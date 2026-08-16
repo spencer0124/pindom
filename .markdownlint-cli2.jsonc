@@ -1,0 +1,20 @@
+// markdownlint-cli2 config — the docs convention gate (see docs/README.md).
+//
+// Rules come from `.markdownlint.jsonc`. Globs stay here because which paths
+// this repo lints is repo-specific: pindom is a flat Expo app, so there are no
+// `apps/*` or `packages/*` paths to exclude the way a monorepo needs to.
+{
+  "config": {
+    "extends": ".markdownlint.jsonc"
+  },
+  "globs": ["**/*.md"],
+  "gitignore": true,
+  "ignores": [
+    "node_modules",
+    "**/node_modules",
+    ".expo",
+    "ios",
+    "android",
+    "**/CHANGELOG.md"
+  ]
+}
