@@ -55,3 +55,6 @@ Thumbs.db
 
 # Claude Code local state (per-machine)
 .claude/
+
+# explain-diff plugin output — generated HTML walkthroughs, regenerable
+explain-diff/
