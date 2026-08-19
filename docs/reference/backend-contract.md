@@ -161,9 +161,10 @@ All three are **callable** functions, not HTTP endpoints — the client invokes 
 SDK, which attaches the auth token automatically.
 
 > [!NOTE]
-> Tell the app developer which **region** these deploy to. The client's `getFunctions(app)`
-> defaults to `us-central1`, so an `asia-northeast3` deployment fails with `not-found` until
-> the region is passed explicitly.
+> **Region: `asia-northeast3` (Seoul)**, agreed with the backend developer. The client passes
+> it explicitly, because `getFunctions(app)` would otherwise default to `us-central1` and every
+> callable would fail with `not-found`. Deploying anywhere else means updating
+> `EXPO_PUBLIC_FUNCTIONS_REGION` in the app — say so before you do it.
 
 ### `verifyLocation`
 

@@ -39,6 +39,17 @@ bricks. The division of labour, and why it is drawn here, is in
 - Node and Yarn per the root [README](../../README.md); the versions are pinned in `.nvmrc`
   and `package.json`.
 
+> [!NOTE]
+> **Already done on this checkout.** The project exists (`pindom-1234`), Email/Password
+> sign-in is enabled, the Cloud Functions region is agreed as `asia-northeast3`, both config
+> files are in place, and the packages are installed. The steps below remain the procedure —
+> for a fresh clone, a second developer, or a new Firebase project — but you do not need to
+> repeat them.
+>
+> What is *not* done: no Firestore collections, no rules, no deployed functions. Stay on
+> fixtures (`EXPO_PUBLIC_USE_MOCKS=true`) until the backend developer says otherwise, or every
+> screen goes blank against an empty database.
+
 ## How Firebase recognises your app
 
 Firebase does not use a base URL or an API key you paste into code. Instead, every platform
@@ -84,8 +95,8 @@ Ask for three things:
    are already listed in `.gitignore`.
 2. **Editor** access to the Firebase project, so you can read the console when debugging. See
    [Firebase IAM](https://firebase.google.com/docs/projects/iam/overview).
-3. The **region** their Cloud Functions deploy to. This matters; see
-   [troubleshooting](#troubleshooting).
+3. The **region** their Cloud Functions deploy to — for PINDOM this is
+   `asia-northeast3` (Seoul). It matters; see [troubleshooting](#troubleshooting).
 
 ### 2. Drop the files in — that is the whole integration
 
@@ -148,7 +159,7 @@ Set `EXPO_PUBLIC_USE_MOCKS=false` in `.env`, and tell `AppConfig` where the func
 
 ```bash
 EXPO_PUBLIC_USE_MOCKS=false
-EXPO_PUBLIC_FUNCTIONS_REGION=asia-northeast3   # whatever the backend dev deploys to
+EXPO_PUBLIC_FUNCTIONS_REGION=asia-northeast3   # confirmed with the backend dev
 ```
 
 Dropping the config files in does **not** silently switch you to live data — an explicit
@@ -248,7 +259,8 @@ afternoon if you do not recognise them.
 | --- | --- | --- |
 | A field renders `undefined` | Field-name mismatch. Firestore has no schema and never errors on a wrong key | Check [backend-contract.md](../reference/backend-contract.md). It is the referee, not either codebase |
 | `permission-denied` on a read that should work | Firestore rules, not your code | Send the collection path to the backend dev |
-| Callable throws `not-found` | The function is not deployed, **or** it is deployed to a different region. `getFunctions(app)` defaults to `us-central1`, and a Korean deployment is likely `asia-northeast3` | Pass the region: `getFunctions(app, 'asia-northeast3')` |
+| Callable throws `not-found` | The function is not deployed, **or** the region is wrong. PINDOM deploys to `asia-northeast3`, but `getFunctions(app)` defaults to `us-central1` | Check `EXPO_PUBLIC_FUNCTIONS_REGION`. If it is right, the function is not deployed yet |
+| `auth/operation-not-allowed` on sign-in | Email/Password is disabled in the console. Enabled for `pindom-1234`, so this only bites on a new project | Authentication → Sign-in method → Email/Password |
 | A date renders as `[object Object]` | Firestore returns a `Timestamp`, not a `Date` or an ISO string | Convert once, in the repository, never in a screen |
 | An optional field typed `\| null` never matches | Firestore omits absent fields entirely — they read `undefined`, never `null` | Type them `field?: T` |
 | Everything fails silently after a clean install | Bundle identifier mismatch, or the config files are missing after `prebuild --clean` | Confirm both files are at the repo root and the identifiers match step 1 |

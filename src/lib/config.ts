@@ -23,11 +23,13 @@ const extra = Constants.expoConfig?.extra as
 /**
  * Cloud Functions region.
  *
- * Firebase's client SDK defaults to `us-central1`. PINDOM's users and its
- * backend are in Korea, so `asia-northeast3` (Seoul) is the sensible default —
- * but it is a guess until the backend developer confirms where they deploy. A
- * mismatch fails as `not-found` on every callable, which reads like a missing
- * function rather than a wrong address.
+ * `asia-northeast3` (Seoul) is **confirmed** with the backend developer, not a
+ * guess. It stays an env var so a redeployment elsewhere does not need a code
+ * change.
+ *
+ * Firebase's client SDK defaults to `us-central1`, and a mismatch fails as
+ * `not-found` on every callable — which reads like a missing function rather
+ * than a wrong address, so it is worth being explicit about.
  */
 const DEFAULT_FUNCTIONS_REGION = 'asia-northeast3';
 
