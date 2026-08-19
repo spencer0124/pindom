@@ -21,9 +21,14 @@ public — never put a secret behind that prefix.
 
 | Key | Required | Notes |
 | --- | --- | --- |
-| `EXPO_PUBLIC_BASE_URL` | for API calls | Unset → requests fail against a non-resolving placeholder, by design |
+| `EXPO_PUBLIC_USE_MOCKS` | yes | `true` serves typed fixtures from `src/mocks/`; `false` calls Firebase |
 | `EXPO_PUBLIC_ENV` | no | `dev` \| `staging` \| `prod`, defaults to `prod` |
 | `EXPO_PUBLIC_NAVER_MAP_CLIENT_ID` | for the map | Must be registered to `com.zoyoong.pindom`; a wrong ID fails **silently** with a blank map |
+
+Firebase needs no key here — it carries its project identity in
+`google-services.json` and `GoogleService-Info.plist`, which are gitignored and
+come from the backend developer. See
+[connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md).
 
 Flow: `.env` → `app.config.ts` `extra` → `Constants.expoConfig.extra` →
 `src/lib/api/config.ts`. Read through `ApiConfig`, not `extra` directly.
@@ -44,12 +49,14 @@ Full docs are in [docs/](docs/README.md), filed by reader need
 
 | Document | For |
 | --- | --- |
+| [connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project — and building before you can. **Start here for anything backend-shaped** |
 | [architecture.md](docs/explanation/architecture.md) | What PINDOM is and how the app is assembled |
 | [design-language.md](docs/explanation/design-language.md) | Why some screens are dark and most are light |
 | [design-system.md](docs/reference/design-system.md) | Every component and when to use it — **read before building anything** |
 | [design-tokens.md](docs/reference/design-tokens.md) | Colour, type, spacing, and the rules for reading them |
 | [screens.md](docs/reference/screens.md) | Every Figma frame → node id, theme, route, status |
 | [figma-workflow.md](docs/reference/figma-workflow.md) | Driving Figma MCP against this file without getting burned |
+| [backend-contract.md](docs/reference/backend-contract.md) | Firestore collections and Cloud Function signatures both codebases implement against |
 | [screen-implementation.md](docs/plans/screen-implementation.md) | The order to build screens in |
 
 [CLAUDE.md](CLAUDE.md) carries the build rules those docs back.
@@ -81,7 +88,12 @@ check a theme change.
 
 Screens are route skeletons. Each placeholder shows its Figma node id and the
 flowchart's outgoing transitions, so the navigation graph is walkable before any
-screen is built. Backend (Firebase) is not wired yet.
+screen is built.
+
+The backend is **Firebase, owned by the backend developer**. This repo is a
+client of it and reaches it through `src/lib/repositories/` — which, along with
+`src/mocks/`, is not built yet. Until then screens bind to fixtures; see
+[ADR 0005](docs/decisions/0005-keep-firebase-behind-a-repository-boundary.md).
 
 The GPS check (50m radius + speed) is an anti-spoofing measure and **must be
 adjudicated server-side** — the client submits a reading, it does not decide.

@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-19
 audience: internal
 ---
 
@@ -29,10 +29,17 @@ internal ones. **The category follows the reader's need, not the subject matter.
 A document serves one need. When a procedure and its background start sharing a page, split
 them and link the halves.
 
-`tutorials/`, `how-to/` and `internal/` are empty for now. pindom has no build or deploy
-pipeline yet, so a runbook would document a process that does not exist.
+`tutorials/` and `internal/` are empty for now. pindom has no build or deploy pipeline yet,
+so a runbook for one would document a process that does not exist. `how-to/` holds the one
+procedure that does: joining the backend developer's Firebase project.
 
 ## Index
+
+### how-to
+
+| Document | Summary |
+| --- | --- |
+| [connect-the-app-to-firebase.md](how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project, building with fixtures before you can, and every Firebase-adjacent document linked in one place. **Start here for anything backend-shaped** |
 
 ### reference
 
@@ -42,6 +49,7 @@ pipeline yet, so a runbook would document a process that does not exist.
 | [design-tokens.md](reference/design-tokens.md) | The token contract: brand ramp, typography, spacing, radius, shadow, and the rules for reading them |
 | [screens.md](reference/screens.md) | Every Figma frame mapped to node id, theme, route and status, plus the flow slices to build in |
 | [figma-workflow.md](reference/figma-workflow.md) | How to drive the Figma MCP against this particular file, and the traps it sets |
+| [backend-contract.md](reference/backend-contract.md) | The Firestore collections, field names and Cloud Function signatures both codebases implement against. The referee when they disagree |
 
 ### explanation
 
@@ -61,6 +69,7 @@ copied to a second place is a value that will disagree with the first.
 | [0002-vendor-sds-instead-of-dependency.md](decisions/0002-vendor-sds-instead-of-dependency.md) | Copying the design system in rather than depending on it |
 | [0003-single-seed-theming.md](decisions/0003-single-seed-theming.md) | Threading every accent component through one theme seed |
 | [0004-per-screen-theme-not-global-dark-mode.md](decisions/0004-per-screen-theme-not-global-dark-mode.md) | Theme as a property of the route, not of the user's system preference |
+| [0005-keep-firebase-behind-a-repository-boundary.md](decisions/0005-keep-firebase-behind-a-repository-boundary.md) | Firebase owned by the backend developer, reached through one directory, and what that supersedes |
 
 ### plans
 

@@ -20,6 +20,9 @@ not know what this app does. The docs index is [docs/README.md](docs/README.md).
 - **The product is PINDOM.** Two Figma frames render the wordmark as `FINDOM`. That is a
   typo in the design; never copy it into code.
 - **Match the golden screen**, `app/(tabs)/index.tsx`, for structure and conventions.
+- **Screens get data from `src/lib/repositories/` only** — never from `@react-native-firebase/*`
+  or `src/mocks/` directly. Field names come from
+  [docs/reference/backend-contract.md](docs/reference/backend-contract.md), not from invention.
 - **One screen per commit.** Update the status column in
   [docs/reference/screens.md](docs/reference/screens.md) when a screen lands.
 
@@ -32,6 +35,10 @@ not know what this app does. The docs index is [docs/README.md](docs/README.md).
   See [ADR 0004](docs/decisions/0004-per-screen-theme-not-global-dark-mode.md).
 - **The design system must not import from a screen.** Dependencies run one way:
   `app/` → `src/features/` → `src/components/` → `src/design-system/`.
+- **The backend is Firebase and the backend developer owns all of it** — project, schema,
+  rules, functions, billing. Never write Firestore rules or Cloud Functions in this repo.
+  [ADR 0005](docs/decisions/0005-keep-firebase-behind-a-repository-boundary.md); the runbook is
+  [docs/how-to/connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md).
 
 ## Commands
 

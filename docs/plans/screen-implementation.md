@@ -3,7 +3,7 @@ title: Screen Implementation Plan
 type: plan
 status: draft
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-19
 audience: internal
 ---
 
@@ -30,14 +30,25 @@ colour. `CLAUDE.md` points at both.
 This is what prevents duplicate primitives. Without an index, nobody can know that the thing
 they are about to build already exists.
 
-## Phase 1 — navigation shell and typed fixtures
+## Phase 1 — data shapes, fixtures, and the repository layer
 
-The route skeletons exist; the data shapes do not.
+The route skeletons exist; the data shapes do not. Three pieces, in order:
 
-Add `mocks/` with typed fixtures for the four entities the flowchart implies: `Place`,
-`Ticket`, `Post`, `User`. Derive fields from what the designs actually show — 홈 displays a
-ticket count and a distance, 컬렉션 displays issued tickets, 커뮤니티 2 displays posts with
-author, location, like and comment counts.
+1. **`src/lib/domain/`** — one type per entity in
+   [../reference/backend-contract.md](../reference/backend-contract.md). That document is the
+   source; these types mirror it. Fields come from what the designs actually show — 홈 displays
+   a ticket balance and a distance, 컬렉션 displays issued tickets, 커뮤니티 2 displays posts
+   with author, location, like and comment counts.
+2. **`src/mocks/`** — typed fixtures against those types, in Korean. Include a scripted
+   verification sequence counting 84m → 66m → 32m → verified, so the whole capture chain is
+   walkable in the simulator without travelling to 주문진 방파제.
+3. **`src/lib/repositories/`** — one module per entity, each function returning `Result<T>` and
+   branching on `EXPO_PUBLIC_USE_MOCKS`. This is the **only** place that will import Firebase,
+   per [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md). Screens
+   import repositories and nothing below them.
+
+Give the mock path a deliberate 250–400ms delay. Fixtures that resolve instantly mean nobody
+builds the loading state, and the design system ships both `Skeleton` and `Loader`.
 
 The point is that every screen after this has a data shape to bind to, so a screen author
 stops inventing one per screen. Three screens inventing three shapes of `Place` is the same
@@ -94,12 +105,15 @@ means the route params match; building them a week apart means they do not.
 - **Code Connect.** Mapping design-system components to Figma nodes would let the MCP name
   a component instead of describing a rectangle. The largest available quality gain, but it
   needs stable components, so it belongs after the first few slices.
-- **Backend binding.** Screens bind to fixtures until Firebase exists. Swapping fixtures for
-  real queries is a separate pass, made easy by having one data shape per entity rather than
-  one per screen.
+- **Firebase integration.** Screens bind to fixtures until the backend developer has a project
+  and functions to point at. Because the switch lives in `src/lib/repositories/`, flipping
+  `EXPO_PUBLIC_USE_MOCKS` is the whole migration — nothing under `app/` changes. The runbook is
+  [../how-to/connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md).
 
 ## Related
 
 - [../reference/screens.md](../reference/screens.md) — node ids, themes, slices
 - [../reference/figma-workflow.md](../reference/figma-workflow.md) — the prompt and its traps
 - [../reference/design-system.md](../reference/design-system.md) — what to build with
+- [../reference/backend-contract.md](../reference/backend-contract.md) — the data shapes Phase 1 mirrors
+- [../how-to/connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md) — the fixture switch, and how to leave it behind

@@ -3,7 +3,7 @@ title: Architecture Overview
 type: explanation
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-19
 audience: internal
 ---
 
@@ -42,7 +42,10 @@ A **flat Expo app**, not a monorepo — the version pins are in `package.json`.
 | --- | --- |
 | `app/` | Expo Router routes. File tree *is* the navigation graph |
 | `src/design-system/` | The vendored design system. Owned by this repo, not a dependency |
-| `src/lib/api/` | Axios client, interceptor chain, `Result` envelope. Idle until a backend exists |
+| `src/lib/api/` | Superseded by [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md), except `types.ts` — the `Result` envelope and failure taxonomy |
+| `src/lib/domain/` | Domain types, mirroring [../reference/backend-contract.md](../reference/backend-contract.md). Not built yet |
+| `src/lib/repositories/` | The only code that talks to Firebase. Not built yet |
+| `src/mocks/` | Typed fixtures the repositories serve when `EXPO_PUBLIC_USE_MOCKS` is on. Not built yet |
 | `src/lib/store/` | MMKV-backed persistence adapters for Zustand |
 | `src/components/` | App-level shared components, above the design system |
 | `src/features/` | Feature-scoped code |
@@ -89,28 +92,34 @@ Two route-shape notes worth knowing:
 
 ## Data flow
 
-There is none yet, and it is better to say so than to describe an intention.
+The backend is **Firebase, owned by the backend developer** — project, schema, rules,
+functions and billing. This repo is a client of it, and reaches it through exactly one
+directory.
 
 ```mermaid
 flowchart LR
-  UI["Screens (app/)"] -->|"not yet wired"| API["src/lib/api<br/>axios + Result"]
-  API -.->|"EXPO_PUBLIC_BASE_URL unset"| X(["no backend"])
-  UI -.->|"deferred"| FB[("Firebase<br/>auth · storage · data")]
+  UI["Screens (app/)"] --> R["src/lib/repositories"]
+  R -->|"EXPO_PUBLIC_USE_MOCKS=true"| M["src/mocks<br/>typed fixtures"]
+  R -->|"EXPO_PUBLIC_USE_MOCKS=false"| FB[("Firebase<br/>auth · firestore · storage · functions")]
 ```
 
-- The **axios layer is vendored and idle**. It has the interceptor chain (auth, retry,
-  platform headers, observability) and a `Result<T>` success-or-failure envelope, but
-  `ApiConfig.baseUrl` falls back to a deliberately non-resolving placeholder. A request
-  made today fails loudly, which is the intended behaviour: better than quietly pointing
-  somewhere plausible.
-- **Firebase is deferred.** The plan is a new project covering auth, photo storage,
-  tickets/raffles/posts, and push. `app.config.ts` and the env contract are already shaped
-  for it.
-- The endpoint list in `src/lib/api/endpoints.ts` is **proposed, not agreed** — shaped from
-  the flowchart, to be confirmed or overridden by whatever the server actually does.
+- **`src/lib/repositories/` is the only code that imports Firebase.** Both branches return the
+  same `Result<T>`, so a screen cannot tell which one is running. Neither that directory nor
+  `src/mocks/` exists yet; [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md)
+  records the decision and the gap.
+- **`src/lib/api/` is superseded**, except `types.ts`. The axios client, its interceptor chain
+  and the provisional `endpoints.ts` describe a REST server that is not being built. `Result<T>`
+  and the failure taxonomy survive as the convention repositories return.
+- **Only three operations are server-side code.** Security rules have no `sqrt` and no
+  trigonometry, so `verifyLocation`, `issueTicket` and `enterRaffle` are Cloud Functions.
+  Everything else is direct Firestore access guarded by rules.
+- **Firestore enforces no schema**, so the field names the two codebases agree on live in
+  [../reference/backend-contract.md](../reference/backend-contract.md). That document is the
+  referee, because nothing in either codebase will catch a mismatch.
 
-Until a backend lands, screens should bind to typed fixtures rather than inventing data
-shapes ad hoc. See [../plans/screen-implementation.md](../plans/screen-implementation.md).
+Until the Firebase project is reachable, screens bind to typed fixtures. How to join the
+project — and how to work before you can — is in
+[../how-to/connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md).
 
 ## Trust boundary
 
@@ -144,12 +153,12 @@ flowchart TB
   FIG["Figma<br/>OZ8H9E7WDdruFIhQ7UBgcy"]
   NAVER["Naver Maps SDK"]
   SDS["skkuverse-app<br/>@skkuverse/sds"]
-  BE[("backend — not built")]
+  BE[("Firebase<br/>owned by the backend dev")]
 
   SDS -.->|"copied once, no live link"| APP
   FIG -.->|"layout + copy reference"| APP
   APP -->|"map tiles, place pins"| NAVER
-  APP -.->|"deferred"| BE
+  APP -->|"firestore · auth · storage · callable functions"| BE
 ```
 
 The dotted edges matter: neither Figma nor skkuverse is a runtime dependency. The design
@@ -158,6 +167,8 @@ system was copied at a point in time and diverges freely; upstream fixes do not 
 ## Related
 
 - [design-language.md](design-language.md) — why the screens look the way they do
+- [../how-to/connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md) — joining the Firebase project, and building before you can
+- [../reference/backend-contract.md](../reference/backend-contract.md) — the Firestore collections and Cloud Function signatures
 - [../reference/screens.md](../reference/screens.md) — the navigation graph and screen map
 - [../decisions/](../decisions/) — the structural decisions behind all of this
 - [../README.md](../README.md) — docs index and writing rules
