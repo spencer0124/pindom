@@ -5,10 +5,13 @@
  * Shapes come from `src/lib/domain/`, which mirrors
  * docs/reference/backend-contract.md. When the contract changes, these change.
  */
+export { mockArtists } from './artists';
+export { mockCourses } from './courses';
 export { mockDelay } from './delay';
 export { mockPlaces } from './places';
 export { mockPosts } from './posts';
 export { mockRaffles } from './raffles';
+export { mockGallery, mockReviews } from './reviews';
 export { mockTickets } from './tickets';
 export { mockUser } from './users';
 export { mockVerificationSequence } from './verification';

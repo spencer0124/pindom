@@ -1,5 +1,7 @@
+import type { Tier } from './user';
+
 /**
- * A 커뮤니티 post — the 인증샷 자랑 feed.
+ * A 커뮤니티 post — the 인증샷 자랑 feed, segmented by artist board.
  *
  * Mirrors the `posts` collection in docs/reference/backend-contract.md.
  * `likeCount` and `commentCount` are display-only: the designs show the numbers
@@ -7,10 +9,14 @@
  */
 export interface Post {
   id: string;
+  /** The artist whose board this is. The feed is per 최애, never global */
+  boardId: string;
   authorId: string;
   /** Denormalised so the feed is one query rather than one read per author */
   authorNickname: string;
   authorAvatarUrl?: string;
+  /** Denormalised. Every post card renders the tier badge */
+  authorTier: Tier;
   body: string;
   imageUrls: string[];
   placeId?: string;
@@ -24,6 +30,7 @@ export interface Post {
 
 /** What 글쓰기 submits. */
 export interface NewPost {
+  boardId: string;
   body: string;
   imageUrls: string[];
   placeId?: string;

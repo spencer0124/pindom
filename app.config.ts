@@ -111,10 +111,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-localization',
       {
-        supportedLocales: ['ko', 'en'],
+        // The prototype writes copy in four languages — its helper is `L(ko, en, ja, zh)`.
+        // Declaring a locale here only makes the OS offer it; the seeded content has to exist
+        // in each one, which is the actual cost. See docs/reference/backend-contract.md.
+        supportedLocales: ['ko', 'en', 'ja', 'zh'],
       },
     ],
     [
+      // TODO(design): direction `2b` sets everything in Pretendard Variable and the prototype
+      // contains no Wanted Sans at all (ADR 0006). Swapping means new font files, deleting the
+      // platform-split `fontFamilyByWeight` map, and re-checking every screen — so it is left
+      // until the token work in docs/reference/design-tokens.md is picked up.
       'expo-font',
       {
         // Registered per platform because the two resolve font names differently.

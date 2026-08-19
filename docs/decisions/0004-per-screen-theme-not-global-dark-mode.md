@@ -13,7 +13,15 @@ audience: internal
 
 ## Status
 
-Accepted. The dark surface palette is **not yet built** — this ADR records the decision and
+Accepted, and **refined by [ADR 0006](0006-adopt-the-prototype-as-the-design-source-of-truth.md)**.
+
+The conclusion below holds: there is no user-facing theme toggle, and the prototype's
+마이페이지 switch is not adopted. What changed is the premise. Direction `2b` is a single dark
+surface applied to every screen, so the bimodal light/dark split this ADR was written to model
+no longer exists — there is one surface set, not two, and every screen waits on it rather than
+seven.
+
+Original status: The dark surface palette is **not yet built** — this ADR records the decision and
 the gap.
 
 ## Context

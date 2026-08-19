@@ -5,13 +5,19 @@ PINDOM — Expo / React Native. Location-verified photo tickets.
 Read [docs/explanation/architecture.md](docs/explanation/architecture.md) first if you do
 not know what this app does. The docs index is [docs/README.md](docs/README.md).
 
+**The design source is [design/README.md](design/README.md)** — an interactive prototype that
+outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)).
+
 ## Build rules
 
 - **Check [docs/reference/design-system.md](docs/reference/design-system.md) before creating
   any component.** Reuse beats create. If nothing fits, ask before adding a primitive.
-- **Figma output is layout intent and copy, never final code.** This file has no auto layout
-  and no components — always rebuild with flexbox, never absolute positioning. See
-  [docs/reference/figma-workflow.md](docs/reference/figma-workflow.md).
+- **The prototype beats Figma.** Read layout, copy and flow from block `1a`; read colour, type
+  and corners from `2b`. Where an old Figma frame disagrees, it is wrong. See
+  [design/README.md](design/README.md).
+- **Prototype output is layout intent and copy, never final code.** Same rule Figma had —
+  always rebuild with flexbox, never absolute positioning, never copy its inline styles. For
+  older frames see [docs/reference/figma-workflow.md](docs/reference/figma-workflow.md).
 - **Tokens only.** A raw hex or magic number in a screen file is a bug.
 - **Read accent colour from `useTheme().token.accent`**, never `SdsColors.brand*` directly.
   See [docs/reference/design-tokens.md](docs/reference/design-tokens.md).
@@ -31,8 +37,10 @@ not know what this app does. The docs index is [docs/README.md](docs/README.md).
 - **The client never decides whether a GPS verification passed.** The 50m radius and speed
   checks are anti-spoofing and must be adjudicated server-side. The client submits a
   reading. On-screen distance is feedback, not the check.
-- **No global dark mode.** Theme is a fixed property of each route, not a user preference.
-  See [ADR 0004](docs/decisions/0004-per-screen-theme-not-global-dark-mode.md).
+- **No theme toggle.** Every screen is dark under direction `2b`, and that is a property of
+  the build, not a user preference. The prototype's 마이페이지 has a toggle; it is **not**
+  adopted. See [ADR 0004](docs/decisions/0004-per-screen-theme-not-global-dark-mode.md) and
+  [ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md).
 - **The design system must not import from a screen.** Dependencies run one way:
   `app/` → `src/features/` → `src/components/` → `src/design-system/`.
 - **The backend is Firebase and the backend developer owns all of it** — project, schema,

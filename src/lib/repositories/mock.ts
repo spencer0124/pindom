@@ -1,6 +1,10 @@
 import { Failure, ResultHelper, type Result } from '../api/types';
 import type {
+  Artist,
   FeedPage,
+  Locale,
+  NewReview,
+  Review,
   LocationReading,
   NewPost,
   Place,
@@ -16,10 +20,14 @@ import type {
 } from '../domain';
 import { distanceMeters } from '../geo';
 import {
+  mockArtists,
+  mockCourses,
   mockDelay,
+  mockGallery,
   mockPlaces,
   mockPosts,
   mockRaffles,
+  mockReviews,
   mockTickets,
   mockUser,
   mockVerificationSequence,
@@ -44,6 +52,7 @@ let session: Session | null = { userId: mockUser.id, email: mockUser.email };
 let user: User = { ...mockUser };
 let tickets: Ticket[] = [...mockTickets];
 let posts: Post[] = [...mockPosts];
+let reviews: Review[] = [...mockReviews];
 const entries: RaffleEntry[] = [];
 
 /** How far through `mockVerificationSequence` each verify session has walked. */
@@ -83,6 +92,55 @@ function withDistance(
 // ── Implementation ──
 
 export const mockRepositories: Repositories = {
+  artists: {
+    async search(queryText) {
+      const q = (queryText ?? '').trim();
+      const hits = q
+        ? mockArtists.filter((a) => a.name.includes(q) || a.initial.includes(q.toUpperCase()))
+        : mockArtists;
+      return mockDelay(ResultHelper.ok([...hits]));
+    },
+
+    async getById(artistId) {
+      const artist = mockArtists.find((a) => a.id === artistId);
+      return mockDelay(artist ? ResultHelper.ok(artist) : notFound<Artist>('아티스트'));
+    },
+
+    async listMine() {
+      if (!session) return mockDelay(unauthenticated<Artist[]>());
+      // Ordered by the user's own list, not by the fixture order — the first followed artist
+      // is the one 홈 opens on.
+      const mine = user.followedArtistIds
+        .map((id) => mockArtists.find((a) => a.id === id))
+        .filter((a): a is Artist => Boolean(a));
+      return mockDelay(ResultHelper.ok(mine));
+    },
+
+    async follow(artistId) {
+      if (!session) return mockDelay(unauthenticated<void>());
+      if (!user.followedArtistIds.includes(artistId)) {
+        user = { ...user, followedArtistIds: [...user.followedArtistIds, artistId] };
+      }
+      return mockDelay(ResultHelper.ok<void>(undefined));
+    },
+
+    async unfollow(artistId) {
+      if (!session) return mockDelay(unauthenticated<void>());
+      user = {
+        ...user,
+        followedArtistIds: user.followedArtistIds.filter((id) => id !== artistId),
+      };
+      return mockDelay(ResultHelper.ok<void>(undefined));
+    },
+  },
+
+  courses: {
+    async listForArtist(artistId) {
+      const hits = mockCourses.filter((c) => c.artistId === artistId);
+      return mockDelay(ResultHelper.ok(hits));
+    },
+  },
+
   auth: {
     async signIn(email) {
       session = { userId: user.id, email };
@@ -128,6 +186,37 @@ export const mockRepositories: Repositories = {
       const place = mockPlaces.find((p) => p.id === placeId);
       return mockDelay(place ? ResultHelper.ok(place) : notFound<Place>('촬영지'));
     },
+
+    async reviews(placeId) {
+      const hits = reviews
+        .filter((r) => r.placeId === placeId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return mockDelay(ResultHelper.ok(hits));
+    },
+
+    async gallery(placeId) {
+      const hits = mockGallery
+        .filter((g) => g.placeId === placeId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return mockDelay(ResultHelper.ok(hits));
+    },
+
+    async addReview(input: NewReview) {
+      if (!session) return mockDelay(unauthenticated<Review>());
+      const review: Review = {
+        id: nextId('review'),
+        placeId: input.placeId,
+        authorId: user.id,
+        authorNickname: user.nickname,
+        authorTier: user.tier,
+        text: input.text,
+        tags: input.tags,
+        likeCount: 0,
+        createdAt: new Date(),
+      };
+      reviews = [review, ...reviews];
+      return mockDelay(ResultHelper.ok(review));
+    },
   },
 
   verification: {
@@ -159,10 +248,27 @@ export const mockRepositories: Repositories = {
   tickets: {
     async listMine() {
       if (!session) return mockDelay(unauthenticated<Ticket[]>());
-      const mine = [...tickets].sort(
-        (a, b) => b.issuedAt.getTime() - a.issuedAt.getTime(),
-      );
+      const mine = tickets
+        .filter((t) => t.visibility === 'public')
+        .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
       return mockDelay(ResultHelper.ok(mine));
+    },
+
+    async listVault() {
+      if (!session) return mockDelay(unauthenticated<Ticket[]>());
+      const vault = tickets
+        .filter((t) => t.visibility === 'private')
+        .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
+      return mockDelay(ResultHelper.ok(vault));
+    },
+
+    async setVisibility(ticketId, visibility) {
+      if (!session) return mockDelay(unauthenticated<Ticket>());
+      const found = tickets.find((t) => t.id === ticketId);
+      if (!found) return mockDelay(notFound<Ticket>('티켓'));
+      const updated = { ...found, visibility };
+      tickets = tickets.map((t) => (t.id === ticketId ? updated : t));
+      return mockDelay(ResultHelper.ok(updated));
     },
 
     async getById(ticketId) {
@@ -267,11 +373,12 @@ export const mockRepositories: Repositories = {
   },
 
   posts: {
-    async feed(cursor) {
-      const start = cursor ? posts.findIndex((p) => p.id === cursor) + 1 : 0;
-      const page = posts.slice(start, start + FEED_PAGE_SIZE);
+    async feed(boardId, cursor) {
+      const board = posts.filter((p) => p.boardId === boardId);
+      const start = cursor ? board.findIndex((p) => p.id === cursor) + 1 : 0;
+      const page = board.slice(start, start + FEED_PAGE_SIZE);
       const last = page[page.length - 1];
-      const more = start + FEED_PAGE_SIZE < posts.length;
+      const more = start + FEED_PAGE_SIZE < board.length;
       const result: FeedPage = {
         posts: page,
         cursor: more && last ? last.id : null,
@@ -292,8 +399,10 @@ export const mockRepositories: Repositories = {
         : undefined;
       const post: Post = {
         id: nextId('post'),
+        boardId: input.boardId,
         authorId: user.id,
         authorNickname: user.nickname,
+        authorTier: user.tier,
         ...(user.avatarUrl && { authorAvatarUrl: user.avatarUrl }),
         body: input.body,
         imageUrls: input.imageUrls,
@@ -311,6 +420,26 @@ export const mockRepositories: Repositories = {
   users: {
     async me() {
       if (!session) return mockDelay(unauthenticated<User>());
+      return mockDelay(ResultHelper.ok(user));
+    },
+
+    async updateProfile(input) {
+      if (!session) return mockDelay(unauthenticated<User>());
+      user = {
+        ...user,
+        ...(input.nickname !== undefined && { nickname: input.nickname }),
+        ...(input.bio !== undefined && { bio: input.bio }),
+        ...(input.avatarUrl !== undefined && { avatarUrl: input.avatarUrl }),
+        ...(input.profileVisibility !== undefined && {
+          profileVisibility: input.profileVisibility,
+        }),
+      };
+      return mockDelay(ResultHelper.ok(user));
+    },
+
+    async setLocale(locale: Locale) {
+      if (!session) return mockDelay(unauthenticated<User>());
+      user = { ...user, locale };
       return mockDelay(ResultHelper.ok(user));
     },
   },

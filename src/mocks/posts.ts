@@ -12,8 +12,10 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000);
 export const mockPosts: Post[] = [
   {
     id: 'post-011',
+    boardId: 'artist-lumina',
     authorId: 'user-yuna',
     authorNickname: '유나',
+    authorTier: 'club20',
     authorAvatarUrl: 'https://picsum.photos/seed/yuna/200/200',
     body: '파도 진짜 셌는데 겨우 건짐 ㅋㅋ 방파제 끝까지는 못 갔어요',
     imageUrls: ['https://picsum.photos/seed/post11/900/1200'],
@@ -26,8 +28,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-010',
+    boardId: 'artist-lumina',
     authorId: 'user-minseo',
     authorNickname: '민서',
+    authorTier: 'club10',
     body: '해질녘 노려서 갔는데 사람 너무 많아요. 평일 낮 추천',
     imageUrls: [
       'https://picsum.photos/seed/post10a/900/1200',
@@ -41,8 +45,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-009',
+    boardId: 'artist-echoline',
     authorId: 'user-demo',
     authorNickname: '도민',
+    authorTier: 'club10',
     authorAvatarUrl: 'https://picsum.photos/seed/pindomuser/200/200',
     body: '드디어 6장째. 다음은 을왕리',
     imageUrls: ['https://picsum.photos/seed/post9/900/1200'],
@@ -55,8 +61,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-008',
+    boardId: 'artist-echoline',
     authorId: 'user-jihoon',
     authorNickname: '지훈',
+    authorTier: 'clubGo',
     body: '골목 계단 올라가는 길에 찍었어요. 주민분들 계셔서 조용히!',
     imageUrls: ['https://picsum.photos/seed/post8/900/1200'],
     placeId: 'place-gamcheon',
@@ -67,8 +75,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-007',
+    boardId: 'artist-lumina',
     authorId: 'user-hana',
     authorNickname: '하나',
+    authorTier: 'club10',
     authorAvatarUrl: 'https://picsum.photos/seed/hana/200/200',
     body: '광통교 밑에서 찍으면 반사되는 게 예뻐요',
     imageUrls: ['https://picsum.photos/seed/post7/900/1200'],
@@ -80,8 +90,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-006',
+    boardId: 'artist-nightpost',
     authorId: 'user-seojun',
     authorNickname: '서준',
+    authorTier: 'club20',
     body: '백사장 북쪽 끝 맞아요. 남쪽은 아예 다른 각도',
     imageUrls: ['https://picsum.photos/seed/post6/900/1200'],
     placeId: 'place-eurwangni',
@@ -92,8 +104,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-005',
+    boardId: 'artist-lumina',
     authorId: 'user-yuna',
     authorNickname: '유나',
+    authorTier: 'club20',
     authorAvatarUrl: 'https://picsum.photos/seed/yuna/200/200',
     body: '티켓 8장 모아서 콘서트 응모 넣었습니다 제발',
     imageUrls: [],
@@ -103,8 +117,10 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-004',
+    boardId: 'artist-lumina',
     authorId: 'user-minseo',
     authorNickname: '민서',
+    authorTier: 'club10',
     body: '주말에 방파제 가시는 분들 파도 확인하고 가세요 통제됨',
     imageUrls: ['https://picsum.photos/seed/post4/900/1200'],
     placeId: 'place-jumunjin',

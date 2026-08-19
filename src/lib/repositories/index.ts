@@ -1,6 +1,8 @@
 import { AppConfig } from '../config';
 import type {
+  ArtistRepository,
   AuthRepository,
+  CourseRepository,
   PlaceRepository,
   PostRepository,
   RaffleRepository,
@@ -39,6 +41,18 @@ function impl(): Promise<Repositories> {
   return loading;
 }
 
+export const artistRepository: ArtistRepository = {
+  search: async (queryText) => (await impl()).artists.search(queryText),
+  getById: async (artistId) => (await impl()).artists.getById(artistId),
+  listMine: async () => (await impl()).artists.listMine(),
+  follow: async (artistId) => (await impl()).artists.follow(artistId),
+  unfollow: async (artistId) => (await impl()).artists.unfollow(artistId),
+};
+
+export const courseRepository: CourseRepository = {
+  listForArtist: async (artistId) => (await impl()).courses.listForArtist(artistId),
+};
+
 export const authRepository: AuthRepository = {
   signIn: async (email, password) => (await impl()).auth.signIn(email, password),
   signUp: async (email, password, nickname) =>
@@ -53,6 +67,9 @@ export const placeRepository: PlaceRepository = {
   listRecommended: async (lat, lng) =>
     (await impl()).places.listRecommended(lat, lng),
   getById: async (placeId) => (await impl()).places.getById(placeId),
+  reviews: async (placeId) => (await impl()).places.reviews(placeId),
+  gallery: async (placeId) => (await impl()).places.gallery(placeId),
+  addReview: async (input) => (await impl()).places.addReview(input),
 };
 
 export const verificationRepository: VerificationRepository = {
@@ -62,6 +79,9 @@ export const verificationRepository: VerificationRepository = {
 
 export const ticketRepository: TicketRepository = {
   listMine: async () => (await impl()).tickets.listMine(),
+  listVault: async () => (await impl()).tickets.listVault(),
+  setVisibility: async (ticketId, visibility) =>
+    (await impl()).tickets.setVisibility(ticketId, visibility),
   getById: async (ticketId) => (await impl()).tickets.getById(ticketId),
   issue: async (input) => (await impl()).tickets.issue(input),
 };
@@ -73,17 +93,21 @@ export const raffleRepository: RaffleRepository = {
 };
 
 export const postRepository: PostRepository = {
-  feed: async (cursor) => (await impl()).posts.feed(cursor),
+  feed: async (boardId, cursor) => (await impl()).posts.feed(boardId, cursor),
   getById: async (postId) => (await impl()).posts.getById(postId),
   create: async (input) => (await impl()).posts.create(input),
 };
 
 export const userRepository: UserRepository = {
   me: async () => (await impl()).users.me(),
+  updateProfile: async (input) => (await impl()).users.updateProfile(input),
+  setLocale: async (locale) => (await impl()).users.setLocale(locale),
 };
 
 export type {
+  ArtistRepository,
   AuthRepository,
+  CourseRepository,
   PlaceRepository,
   PostRepository,
   RaffleRepository,

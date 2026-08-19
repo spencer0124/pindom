@@ -51,6 +51,7 @@ A **flat Expo app**, not a monorepo — the version pins are in `package.json`.
 | `src/components/` | App-level shared components, above the design system |
 | `src/features/` | Feature-scoped code |
 | `assets/` | Images and (eventually) fonts |
+| `design/` | The interactive prototype — the design authority. See [../../design/README.md](../../design/README.md) |
 
 Dependencies run **one way**: `app/` → `src/features/` → `src/components/` →
 `src/design-system/`. The design system must never import from a screen; the moment it
@@ -152,13 +153,15 @@ Treat the on-screen radius and countdown as **feedback**, not as the check.
 ```mermaid
 flowchart TB
   APP["pindom (this repo)<br/>Expo · React Native"]
+  PROTO["design/2026-08-19-prototype.html<br/>layout · copy · flow · colour"]
   FIG["Figma<br/>OZ8H9E7WDdruFIhQ7UBgcy"]
   NAVER["Naver Maps SDK"]
   SDS["skkuverse-app<br/>@skkuverse/sds"]
   BE[("Firebase<br/>owned by the backend dev")]
 
   SDS -.->|"copied once, no live link"| APP
-  FIG -.->|"layout + copy reference"| APP
+  PROTO -.->|"design authority"| APP
+  FIG -.->|"legacy frame ids only"| APP
   APP -->|"map tiles, place pins"| NAVER
   APP -->|"firestore · auth · storage · callable functions"| BE
 ```

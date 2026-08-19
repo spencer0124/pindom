@@ -3,13 +3,20 @@ title: Design Tokens
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-19
 audience: internal
 ---
 
 # Design Tokens
 
 > The token contract: what exists, how to read it, and the two places where the tokens currently disagree with the design. Read before styling anything.
+
+> [!WARNING]
+> **The palette below is superseded.** [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)
+> adopted direction `2b` from the prototype, and not one colour survives — neither the brand
+> ramp nor the grey ladder appears anywhere in it. The replacement is recorded in
+> [The `2b` surface](#the-2b-surface). Everything after that section describes what is
+> currently *in the code*, which is now a description of what has to change.
 
 ## Summary
 
@@ -55,6 +62,67 @@ The `accent` group is derived in `src/design-system/core/ThemeProvider.tsx`:
 The seed itself is `colorSeeds.primary` in `src/design-system/foundation/colors.ts`.
 Changing that one value re-themes every accent-bearing component. See
 [ADR 0003](../decisions/0003-single-seed-theming.md).
+
+## The 2b surface
+
+Sampled from block `2b` of [`design/2026-08-19-prototype.html`](../../design/2026-08-19-prototype.html)
+— 인쇄물, 블랙 & 애시드. Its own description: 실물 티켓·스탬프 대장 느낌. 각진 모서리와
+모노스페이스 수치가 "수집 기록"을 강조합니다.
+
+These are **evidence, not constants**. Nothing in the code emits them yet.
+
+### Surfaces and ink
+
+| Role | Value | Where it appears in `2b` |
+| --- | --- | --- |
+| Deepest ground | `#0B0B0B` | Text colour *on* the acid chip — the inverse pair |
+| Screen ground | `#131313` | The device canvas |
+| Chrome / ink on light | `#171719` | The block frame, and body text where the surrounding page is light |
+| Accent — acid | `#58CF04` | `TICKETS OWNED`, `NEARBY LOCATIONS`, the nearest distance `84m` |
+| Alert | `#FF5E00` | `CLOSING TODAY` |
+| Primary text | `#FFFFFF` | Headlines and the big numerals |
+
+There is no ramp. The accent appears at one value, used sparingly — section labels and the
+single most important number on screen. That restraint is the direction; a five-stop acid ramp
+would undo it.
+
+### Text is an alpha ladder, not a grey ladder
+
+Every secondary tone in `2b` is white at an opacity, over the ground. This is why the inherited
+grey scale has nothing to contribute.
+
+| Alpha | Used for |
+| --- | --- |
+| `1.0` | Headlines, primary numerals |
+| `.7` | Secondary values — a distance that is not the nearest |
+| `.5` | Supporting sentences |
+| `.45` | Metadata — `11H LEFT / 6 TICKETS` |
+| `.42` | Roman captions — `MV / GANGNEUNG` |
+| `.4` | Sub-labels — `BY DISTANCE` |
+| `.35` | Row numerals — `01`, `02`, `03` |
+
+### Rules, not cards
+
+| Token | Value | Use |
+| --- | --- | --- |
+| Section rule | `2px solid rgba(255,255,255,.14)` | Between blocks, and vertically between grid cells |
+| Row rule | `1px solid rgba(255,255,255,.14)` | Between list rows |
+| Radius | `4–5px` | Chips only. Everything else is square |
+
+The direction has almost no rounding and almost no fills. Structure comes from rules and
+spacing. A component that reaches for a card with a radius and a shadow is working against it.
+
+### Typographic signature
+
+| Tracking | Applied to |
+| --- | --- |
+| `.28em` | The wordmark — `PINDOM / 002` |
+| `.2em` | Uppercase section labels — `TICKETS OWNED`, `NEARBY LOCATIONS` |
+| `-.05em` | Large numerals — the ticket count |
+
+Numerals are monospaced and roman captions are uppercase Latin beside the Korean. That pairing
+is what makes it read as a ledger rather than a feed, and it is doing more work than the
+colours are.
 
 ## The brand ramp
 
@@ -104,8 +172,15 @@ shadow props plus Android `elevation`, for use where `boxShadow` is not supporte
 
 ## The font family, and why it is platform-split
 
-Type is set in **Wanted Sans**, bundled under `assets/fonts/` and embedded natively by the
-`expo-font` config plugin in `app.config.ts`. See
+> [!WARNING]
+> **Superseded.** The prototype sets everything in **Pretendard Variable** and contains no
+> Wanted Sans at all. Pretendard is a single variable family, so the whole platform-split
+> problem described below disappears with it — there is no separate Medium family to map
+> around. The section is kept because the swap has not been made yet, and because the failure
+> mode it describes is the one to watch for during the swap.
+
+Type is currently set in **Wanted Sans**, bundled under `assets/fonts/` and embedded natively
+by the `expo-font` config plugin in `app.config.ts`. See
 [assets/fonts/NOTICE.md](../../assets/fonts/NOTICE.md) for licensing.
 
 `FONT_FAMILY` is not one string, and the reason is worth knowing before anyone "simplifies"
@@ -130,18 +205,25 @@ Medium family on iOS only. Android needs no such special case.
 Only weights **400, 500 and 700** ship. Anything else (`thin`, `light`, `extraBold`,
 `black`) is synthesised or snapped to the nearest face.
 
-## Known gap: the grey ladder is blue-tinted, the design is neutral
+## What has to change
 
-The grey scale is inherited from the design system's origin and is subtly blue
-(`grey900` is a navy-leaning near-black). The PINDOM design uses **neutral** greys —
-`#171719` for primary text and `#2F2F30` for raised dark surfaces, both sampled from 홈
-(`33:2617`).
+The gap is no longer a tint on one scale. It is the whole palette.
 
-Only the surface tokens were corrected. Realigning the full ladder is deferred until
-enough real screens exist to check it against.
+| # | Change | Cost |
+| --- | --- | --- |
+| 1 | Re-point `colorSeeds.primary` at the acid accent | One line. [ADR 0003](../decisions/0003-single-seed-theming.md) means every accent component follows |
+| 2 | Replace the grey ladder with the white-alpha ladder over a dark ground | Real work. The scale does not translate — it is a different mechanism, not different values |
+| 3 | Build the dark surface set | `getAdaptiveColors('dark')` still returns inherited generic greys. Now needed by **every** screen, not seven |
+| 4 | Flatten radius and remove card fills | Touches most components. The direction is rules and spacing, not cards |
+| 5 | Swap Wanted Sans for Pretendard Variable | Font files, `app.config.ts`, and deleting `fontFamilyByWeight` |
+
+Do 1 and 3 before the second screen. Retrofitting a surface set through a dozen screens is the
+expensive version of this work, and under `2b` there is no light screen to hide behind.
 
 ## Related
 
+- [`design/README.md`](../../design/README.md) — the prototype these values are sampled from
+- [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the palette was replaced
 - [design-system.md](design-system.md) — the components that consume these tokens
 - [../explanation/design-language.md](../explanation/design-language.md) — why the palette is shaped this way
 - [../decisions/0003-single-seed-theming.md](../decisions/0003-single-seed-theming.md)

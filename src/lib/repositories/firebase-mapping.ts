@@ -8,7 +8,44 @@
  * degrade *silently* — which is the failure mode called out in
  * docs/how-to/connect-the-app-to-firebase.md.
  */
+import { DEFAULT_LOCALE, type Locale } from '../domain';
+
 export type DocData = Record<string, unknown>;
+
+/**
+ * The locale localized fields resolve to.
+ *
+ * A user preference, not a device setting — 언어 in 마이페이지 sets it, and it persists on the
+ * user document. The session layer calls `setActiveLocale` once the user document loads;
+ * before that, everything resolves to Korean.
+ */
+let activeLocale: Locale = DEFAULT_LOCALE;
+
+export function setActiveLocale(locale: Locale): void {
+  activeLocale = locale;
+}
+
+/**
+ * Resolve a localized string map to a plain string.
+ *
+ * Firestore stores any user-visible string that varies by language as `{ ko, en, ja, zh }`.
+ * Resolving here, at the boundary, is the same move as turning a `Timestamp` into a `Date`:
+ * every screen would otherwise have to pick a language out of a map, identically.
+ *
+ * Falls back to Korean, then to any populated value — a place with only Korean copy should
+ * still render for an English reader rather than showing a blank.
+ */
+export function localized(d: DocData, key: string, where: string): string {
+  const v = d[key];
+  if (typeof v === 'string') return v; // tolerated: a plain string that was never localized
+  if (v && typeof v === 'object') {
+    const map = v as Partial<Record<Locale, string>>;
+    const hit = map[activeLocale] ?? map[DEFAULT_LOCALE] ?? Object.values(map).find(Boolean);
+    if (hit) return hit;
+  }
+  missing(key, where);
+  return '';
+}
 
 function missing(field: string, where: string): void {
   if (__DEV__) {

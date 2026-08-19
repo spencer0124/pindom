@@ -15,11 +15,15 @@ export interface Ticket {
   placeId: string;
   /** Denormalised so 티켓 발행 and 컬렉션 render without a second read */
   placeName: string;
+  /** Inherited from the place, so 컬렉션 can group by 최애 */
+  artistId?: string;
   photoUrl: string;
   /** Rendered as the barcode on 티켓 발행 */
   serial: string;
+  /** `private` puts the ticket in 보관함 rather than the public collection */
   visibility: TicketVisibility;
   issuedAt: Date;
+  /** Rendered as the `USED` stub state on 티켓 절취 */
   spent: boolean;
   spentOnEntryId?: string;
 }

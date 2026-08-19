@@ -7,6 +7,8 @@ import {
 } from '@react-native-firebase/auth';
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -17,14 +19,22 @@ import {
   query,
   serverTimestamp,
   startAfter,
+  updateDoc,
   where,
 } from '@react-native-firebase/firestore';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
 
 import { AppConfig } from '../config';
 import { Failure, ResultHelper, type AppFailure, type Result } from '../api/types';
+import { DEFAULT_LOCALE, LOCALES } from '../domain';
 import type {
+  Artist,
+  Course,
   FeedPage,
+  GalleryPhoto,
+  Locale,
+  NewReview,
+  Review,
   LocationReading,
   NewPost,
   Place,
@@ -43,10 +53,12 @@ import {
   date,
   geo,
   isoDate,
+  localized,
   num,
   oneOf,
   optNum,
   optStr,
+  setActiveLocale,
   str,
   strList,
   type DocData,
@@ -122,30 +134,45 @@ function toPlace(id: string, d: DocData): Place {
   const { lat, lng } = geo(d, 'location', at);
   return {
     id,
-    name: str(d, 'name', at),
-    description: str(d, 'description', at),
+    name: localized(d, 'name', at),
+    roman: str(d, 'roman', at),
+    description: localized(d, 'description', at),
     address: str(d, 'address', at),
-    workTitle: str(d, 'workTitle', at),
+    region: localized(d, 'region', at),
+    workTitle: localized(d, 'workTitle', at),
+    workKind: oneOf(d.workKind, ['mv', 'drama', 'self'] as const, 'mv'),
+    artistIds: strList(d, 'artistIds'),
     lat,
     lng,
     radiusMeters: optNum(d, 'radiusMeters') ?? 50,
     coverImageUrl: str(d, 'coverImageUrl', at),
     ticketCount: num(d, 'ticketCount', at),
+    verifyCount: num(d, 'verifyCount', at),
+    photoCount: num(d, 'photoCount', at),
+    reviewCount: num(d, 'reviewCount', at),
     createdAt: date(d, 'createdAt', at),
   };
 }
 
+const TIERS = ['club10', 'club20', 'clubGo'] as const;
+
 function toUser(id: string, d: DocData): User {
   const at = `users/${id}`;
   const avatarUrl = optStr(d, 'avatarUrl');
+  const bio = optStr(d, 'bio');
   return {
     id,
     email: str(d, 'email', at),
     nickname: str(d, 'nickname', at),
     ...(avatarUrl && { avatarUrl }),
+    ...(bio && { bio }),
+    followedArtistIds: strList(d, 'followedArtistIds'),
     ticketBalance: num(d, 'ticketBalance', at),
     ticketsIssued: num(d, 'ticketsIssued', at),
     placesVisited: num(d, 'placesVisited', at),
+    tier: oneOf(d.tier, TIERS, 'club10'),
+    profileVisibility: oneOf(d.profileVisibility, ['public', 'private'] as const, 'public'),
+    locale: oneOf(d.locale, LOCALES, DEFAULT_LOCALE),
     createdAt: date(d, 'createdAt', at),
   };
 }
@@ -191,9 +218,11 @@ function toPost(id: string, d: DocData): Post {
   const ticketId = optStr(d, 'ticketId');
   return {
     id,
+    boardId: str(d, 'boardId', at),
     authorId: str(d, 'authorId', at),
     authorNickname: str(d, 'authorNickname', at),
     ...(authorAvatarUrl && { authorAvatarUrl }),
+    authorTier: oneOf(d.authorTier, TIERS, 'club10'),
     body: str(d, 'body', at),
     imageUrls: strList(d, 'imageUrls'),
     ...(placeId && { placeId }),
@@ -207,7 +236,121 @@ function toPost(id: string, d: DocData): Post {
 
 // ── Implementation ──
 
+function toArtist(id: string, d: DocData): Artist {
+  const at = `artists/${id}`;
+  const imageUrl = optStr(d, 'imageUrl');
+  const accentColor = optStr(d, 'accentColor');
+  return {
+    id,
+    name: localized(d, 'name', at),
+    initial: str(d, 'initial', at),
+    ...(imageUrl && { imageUrl }),
+    placeCount: num(d, 'placeCount', at),
+    memberCount: num(d, 'memberCount', at),
+    ...(accentColor && { accentColor }),
+  };
+}
+
+function toCourse(id: string, d: DocData): Course {
+  const at = `courses/${id}`;
+  return {
+    id,
+    artistId: str(d, 'artistId', at),
+    name: localized(d, 'name', at),
+    description: localized(d, 'description', at),
+    placeIds: strList(d, 'placeIds'),
+    placeCount: num(d, 'placeCount', at),
+  };
+}
+
+function toReview(placeId: string, id: string, d: DocData): Review {
+  const at = `places/${placeId}/reviews/${id}`;
+  return {
+    id,
+    placeId,
+    authorId: str(d, 'authorId', at),
+    authorNickname: str(d, 'authorNickname', at),
+    authorTier: oneOf(d.authorTier, TIERS, 'club10'),
+    text: str(d, 'text', at),
+    tags: strList(d, 'tags'),
+    likeCount: num(d, 'likeCount', at),
+    createdAt: date(d, 'createdAt', at),
+  };
+}
+
+function toGalleryPhoto(placeId: string, id: string, d: DocData): GalleryPhoto {
+  const at = `places/${placeId}/gallery/${id}`;
+  return {
+    id,
+    placeId,
+    ticketId: str(d, 'ticketId', at),
+    authorId: str(d, 'authorId', at),
+    photoUrl: str(d, 'photoUrl', at),
+    createdAt: date(d, 'createdAt', at),
+  };
+}
+
 export const firebaseRepositories: Repositories = {
+  artists: {
+    search: (queryText) =>
+      attempt(async () => {
+        // Filtered client-side: the roster is small and Firestore has no substring search.
+        // If it grows, this needs a search index, not a bigger `getDocs`.
+        const snap = await getDocs(collection(db(), 'artists'));
+        const all = snap.docs.map((d_) => toArtist(d_.id, d_.data() as DocData));
+        const q = (queryText ?? '').trim();
+        return q ? all.filter((a) => a.name.includes(q) || a.initial.includes(q.toUpperCase())) : all;
+      }),
+
+    getById: (artistId) =>
+      attempt(async () => {
+        const snap = await getDoc(doc(db(), 'artists', artistId));
+        if (!snap.exists()) {
+          throw Object.assign(new Error('아티스트 없음'), { code: 'not-found' });
+        }
+        return toArtist(snap.id, snap.data() as DocData);
+      }),
+
+    listMine: () =>
+      attempt(async () => {
+        const uid = requireUid();
+        const meSnap = await getDoc(doc(db(), 'users', uid));
+        const ids = strList((meSnap.data() ?? {}) as DocData, 'followedArtistIds');
+        const docs = await Promise.all(
+          ids.map((id) => getDoc(doc(db(), 'artists', id))),
+        );
+        // Ordered by the user's own list, not by document order — the first followed artist
+        // is the one 홈 opens on.
+        return docs
+          .filter((d_) => d_.exists())
+          .map((d_) => toArtist(d_.id, d_.data() as DocData));
+      }),
+
+    follow: (artistId) =>
+      attempt(async () => {
+        await updateDoc(doc(db(), 'users', requireUid()), {
+          followedArtistIds: arrayUnion(artistId),
+        });
+      }),
+
+    unfollow: (artistId) =>
+      attempt(async () => {
+        await updateDoc(doc(db(), 'users', requireUid()), {
+          followedArtistIds: arrayRemove(artistId),
+        });
+      }),
+  },
+
+  courses: {
+    listForArtist: (artistId) =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(collection(db(), 'courses'), where('artistId', '==', artistId)),
+        );
+        return snap.docs.map((d_) => toCourse(d_.id, d_.data() as DocData));
+      }),
+  },
+
   auth: {
     signIn: (email, password) =>
       attempt(async () => {
@@ -283,6 +426,50 @@ export const firebaseRepositories: Repositories = {
         }
         return toPlace(snap.id, snap.data() as DocData);
       }),
+
+    reviews: (placeId) =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(
+            collection(db(), 'places', placeId, 'reviews'),
+            orderBy('createdAt', 'desc'),
+          ),
+        );
+        return snap.docs.map((d_) => toReview(placeId, d_.id, d_.data() as DocData));
+      }),
+
+    gallery: (placeId) =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(
+            collection(db(), 'places', placeId, 'gallery'),
+            orderBy('createdAt', 'desc'),
+            limit(24),
+          ),
+        );
+        return snap.docs.map((d_) => toGalleryPhoto(placeId, d_.id, d_.data() as DocData));
+      }),
+
+    addReview: (input: NewReview) =>
+      attempt(async () => {
+        const uid = requireUid();
+        const meSnap = await getDoc(doc(db(), 'users', uid));
+        const me = toUser(uid, (meSnap.data() ?? {}) as DocData);
+        const written = await addDoc(
+          collection(db(), 'places', input.placeId, 'reviews'),
+          {
+            authorId: uid,
+            authorNickname: me.nickname,
+            authorTier: me.tier,
+            text: input.text,
+            tags: input.tags,
+            likeCount: 0,
+            createdAt: serverTimestamp(),
+          },
+        );
+        const snap = await getDoc(written);
+        return toReview(input.placeId, snap.id, (snap.data() ?? {}) as DocData);
+      }),
   },
 
   verification: {
@@ -328,17 +515,15 @@ export const firebaseRepositories: Repositories = {
   },
 
   tickets: {
-    listMine: () =>
+    listMine: () => listTicketsByVisibility('public'),
+
+    listVault: () => listTicketsByVisibility('private'),
+
+    setVisibility: (ticketId, visibility) =>
       attempt(async () => {
-        const uid = requireUid();
-        const snap = await getDocs(
-          query(
-            collection(db(), 'tickets'),
-            where('userId', '==', uid),
-            orderBy('issuedAt', 'desc'),
-          ),
-        );
-        return snap.docs.map((doc_) => toTicket(doc_.id, doc_.data() as DocData));
+        await updateDoc(doc(db(), 'tickets', ticketId), { visibility });
+        const snap = await getDoc(doc(db(), 'tickets', ticketId));
+        return toTicket(snap.id, (snap.data() ?? {}) as DocData);
       }),
 
     getById: (ticketId) =>
@@ -404,17 +589,18 @@ export const firebaseRepositories: Repositories = {
   },
 
   posts: {
-    feed: (cursor) =>
+    feed: (boardId, cursor) =>
       attempt(async () => {
         const base = [
           collection(db(), 'posts'),
+          where('boardId', '==', boardId),
           orderBy('createdAt', 'desc'),
           limit(FEED_PAGE_SIZE),
         ] as const;
         const snap = await getDocs(
           cursor
-            ? query(base[0], base[1], startAfter(await cursorSnapshot(cursor)), base[2])
-            : query(base[0], base[1], base[2]),
+            ? query(base[0], base[1], base[2], startAfter(await cursorSnapshot(cursor)), base[3])
+            : query(base[0], base[1], base[2], base[3]),
         );
         const posts = snap.docs.map((doc_) => toPost(doc_.id, doc_.data() as DocData));
         const last = snap.docs[snap.docs.length - 1];
@@ -440,7 +626,9 @@ export const firebaseRepositories: Repositories = {
         const meSnap = await getDoc(doc(db(), 'users', uid));
         const me = toUser(uid, (meSnap.data() ?? {}) as DocData);
         const payload = {
+          boardId: input.boardId,
           authorId: uid,
+          authorTier: me.tier,
           authorNickname: me.nickname,
           ...(me.avatarUrl && { authorAvatarUrl: me.avatarUrl }),
           body: input.body,
@@ -467,8 +655,41 @@ export const firebaseRepositories: Repositories = {
         }
         return toUser(snap.id, snap.data() as DocData);
       }),
+
+    updateProfile: (input) =>
+      attempt(async () => {
+        const uid = requireUid();
+        await updateDoc(doc(db(), 'users', uid), { ...input });
+        const snap = await getDoc(doc(db(), 'users', uid));
+        return toUser(uid, (snap.data() ?? {}) as DocData);
+      }),
+
+    setLocale: (locale: Locale) =>
+      attempt(async () => {
+        const uid = requireUid();
+        await updateDoc(doc(db(), 'users', uid), { locale });
+        // Localized fields resolve through this from the next read onward.
+        setActiveLocale(locale);
+        const snap = await getDoc(doc(db(), 'users', uid));
+        return toUser(uid, (snap.data() ?? {}) as DocData);
+      }),
   },
 };
+
+/** 컬렉션 and 보관함 are the same query with the visibility flag flipped. */
+function listTicketsByVisibility(visibility: 'public' | 'private') {
+  return attempt(async () => {
+    const snap = await getDocs(
+      query(
+        collection(db(), 'tickets'),
+        where('userId', '==', requireUid()),
+        where('visibility', '==', visibility),
+        orderBy('issuedAt', 'desc'),
+      ),
+    );
+    return snap.docs.map((d_) => toTicket(d_.id, d_.data() as DocData));
+  });
+}
 
 /** Firestore paginates from a snapshot, not an id, so the cursor is re-read. */
 async function cursorSnapshot(postId: string) {

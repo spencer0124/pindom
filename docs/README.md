@@ -70,12 +70,19 @@ copied to a second place is a value that will disagree with the first.
 | [0003-single-seed-theming.md](decisions/0003-single-seed-theming.md) | Threading every accent component through one theme seed |
 | [0004-per-screen-theme-not-global-dark-mode.md](decisions/0004-per-screen-theme-not-global-dark-mode.md) | Theme as a property of the route, not of the user's system preference |
 | [0005-keep-firebase-behind-a-repository-boundary.md](decisions/0005-keep-firebase-behind-a-repository-boundary.md) | Firebase owned by the backend developer, reached through one directory, and what that supersedes |
+| [0006-adopt-the-prototype-as-the-design-source-of-truth.md](decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) | The interactive prototype replaces Figma; direction `2b`; what that changed |
 
 ### plans
 
 | Document | Summary |
 | --- | --- |
 | [screen-implementation.md](plans/screen-implementation.md) | The order to build the designed screens in: shell, then one golden screen, then flow slices |
+
+## Outside this folder
+
+| Path | What it is |
+| --- | --- |
+| [`design/README.md`](../design/README.md) | The interactive prototype and how to read it. **The design authority** — it outranks Figma |
 
 ## Writing rules
 

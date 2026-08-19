@@ -49,6 +49,7 @@ Full docs are in [docs/](docs/README.md), filed by reader need
 
 | Document | For |
 | --- | --- |
+| [design/README.md](design/README.md) | The interactive prototype. **The design authority — read before building any screen** |
 | [connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project — and building before you can. **Start here for anything backend-shaped** |
 | [architecture.md](docs/explanation/architecture.md) | What PINDOM is and how the app is assembled |
 | [design-language.md](docs/explanation/design-language.md) | Why some screens are dark and most are light |
