@@ -62,55 +62,118 @@ Every screen after this has a data shape to bind to, so a screen author stops in
 screen. Three screens inventing three shapes of `Place` is the same class of failure as three
 shapes of card.
 
-## Phase 2 — one golden screen
+## Phase 2 — run the app
 
-Build 홈 (`33:2617`), then review it line by line and fix everything that is not right.
+**Nothing in this repo has ever been seen on a device.** Every screen is a placeholder, the
+design system has only been verified statically, and Firebase's native modules went in without
+a prebuild since.
 
-홈 is the right choice: it is the most component-dense light screen, exercises the largest
-number of primitives, and is the screen users see most.
+```bash
+npx expo prebuild --clean    # Firebase plugins are new; this has not run with them
+yarn ios
+```
 
-Every later prompt then ends with *"match the patterns in `app/(tabs)/index.tsx`"*. This
-single step does more for consistency than any amount of prompt wording, because it replaces
-an abstract instruction with a concrete example.
+Then open `/sds-preview`, which renders every component the design system exports on one page.
+
+This is first because it is the cheapest step with the highest blocking risk. If the pod
+install fails on the new Firebase plugins, or Wanted Sans silently falls back to the system
+font, everything after this phase is built on a guess. Two things to look at specifically:
+
+- **Is the type actually Wanted Sans?** Its failure mode is a silent fallback that looks fine
+  until you hold it next to the design. It is about to be replaced by Pretendard anyway — but
+  knowing whether font embedding works *at all* is what you need before swapping families.
+- **Does anything still render blue or violet?** That is the ramp Phase 3 replaces.
+
+## Phase 3 — re-skin the design system to `2b`
+
+**Do this before the first screen, not after the twelfth.**
+
+[ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) replaced the
+palette outright, and [../reference/design-tokens.md](../reference/design-tokens.md) lists the
+five changes in order. The reason it comes before any screen is specific to what changed:
+
+Under the old split there were light screens to build while the dark set was missing. Under
+`2b` there is no light screen to hide behind. A screen built on today's violet-on-white tokens
+is not "a screen that needs restyling later" — it is a screen whose spacing, contrast and
+component choices were all made against the wrong ground. Twelve of those is the expensive
+version of this work; the plan exists to avoid exactly that.
+
+Two of the five are cheap and unblock the rest:
+
+| | Change | Why now |
+| --- | --- | --- |
+| 1 | Re-point `colorSeeds.primary` at the acid accent | One line. [ADR 0003](../decisions/0003-single-seed-theming.md) means every accent component follows |
+| 3 | Build the dark surface set | `getAdaptiveColors('dark')` still returns inherited greys. **Every** screen waits on it now, not seven |
+
+`/sds-preview` is the whole verification loop: change a token, reload, scan every component at
+once. Finding a broken `Switch` there costs a minute. Finding it on screen nine costs the nine
+screens that copied it.
+
+Radius, card fills and the Pretendard swap can follow once those two land.
+
+## Phase 4 — one golden screen
+
+Build 홈 (`33:2617`, and block `1a` of the prototype), then review it line by line and fix
+everything that is not right.
+
+홈 is the right choice: it is the most component-dense screen, exercises the largest number of
+primitives, and is the screen users see most. It also now carries the artist header and the
+tier gauge, so it is where those patterns get settled.
+
+Every later prompt then ends with *"match the patterns in `app/(tabs)/index.tsx`"*. This single
+step does more for consistency than any amount of prompt wording, because it replaces an
+abstract instruction with a concrete example.
 
 > [!NOTE]
-> Build one dark screen early too — 시작화면 (`33:2801`) is the simplest. Seven screens are
-> dark and the dark surface palette does not exist yet
-> ([ADR 0004](../decisions/0004-per-screen-theme-not-global-dark-mode.md)). Discovering what
-> it needs on screen 2 is much cheaper than on screen 12.
+> Bind it to `placeRepository`, `userRepository` and `raffleRepository` from
+> `@/lib/repositories`. Never to `src/mocks/` directly — that is the boundary
+> [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) exists to keep.
 
-## Phase 3 — flow slices
+## Phase 5 — flow slices
 
-One slice per session, in the order below. Slice membership and node ids are in
+One slice per session, in the order below. Slice membership and screens are in
 [../reference/screens.md](../reference/screens.md).
 
 | Order | Slice | Why here |
 | --- | --- | --- |
-| 1 | Auth & entry | Smallest; exercises the dark surfaces first |
-| 2 | Discovery | Contains the golden screen; establishes list and card patterns |
+| 1 | Auth & entry | 최애 찾기 is structural — every other screen is keyed to the selected artist, so settling that shape first stops five screens inventing five versions of it |
+| 2 | Discovery | Contains the golden screen; establishes list, row and rule patterns |
 | 3 | Capture | The core loop, and the largest slice. Needs discovery's place shape |
-| 4 | Tickets & raffle | Consumes what capture produces |
-| 5 | Community | Mostly independent; can move earlier if needed |
-| 6 | Profile | Smallest surface, least shared state |
+| 4 | Tickets & raffle | Consumes what capture produces. Includes the 절취 step |
+| 5 | Community | Per-artist boards, so it needs Auth's artist shape but nothing else |
+| 6 | Profile | Includes 프로필 편집, 언어 and 보관함 — three small screens, least shared state |
 
-Screens inside a slice share state and navigation params. Building 응모 → 응모완료 together
-means the route params match; building them a week apart means they do not.
+Screens inside a slice share state and navigation params. Building 응모 → 티켓 절취 → 응모완료
+together means the route params match; building them a week apart means they do not.
 
 ## Per-screen loop
 
-1. Prompt with the template in
-   [../reference/figma-workflow.md](../reference/figma-workflow.md).
-2. Read the deviation list the prompt asks for. Ambiguity in the design surfaces here.
-3. Visual diff: render the frame, screenshot the build, compare as a list rather than by
-   eye.
-4. Update the status column in [../reference/screens.md](../reference/screens.md).
-5. Commit — one screen per commit.
+1. Open the screen in the prototype — `design/2026-08-19-prototype.html`, block `1a`. Its
+   identifiers are the `Screen` column of [../reference/screens.md](../reference/screens.md),
+   so `screen === 'place'` finds 장소/상세 immediately.
+2. Read layout, copy, flow and interaction states from `1a`; read colour, type, corners and
+   dividers from `2b`. Those two axes do not overlap — see
+   [`design/README.md`](../../design/README.md).
+3. Write down the deviations before building. Ambiguity in the design surfaces here, and the
+   prototype has interaction states a static frame never had.
+4. Visual diff: screenshot the build beside the prototype and compare as a list, not by eye.
+5. Update the status column in [../reference/screens.md](../reference/screens.md).
+6. Commit — one screen per commit.
+
+> [!WARNING]
+> Do not copy the prototype's markup. It is a browser page using inline styles and template
+> bindings; PINDOM builds with flexbox and the design system. Same rule Figma output had.
 
 ## Deferred
 
-- **Code Connect.** Mapping design-system components to Figma nodes would let the MCP name
-  a component instead of describing a rectangle. The largest available quality gain, but it
-  needs stable components, so it belongs after the first few slices.
+- **Code Connect.** Lower value now that the prototype, not Figma, is the design authority.
+  Revisit only if screens go back through the Figma MCP.
+- **Pretendard.** The font swap is item 5 of the token work and needs files this repo does not
+  have. It changes metrics, so do it before the layouts are finely tuned — but after the
+  palette, which is what makes screens buildable at all.
+- **The three open design questions** in [`design/README.md`](../../design/README.md): the
+  ticket card variant, the raffle motion, and whether all four locales ship. Only the first
+  blocks a screen (티켓 발행), and not until Phase 5 slice 4.
 - **Firebase integration.** Screens bind to fixtures until the backend developer has a project
   and functions to point at. Because the switch lives in `src/lib/repositories/`, flipping
   `EXPO_PUBLIC_USE_MOCKS` is the whole migration — nothing under `app/` changes. The runbook is
@@ -118,8 +181,9 @@ means the route params match; building them a week apart means they do not.
 
 ## Related
 
-- [../reference/screens.md](../reference/screens.md) — node ids, themes, slices
-- [../reference/figma-workflow.md](../reference/figma-workflow.md) — the prompt and its traps
+- [`design/README.md`](../../design/README.md) — the prototype, and what it leaves open
+- [../reference/screens.md](../reference/screens.md) — the 21 screens, their routes and slices
+- [../reference/design-tokens.md](../reference/design-tokens.md) — the five changes Phase 3 works through
 - [../reference/design-system.md](../reference/design-system.md) — what to build with
 - [../reference/backend-contract.md](../reference/backend-contract.md) — the data shapes Phase 1 mirrors
 - [../how-to/connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md) — the fixture switch, and how to leave it behind
