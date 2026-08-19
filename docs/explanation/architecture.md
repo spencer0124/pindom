@@ -43,9 +43,10 @@ A **flat Expo app**, not a monorepo — the version pins are in `package.json`.
 | `app/` | Expo Router routes. File tree *is* the navigation graph |
 | `src/design-system/` | The vendored design system. Owned by this repo, not a dependency |
 | `src/lib/api/` | Superseded by [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md), except `types.ts` — the `Result` envelope and failure taxonomy |
-| `src/lib/domain/` | Domain types, mirroring [../reference/backend-contract.md](../reference/backend-contract.md). Not built yet |
-| `src/lib/repositories/` | The only code that talks to Firebase. Not built yet |
-| `src/mocks/` | Typed fixtures the repositories serve when `EXPO_PUBLIC_USE_MOCKS` is on. Not built yet |
+| `src/lib/domain/` | Domain types, mirroring [../reference/backend-contract.md](../reference/backend-contract.md) |
+| `src/lib/repositories/` | The data boundary. The only code that talks to Firebase |
+| `src/mocks/` | Typed fixtures the repositories serve when `EXPO_PUBLIC_USE_MOCKS` is on |
+| `src/lib/config.ts` | The only reader of `Constants.expoConfig.extra` |
 | `src/lib/store/` | MMKV-backed persistence adapters for Zustand |
 | `src/components/` | App-level shared components, above the design system |
 | `src/features/` | Feature-scoped code |
@@ -104,9 +105,10 @@ flowchart LR
 ```
 
 - **`src/lib/repositories/` is the only code that imports Firebase.** Both branches return the
-  same `Result<T>`, so a screen cannot tell which one is running. Neither that directory nor
-  `src/mocks/` exists yet; [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md)
-  records the decision and the gap.
+  same `Result<T>`, so a screen cannot tell which one is running. The Firebase side is loaded
+  by a dynamic import, so fixture mode never executes a line of it — which is what lets the
+  app build before the platform config files arrive. See
+  [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md).
 - **`src/lib/api/` is superseded**, except `types.ts`. The axios client, its interceptor chain
   and the provisional `endpoints.ts` describe a REST server that is not being built. `Result<T>`
   and the failure taxonomy survive as the convention repositories return.

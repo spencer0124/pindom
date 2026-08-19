@@ -91,9 +91,11 @@ flowchart's outgoing transitions, so the navigation graph is walkable before any
 screen is built.
 
 The backend is **Firebase, owned by the backend developer**. This repo is a
-client of it and reaches it through `src/lib/repositories/` — which, along with
-`src/mocks/`, is not built yet. Until then screens bind to fixtures; see
-[ADR 0005](docs/decisions/0005-keep-firebase-behind-a-repository-boundary.md).
+client of it and reaches it only through `src/lib/repositories/`, which serves
+typed fixtures from `src/mocks/` until the Firebase project is reachable. The
+switch is `EXPO_PUBLIC_USE_MOCKS`; see
+[ADR 0005](docs/decisions/0005-keep-firebase-behind-a-repository-boundary.md)
+and [connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md).
 
 The GPS check (50m radius + speed) is an anti-spoofing measure and **must be
 adjudicated server-side** — the client submits a reading, it does not decide.

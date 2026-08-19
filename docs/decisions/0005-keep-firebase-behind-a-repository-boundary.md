@@ -13,10 +13,9 @@ audience: internal
 
 ## Status
 
-Accepted. `src/lib/repositories/` and `src/mocks/` do **not exist yet** — this ADR records the
-decision and the gap, in the same way
-[ADR 0004](0004-per-screen-theme-not-global-dark-mode.md) records a palette that has not been
-built.
+Accepted and implemented. `src/lib/domain/`, `src/mocks/` and `src/lib/repositories/` exist,
+with both implementations behind the boundary. No screen consumes them yet — the route
+skeletons are still placeholders.
 
 ## Context
 

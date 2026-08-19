@@ -1,0 +1,94 @@
+import { AppConfig } from '../config';
+import type {
+  AuthRepository,
+  PlaceRepository,
+  PostRepository,
+  RaffleRepository,
+  Repositories,
+  TicketRepository,
+  UserRepository,
+  VerificationRepository,
+} from './types';
+
+/**
+ * The data boundary. Screens import from here and nothing below it.
+ *
+ * Which implementation runs is decided once, on first use, from
+ * `AppConfig.useMocks`:
+ *
+ *   EXPO_PUBLIC_USE_MOCKS=true   →  src/mocks/    typed fixtures
+ *   EXPO_PUBLIC_USE_MOCKS=false  →  Firebase
+ *
+ * The import is **dynamic on purpose**. A static import of `./firebase` would
+ * pull the Firebase SDK into every bundle, and touching it without the native
+ * modules linked throws — which is precisely the state of the app until the
+ * backend developer hands over the platform config files. Loading it lazily
+ * means fixture mode never executes a line of Firebase code.
+ *
+ * See ADR 0005 and docs/how-to/connect-the-app-to-firebase.md.
+ */
+
+let loading: Promise<Repositories> | null = null;
+
+function impl(): Promise<Repositories> {
+  if (!loading) {
+    loading = AppConfig.useMocks
+      ? import('./mock').then((m) => m.mockRepositories)
+      : import('./firebase').then((m) => m.firebaseRepositories);
+  }
+  return loading;
+}
+
+export const authRepository: AuthRepository = {
+  signIn: async (email, password) => (await impl()).auth.signIn(email, password),
+  signUp: async (email, password, nickname) =>
+    (await impl()).auth.signUp(email, password, nickname),
+  signOut: async () => (await impl()).auth.signOut(),
+  currentSession: async () => (await impl()).auth.currentSession(),
+};
+
+export const placeRepository: PlaceRepository = {
+  listNearby: async (lat, lng, radiusMeters) =>
+    (await impl()).places.listNearby(lat, lng, radiusMeters),
+  listRecommended: async (lat, lng) =>
+    (await impl()).places.listRecommended(lat, lng),
+  getById: async (placeId) => (await impl()).places.getById(placeId),
+};
+
+export const verificationRepository: VerificationRepository = {
+  submitReading: async (reading) =>
+    (await impl()).verification.submitReading(reading),
+};
+
+export const ticketRepository: TicketRepository = {
+  listMine: async () => (await impl()).tickets.listMine(),
+  getById: async (ticketId) => (await impl()).tickets.getById(ticketId),
+  issue: async (input) => (await impl()).tickets.issue(input),
+};
+
+export const raffleRepository: RaffleRepository = {
+  list: async () => (await impl()).raffles.list(),
+  getById: async (raffleId) => (await impl()).raffles.getById(raffleId),
+  enter: async (raffleId) => (await impl()).raffles.enter(raffleId),
+};
+
+export const postRepository: PostRepository = {
+  feed: async (cursor) => (await impl()).posts.feed(cursor),
+  getById: async (postId) => (await impl()).posts.getById(postId),
+  create: async (input) => (await impl()).posts.create(input),
+};
+
+export const userRepository: UserRepository = {
+  me: async () => (await impl()).users.me(),
+};
+
+export type {
+  AuthRepository,
+  PlaceRepository,
+  PostRepository,
+  RaffleRepository,
+  Repositories,
+  TicketRepository,
+  UserRepository,
+  VerificationRepository,
+} from './types';

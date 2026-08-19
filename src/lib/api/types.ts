@@ -28,11 +28,28 @@ export interface CancelledFailure {
   type: 'cancelled';
 }
 
+/**
+ * A Firebase SDK error, surfaced through the same `Result` envelope as the rest.
+ *
+ * `code` is Firebase's own code — `permission-denied`, `not-found`,
+ * `unauthenticated`, `failed-precondition`. `errorCode` is the application-level
+ * code a Cloud Function puts in `HttpsError.details`, which is what the UI
+ * branches on: `insufficient_tickets` drives the No edge of 잔여 티켓 충족 on
+ * 응모, and a message string would not be safe to match against.
+ */
+export interface FirebaseFailure {
+  type: 'firebase';
+  code: string;
+  message: string;
+  errorCode?: string;
+}
+
 export type AppFailure =
   | NetworkFailure
   | ServerFailure
   | ParseFailure
-  | CancelledFailure;
+  | CancelledFailure
+  | FirebaseFailure;
 
 /** Factory namespace for creating typed failures */
 export const Failure = {
@@ -59,6 +76,17 @@ export const Failure = {
 
   cancelled: (): CancelledFailure => ({
     type: 'cancelled',
+  }),
+
+  firebase: (
+    code: string,
+    message: string,
+    errorCode?: string,
+  ): FirebaseFailure => ({
+    type: 'firebase',
+    code,
+    message,
+    ...(errorCode !== undefined && { errorCode }),
   }),
 } as const;
 

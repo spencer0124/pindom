@@ -30,31 +30,37 @@ colour. `CLAUDE.md` points at both.
 This is what prevents duplicate primitives. Without an index, nobody can know that the thing
 they are about to build already exists.
 
-## Phase 1 — data shapes, fixtures, and the repository layer
+## Phase 1 — data shapes, fixtures, and the repository layer (done)
 
-The route skeletons exist; the data shapes do not. Three pieces, in order:
+Three pieces, all landed. Screens bind to these, never below them.
 
-1. **`src/lib/domain/`** — one type per entity in
-   [../reference/backend-contract.md](../reference/backend-contract.md). That document is the
-   source; these types mirror it. Fields come from what the designs actually show — 홈 displays
-   a ticket balance and a distance, 컬렉션 displays issued tickets, 커뮤니티 2 displays posts
-   with author, location, like and comment counts.
-2. **`src/mocks/`** — typed fixtures against those types, in Korean. Include a scripted
-   verification sequence counting 84m → 66m → 32m → verified, so the whole capture chain is
-   walkable in the simulator without travelling to 주문진 방파제.
-3. **`src/lib/repositories/`** — one module per entity, each function returning `Result<T>` and
-   branching on `EXPO_PUBLIC_USE_MOCKS`. This is the **only** place that will import Firebase,
-   per [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md). Screens
-   import repositories and nothing below them.
+| Path | What it is |
+| --- | --- |
+| `src/lib/domain/` | One type per entity in [../reference/backend-contract.md](../reference/backend-contract.md). That document is the source; these mirror it. Dates are `Date` — no screen ever sees a Firestore `Timestamp` |
+| `src/mocks/` | Typed fixtures against those types, in Korean. Real 촬영지 with real coordinates, so 지도 sorting and distance are meaningful |
+| `src/lib/repositories/` | One module per entity, each returning `Result<T>` and branching on `EXPO_PUBLIC_USE_MOCKS`. The **only** place that imports Firebase, per [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) |
 
-Give the mock path a deliberate 250–400ms delay. Fixtures that resolve instantly mean nobody
-builds the loading state, and the design system ships both `Skeleton` and `Loader`.
+Three properties worth knowing before binding a screen:
 
-The point is that every screen after this has a data shape to bind to, so a screen author
-stops inventing one per screen. Three screens inventing three shapes of `Place` is the same
-class of failure as three shapes of card.
+- **The mock path is deliberately slow** — a few hundred milliseconds per call. Fixtures that
+  resolve instantly mean nobody builds the loading state, and the design system ships both
+  `Skeleton` and `Loader`.
+- **Fixture state is mutable.** Minting raises the ticket balance and 컬렉션 grows; entering a
+  raffle debits it and fails with `errorCode: 'insufficient_tickets'` when short. So the
+  `잔여 티켓 충족?` branch on 응모 is exercisable without a server. State resets on reload.
+- **Verification is scripted**: 84m → 66m → 32m → verified across successive calls. The whole
+  capture chain is walkable in a simulator without travelling to 주문진 방파제:
 
-Do this **before** the golden screen, so the golden screen binds to fixtures too.
+  ```text
+  지도 → 장소/상세 → GPS인증 → 인증 실패 → GPS인증 → 카메라 → 편집 → 공개설정 → 티켓 발행 → 컬렉션
+  ```
+
+  That path covers six of the seven dark screens, which is also why it is worth building the
+  dark surface set early.
+
+Every screen after this has a data shape to bind to, so a screen author stops inventing one per
+screen. Three screens inventing three shapes of `Place` is the same class of failure as three
+shapes of card.
 
 ## Phase 2 — one golden screen
 

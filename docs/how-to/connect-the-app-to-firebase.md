@@ -87,7 +87,7 @@ Ask for three things:
 3. The **region** their Cloud Functions deploy to. This matters; see
    [troubleshooting](#troubleshooting).
 
-### 2. Put the files in place
+### 2. Drop the files in — that is the whole integration
 
 Both go at the repo root, beside `app.config.ts`:
 
@@ -99,11 +99,24 @@ pindom/
 └── package.json
 ```
 
-### 3. Install the packages
+Nothing else to edit. The packages are installed and `app.config.ts` is already
+wired — it checks for these two files and only then adds the
+`@react-native-firebase/*` plugins and the `googleServicesFile` entries:
 
-```bash
-npx expo install @react-native-firebase/app @react-native-firebase/auth @react-native-firebase/firestore @react-native-firebase/functions @react-native-firebase/storage
+```ts
+const firebaseConfigured =
+  existsSync(ANDROID_FIREBASE_CONFIG) && existsSync(IOS_FIREBASE_CONFIG);
 ```
+
+> [!NOTE]
+> The gate exists because the `@react-native-firebase/app` config plugin **aborts
+> `expo prebuild`** when `googleServicesFile` points at a file that is not there. Since both
+> files are gitignored, an ungated config would mean a fresh clone could not build at all. When
+> the files are absent, `expo config` prints a warning naming what it expected — a build that
+> quietly ran without Firebase would be worse than one that says so.
+
+Already installed, so there is nothing to run:
+`@react-native-firebase/app`, `/auth`, `/firestore`, `/functions`, `/storage`.
 
 | Package | Used for |
 | --- | --- |
@@ -113,38 +126,7 @@ npx expo install @react-native-firebase/app @react-native-firebase/auth @react-n
 | `functions` | Calling `verifyLocation`, `issueTicket`, `enterRaffle` |
 | `storage` | Uploading the ticket photo |
 
-Use `npx expo install`, not `yarn add` — it resolves versions compatible with the Expo SDK
-pinned in `package.json`.
-
-### 4. Point `app.config.ts` at the files
-
-Add `googleServicesFile` to both platform blocks, and the config plugin:
-
-```ts
-ios: {
-  bundleIdentifier: 'com.zoyoong.pindom',
-  googleServicesFile: './GoogleService-Info.plist',
-  // ...existing iOS config
-},
-
-android: {
-  package: 'com.zoyoong.pindom',
-  googleServicesFile: './google-services.json',
-  // ...existing Android config
-},
-
-plugins: [
-  '@react-native-firebase/app',
-  // ...existing plugins
-],
-```
-
-> [!NOTE]
-> Most guides also tell you to add `expo-build-properties` with `ios.useFrameworks: 'static'`.
-> **That is already configured** in `app.config.ts` — Naver Map's iOS SDK required it first.
-> Firebase needs the same setting, so there is nothing to change and no conflict.
-
-### 5. Rebuild the native projects
+### 3. Rebuild the native projects
 
 ```bash
 npx expo prebuild --clean
@@ -160,7 +142,20 @@ build for Naver Map and MMKV, so this changes nothing about your workflow — `y
 `expo run:ios`, which prebuilds for you. The explicit `--clean` above is only needed when
 native config changes, as it just did.
 
-### 6. Use it in code
+### 4. Flip the switch
+
+Set `EXPO_PUBLIC_USE_MOCKS=false` in `.env`, and tell `AppConfig` where the functions live:
+
+```bash
+EXPO_PUBLIC_USE_MOCKS=false
+EXPO_PUBLIC_FUNCTIONS_REGION=asia-northeast3   # whatever the backend dev deploys to
+```
+
+Dropping the config files in does **not** silently switch you to live data — an explicit
+`EXPO_PUBLIC_USE_MOCKS` always wins, so you choose when to cross over. With the variable unset,
+fixtures turn off automatically once Firebase becomes reachable.
+
+### 5. Use it in code
 
 > [!WARNING]
 > Most tutorials still show the **namespaced** API: `firestore().collection('places').doc(id)`.

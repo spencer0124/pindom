@@ -1,0 +1,116 @@
+import type { Post } from '../lib/domain';
+
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000);
+
+/**
+ * 커뮤니티 fixtures — the 인증샷 자랑 feed.
+ *
+ * Enough entries that the feed paginates at the page size in the mock
+ * repository, so 커뮤니티 2 (the populated feed) can be built against real
+ * scroll behaviour rather than a single screenful.
+ */
+export const mockPosts: Post[] = [
+  {
+    id: 'post-011',
+    authorId: 'user-yuna',
+    authorNickname: '유나',
+    authorAvatarUrl: 'https://picsum.photos/seed/yuna/200/200',
+    body: '파도 진짜 셌는데 겨우 건짐 ㅋㅋ 방파제 끝까지는 못 갔어요',
+    imageUrls: ['https://picsum.photos/seed/post11/900/1200'],
+    placeId: 'place-jumunjin',
+    placeName: '주문진 방파제',
+    ticketId: 'ticket-0006',
+    likeCount: 128,
+    commentCount: 14,
+    createdAt: minutesAgo(24),
+  },
+  {
+    id: 'post-010',
+    authorId: 'user-minseo',
+    authorNickname: '민서',
+    body: '해질녘 노려서 갔는데 사람 너무 많아요. 평일 낮 추천',
+    imageUrls: [
+      'https://picsum.photos/seed/post10a/900/1200',
+      'https://picsum.photos/seed/post10b/900/1200',
+    ],
+    placeId: 'place-namsan',
+    placeName: 'N서울타워 전망대',
+    likeCount: 76,
+    commentCount: 9,
+    createdAt: minutesAgo(95),
+  },
+  {
+    id: 'post-009',
+    authorId: 'user-demo',
+    authorNickname: '도민',
+    authorAvatarUrl: 'https://picsum.photos/seed/pindomuser/200/200',
+    body: '드디어 6장째. 다음은 을왕리',
+    imageUrls: ['https://picsum.photos/seed/post9/900/1200'],
+    placeId: 'place-gamcheon',
+    placeName: '감천문화마을',
+    ticketId: 'ticket-0004',
+    likeCount: 41,
+    commentCount: 3,
+    createdAt: minutesAgo(320),
+  },
+  {
+    id: 'post-008',
+    authorId: 'user-jihoon',
+    authorNickname: '지훈',
+    body: '골목 계단 올라가는 길에 찍었어요. 주민분들 계셔서 조용히!',
+    imageUrls: ['https://picsum.photos/seed/post8/900/1200'],
+    placeId: 'place-gamcheon',
+    placeName: '감천문화마을',
+    likeCount: 203,
+    commentCount: 27,
+    createdAt: minutesAgo(600),
+  },
+  {
+    id: 'post-007',
+    authorId: 'user-hana',
+    authorNickname: '하나',
+    authorAvatarUrl: 'https://picsum.photos/seed/hana/200/200',
+    body: '광통교 밑에서 찍으면 반사되는 게 예뻐요',
+    imageUrls: ['https://picsum.photos/seed/post7/900/1200'],
+    placeId: 'place-cheonggye',
+    placeName: '청계천 광통교',
+    likeCount: 58,
+    commentCount: 6,
+    createdAt: minutesAgo(1400),
+  },
+  {
+    id: 'post-006',
+    authorId: 'user-seojun',
+    authorNickname: '서준',
+    body: '백사장 북쪽 끝 맞아요. 남쪽은 아예 다른 각도',
+    imageUrls: ['https://picsum.photos/seed/post6/900/1200'],
+    placeId: 'place-eurwangni',
+    placeName: '을왕리 해수욕장',
+    likeCount: 92,
+    commentCount: 11,
+    createdAt: minutesAgo(2200),
+  },
+  {
+    id: 'post-005',
+    authorId: 'user-yuna',
+    authorNickname: '유나',
+    authorAvatarUrl: 'https://picsum.photos/seed/yuna/200/200',
+    body: '티켓 8장 모아서 콘서트 응모 넣었습니다 제발',
+    imageUrls: [],
+    likeCount: 310,
+    commentCount: 42,
+    createdAt: minutesAgo(3000),
+  },
+  {
+    id: 'post-004',
+    authorId: 'user-minseo',
+    authorNickname: '민서',
+    body: '주말에 방파제 가시는 분들 파도 확인하고 가세요 통제됨',
+    imageUrls: ['https://picsum.photos/seed/post4/900/1200'],
+    placeId: 'place-jumunjin',
+    placeName: '주문진 방파제',
+    likeCount: 145,
+    commentCount: 18,
+    createdAt: minutesAgo(4100),
+  },
+];

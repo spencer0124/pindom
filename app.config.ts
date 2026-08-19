@@ -1,4 +1,35 @@
+import { existsSync } from 'fs';
+
 import { ExpoConfig, ConfigContext } from 'expo/config';
+
+const ANDROID_FIREBASE_CONFIG = './google-services.json';
+const IOS_FIREBASE_CONFIG = './GoogleService-Info.plist';
+
+// The @react-native-firebase/app config plugin aborts `expo prebuild` outright
+// when `googleServicesFile` points at a file that is not there. Both files come
+// from the backend developer and are gitignored, so a fresh clone never has
+// them — gating the whole Firebase block on their presence keeps the native
+// build working before that handoff has happened.
+//
+// See docs/how-to/connect-the-app-to-firebase.md.
+const firebaseConfigured =
+  existsSync(ANDROID_FIREBASE_CONFIG) && existsSync(IOS_FIREBASE_CONFIG);
+
+// An explicit EXPO_PUBLIC_USE_MOCKS always wins. Otherwise fixtures are on
+// exactly when Firebase is unreachable, which is the only setting that works.
+const useMocks = process.env.EXPO_PUBLIC_USE_MOCKS
+  ? process.env.EXPO_PUBLIC_USE_MOCKS === 'true'
+  : !firebaseConfigured;
+
+if (!firebaseConfigured) {
+  // Loud, because the alternative is a silent fixture build that looks real.
+  console.warn(
+    '[pindom] Firebase config files not found — building without Firebase.\n' +
+      `         Expected ${ANDROID_FIREBASE_CONFIG} and ${IOS_FIREBASE_CONFIG}.\n` +
+      '         Screens will read fixtures from src/mocks/.\n' +
+      '         See docs/how-to/connect-the-app-to-firebase.md',
+  );
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -12,16 +43,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
 
   // Values here are readable at runtime via `Constants.expoConfig.extra`.
-  // src/lib/api/config.ts is the only consumer — everything else should read
-  // through ApiConfig rather than touching `extra` directly.
+  // src/lib/config.ts is the only consumer — everything else reads through
+  // AppConfig rather than touching `extra` directly.
   extra: {
-    baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
     env: process.env.EXPO_PUBLIC_ENV,
+    useMocks,
+    firebaseConfigured,
+    // The client defaults to us-central1. A Korean deployment is likely
+    // asia-northeast3, and a mismatch surfaces as `not-found` on every call.
+    functionsRegion: process.env.EXPO_PUBLIC_FUNCTIONS_REGION,
   },
 
   ios: {
     bundleIdentifier: 'com.zoyoong.pindom',
     supportsTablet: false,
+    ...(firebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       // GPS verification: PINDOM only ever checks location while the user is
@@ -36,6 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   android: {
     package: 'com.zoyoong.pindom',
+    ...(firebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
       backgroundColor: '#6541F2',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -58,6 +95,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-secure-store',
+    // Added only when the config files exist; see the note at the top.
+    ...(firebaseConfigured
+      ? ['@react-native-firebase/app', '@react-native-firebase/auth']
+      : []),
     [
       'expo-splash-screen',
       {
