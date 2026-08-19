@@ -1,18 +1,19 @@
 /**
  * PINDOM Color Tokens.
  *
- * Structure is inherited from TDS (Toss Design System) via SDS; the accent ramp
- * is PINDOM's own. Use these tokens instead of hardcoded hex values.
+ * Structure is inherited from TDS (Toss Design System) via SDS. Use these tokens
+ * instead of hardcoded hex values.
  *
- * The `brand` ramp replaces what SDS called `blue`. Three of its stops are
- * sampled directly from the PINDOM design (Figma `33:2617`); the rest are
- * interpolated along the same lightness ladder TDS used for blue, so the
- * contrast relationships the components were built around still hold.
+ * The live palette is the `2b` group at the bottom, sampled from
+ * `design/2026-08-19-prototype.html` — 인쇄물, 블랙 & 애시드. It is a single dark
+ * ground with one accent, and secondary tone comes from a **white-alpha ladder**
+ * rather than a grey scale, which is why the TDS greys below have nothing to
+ * contribute to a PINDOM screen.
  *
- * KNOWN GAP: the grey ladder below is TDS's, which is blue-tinted
- * (`grey900: #191F28`). The PINDOM design uses neutral greys (`#171719`,
- * `#2F2F30`). Only the surface tokens are corrected here — realigning the full
- * grey ramp is deferred until real screens exist to check it against.
+ * The `brand` violet ramp and the TDS grey ladder are **superseded**
+ * (ADR 0006). They are kept because components still reference them directly and
+ * removing them would be a 22-file change with no design review behind it; the
+ * dark surface map in `foundation/colors.ts` is what actually reaches a screen.
  */
 export const SdsColors = {
   // ── Grey Scale (TDS, blue-tinted — see KNOWN GAP above) ──
@@ -78,4 +79,32 @@ export const SdsColors = {
   darkSurface: '#171719',
   darkSurfaceRaised: '#2F2F30',
   darkSurfaceRaisedAlt: '#383839',
+
+  // ══ 2b — the live palette ══════════════════════════════════════════════
+  // Sampled from block `2b` of design/2026-08-19-prototype.html. See
+  // docs/reference/design-tokens.md for where each value appears.
+
+  // ── Ground. Three steps, all near-black; `2b` has no mid-tone surface ──
+  ground: '#0B0B0B', //  deepest — also the ink used *on* the accent
+  groundRaised: '#131313', //  the screen canvas
+  groundChrome: '#171719', //  bars and frames
+
+  // ── Accent. One value, used sparingly: section labels and the single most
+  //    important number on screen. A five-stop ramp would undo the restraint ──
+  acid500: '#58CF04',
+
+  // ── Alert. 마감 임박 and other urgency ──
+  alert500: '#FF5E00',
+
+  // ── Ink. `2b` has no grey scale — secondary tone is white at an opacity ──
+  ink: '#FFFFFF',
+  inkOpacity700: 'rgba(255, 255, 255, 0.70)', //  secondary values
+  inkOpacity500: 'rgba(255, 255, 255, 0.50)', //  supporting sentences
+  inkOpacity450: 'rgba(255, 255, 255, 0.45)', //  metadata
+  inkOpacity420: 'rgba(255, 255, 255, 0.42)', //  roman captions
+  inkOpacity400: 'rgba(255, 255, 255, 0.40)', //  sub-labels
+  inkOpacity350: 'rgba(255, 255, 255, 0.35)', //  row numerals
+
+  // ── Rules, not cards. Structure comes from these, not from fills ──
+  rule: 'rgba(255, 255, 255, 0.14)',
 } as const;

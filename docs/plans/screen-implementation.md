@@ -84,9 +84,16 @@ font, everything after this phase is built on a guess. Two things to look at spe
   knowing whether font embedding works *at all* is what you need before swapping families.
 - **Does anything still render blue or violet?** That is the ramp Phase 3 replaces.
 
-## Phase 3 — re-skin the design system to `2b`
+## Phase 3 — re-skin the design system to `2b` (partly done)
 
 **Do this before the first screen, not after the twelfth.**
+
+The seed, the dark surface set and the contrast-aware accent label have landed and are
+measured — the table in [../reference/design-tokens.md](../reference/design-tokens.md) has the
+numbers. What remains is per-component and needs `/sds-preview` open: 20 components still read
+`SdsColors` greys directly and will render light tones on the dark ground, and every component
+hardcodes its own radius. Neither is a find-and-replace; both want eyes on them, which is why
+Phase 2 comes first.
 
 [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) replaced the
 palette outright, and [../reference/design-tokens.md](../reference/design-tokens.md) lists the
@@ -100,16 +107,9 @@ version of this work; the plan exists to avoid exactly that.
 
 Two of the five are cheap and unblock the rest:
 
-| | Change | Why now |
-| --- | --- | --- |
-| 1 | Re-point `colorSeeds.primary` at the acid accent | One line. [ADR 0003](../decisions/0003-single-seed-theming.md) means every accent component follows |
-| 3 | Build the dark surface set | `getAdaptiveColors('dark')` still returns inherited greys. **Every** screen waits on it now, not seven |
-
 `/sds-preview` is the whole verification loop: change a token, reload, scan every component at
 once. Finding a broken `Switch` there costs a minute. Finding it on screen nine costs the nine
 screens that copied it.
-
-Radius, card fills and the Pretendard swap can follow once those two land.
 
 ## Phase 4 — one golden screen
 

@@ -209,16 +209,72 @@ Only weights **400, 500 and 700** ship. Anything else (`thin`, `light`, `extraBo
 
 The gap is no longer a tint on one scale. It is the whole palette.
 
-| # | Change | Cost |
+| # | Change | Status |
 | --- | --- | --- |
-| 1 | Re-point `colorSeeds.primary` at the acid accent | One line. [ADR 0003](../decisions/0003-single-seed-theming.md) means every accent component follows |
-| 2 | Replace the grey ladder with the white-alpha ladder over a dark ground | Real work. The scale does not translate — it is a different mechanism, not different values |
-| 3 | Build the dark surface set | `getAdaptiveColors('dark')` still returns inherited generic greys. Now needed by **every** screen, not seven |
-| 4 | Flatten radius and remove card fills | Touches most components. The direction is rules and spacing, not cards |
-| 5 | Swap Wanted Sans for Pretendard Variable | Font files, `app.config.ts`, and deleting `fontFamilyByWeight` |
+| 1 | Re-point `colorSeeds.primary` at the acid accent | **Done.** `foundation/colors.ts` |
+| 2 | Replace the grey ladder with the white-alpha ladder over a dark ground | **Done.** The dark branch of `getAdaptiveColors` maps `grey900…grey300` onto the sampled opacities |
+| 3 | Build the dark surface set, and run the app on it | **Done.** `app/_layout.tsx` sets `colorPreference="dark"` |
+| 4 | Flatten radius and remove card fills | **Not started.** Not a token change — see below |
+| 5 | Swap Wanted Sans for Pretendard Variable | **Not started.** Needs font files |
 
-Do 1 and 3 before the second screen. Retrofitting a surface set through a dozen screens is the
-expensive version of this work, and under `2b` there is no light screen to hide behind.
+### What landed, and what it measures
+
+The accent forced one change beyond re-pointing the seed. `deriveAccentTheme` hardcoded white
+as the label colour on a filled accent, which held only while the accent was a dark violet:
+
+| Foreground on `#58CF04` | Ratio | |
+| --- | --- | --- |
+| `#FFFFFF` — the old hardcoded value | `2.03:1` | unreadable |
+| `#0B0B0B` — the ground | `9.69:1` | AA everywhere |
+
+So the derivation now measures the fill's luminance and picks, via `readableOn` in
+`utils/color.ts`. That keeps the seed genuinely swappable, which is the whole promise of
+[ADR 0003](../decisions/0003-single-seed-theming.md) — a future accent of any lightness gets a
+readable label without editing the theme.
+
+Measured against the canvas `#131313`:
+
+| Token | Resolves to | Ratio | |
+| --- | --- | --- | --- |
+| `grey900` primary text | `#FFFFFF` | `18.58:1` | AA |
+| `grey800` | white `.70` | `9.37:1` | AA |
+| `grey700` | white `.50` | `5.31:1` | AA |
+| `grey600` metadata | white `.45` | `4.51:1` | AA — just |
+| `grey500` captions | white `.42` | `4.09:1` | AA large / UI |
+| `grey400` sub-labels | white `.40` | `3.81:1` | AA large / UI |
+| `grey300` row numerals | white `.35` | `3.24:1` | AA large / UI |
+| accent | `#58CF04` | `9.15:1` | AA |
+| warning | `#FF5E00` | `6.06:1` | AA |
+| `grey200` rule | white `.14` | `1.49:1` | decorative, as intended |
+
+Worth noticing: the sampled ladder stops passing AA for body text at exactly the step where
+`2b` stops using it for sentences. The design's opacity choices and the contrast thresholds
+agree, which is a good sign the values were picked by eye against a real ground.
+
+### The remaining gap is in the components, not the tokens
+
+`getAdaptiveColors('dark')` only reaches a component that reads it. Measured across
+`src/design-system/components/`:
+
+| | Count |
+| --- | --- |
+| Components reading `SdsColors.grey*` or the surface tokens **directly** | 20 |
+| Direct call sites | ~62 |
+| Of those, components that already call `useAdaptive()` too | 8 |
+
+Those 20 will render light-mode greys on the dark ground until they are converted. It is not a
+find-and-replace, which is why it is not done here:
+
+- Some greys sit in **module-level constant maps and helper functions**, outside any render, so
+  they cannot read a hook without restructuring the file.
+- Some are **deliberately fixed** — `Button.tsx` has `dark: SdsColors.grey700` as a *variant*
+  entry, where swapping to adaptive would be circular.
+- `SdsColors.background` is ambiguous: sometimes a card fill (should adapt), sometimes the
+  label on a filled accent (must not).
+
+Do this with `/sds-preview` open, one component at a time. The same applies to change 4 —
+`SdsRadius` exists but is referenced **zero times**; every component hardcodes its radius, so
+flattening corners is also per-component and also wants eyes on it.
 
 ## Related
 

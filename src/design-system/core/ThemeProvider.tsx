@@ -10,6 +10,7 @@
  */
 import React, { createContext, useContext, useMemo } from 'react';
 import { SdsColors } from '@/design-system/tokens';
+import { readableOn } from '../utils/color';
 import { colorSeeds } from '../foundation/colors';
 
 // ── Seed Token ──
@@ -154,11 +155,27 @@ export interface DerivedToken {
   accent: AccentDerivedTheme;
 }
 
+/**
+ * The readable foreground for a filled accent surface.
+ *
+ * This used to be hardcoded to white, which held only while the accent was a
+ * dark violet. PINDOM's accent is a light acid green — white on it measures
+ * 2.03:1, the near-black ground 9.69:1 — so the choice is measured rather than
+ * assumed. That is also what keeps the seed genuinely swappable: a future
+ * accent of any lightness gets a readable label without editing this file.
+ */
+function onAccent(fill: string): string {
+  return readableOn(fill, {
+    onLight: SdsColors.ground,
+    onDark: SdsColors.ink,
+  });
+}
+
 function deriveButtonTheme(seed: SeedToken): ButtonDerivedTheme {
   const primary = seed.color.primary;
   return {
     backgroundFillColor: primary,
-    textFillColor: SdsColors.background,
+    textFillColor: onAccent(primary),
     backgroundWeakColor: SdsColors.grey100,
     textWeakColor: primary,
     dimFillColor: hexToRgba(primary, 0.25),
@@ -180,7 +197,7 @@ function deriveAccentTheme(seed: SeedToken): AccentDerivedTheme {
     fillPressedColor: withLightness(primary, Math.max(0, l - 0.051)),
     weakColor: withLightness(primary, 0.957, 0.83),
     softColor: withLightness(primary, 0.782),
-    onFillColor: SdsColors.background,
+    onFillColor: onAccent(primary),
     dimColor: hexToRgba(primary, 0.25),
   };
 }

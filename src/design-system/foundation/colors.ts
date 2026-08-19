@@ -11,27 +11,47 @@ export type ColorPreference = 'light' | 'dark';
 
 /**
  * Full adaptive color map — resolves to actual hex values based on preference.
- * Currently light-only; dark theme values will be added later.
+ *
+ * **PINDOM runs `dark` everywhere.** Direction `2b` is a single dark surface
+ * applied to every screen (ADR 0006), and `app/_layout.tsx` sets the preference
+ * once. This is not a user setting and there is no toggle — see ADR 0004.
+ *
+ * The `light` branch is kept because the design system is vendored and its
+ * components are written against a light default; deleting it would mean
+ * rewriting all of them at once.
+ *
+ * Note what the dark branch does to the greys. `2b` has **no grey scale** — its
+ * secondary tone is white at an opacity over the ground. So `grey900`, which is
+ * primary text in light mode, becomes solid white here, and the ladder descends
+ * through the sampled opacities rather than through darker greys. A component
+ * asking for `grey600` gets "the metadata tone" either way, which is what makes
+ * the swap work without touching the component.
  */
 export function getAdaptiveColors(preference: ColorPreference) {
-  // TODO: Add dark theme when needed
   if (preference === 'dark') {
     return {
       ...SdsColors,
-      grey900: '#FFFFFF',
-      grey800: '#ECECEC',
-      grey700: '#B0B8C1',
-      grey600: '#8B95A1',
-      grey500: '#6B7684',
-      grey400: '#4E5968',
-      grey300: '#333D4B',
-      grey200: '#2B2E33',
-      grey100: '#1E2025',
-      grey50: '#17171C',
-      background: '#17171C',
-      greyBackground: '#1E2025',
-      layeredBackground: '#1E2025',
-      floatedBackground: '#2B2E33',
+
+      // Text ladder: darkest-in-light becomes brightest-in-dark.
+      grey900: SdsColors.ink,
+      grey800: SdsColors.inkOpacity700,
+      grey700: SdsColors.inkOpacity500,
+      grey600: SdsColors.inkOpacity450,
+      grey500: SdsColors.inkOpacity420,
+      grey400: SdsColors.inkOpacity400,
+      grey300: SdsColors.inkOpacity350,
+
+      // The bottom of the light ladder is fills and borders, not text.
+      grey200: SdsColors.rule,
+      grey100: SdsColors.groundChrome,
+      grey50: SdsColors.groundRaised,
+
+      // Surfaces. Deeper reads as further back, matching the light set where
+      // the page ground (#F7F7F8) sits behind the cards (#FFFFFF).
+      background: SdsColors.groundRaised,
+      greyBackground: SdsColors.ground,
+      layeredBackground: SdsColors.groundRaised,
+      floatedBackground: SdsColors.groundChrome,
     };
   }
 
@@ -40,14 +60,19 @@ export function getAdaptiveColors(preference: ColorPreference) {
 
 /** Default seed colors for the theme system */
 export const colorSeeds = {
-  // PINDOM purple — the single brand action color across the app. Every
+  // PINDOM acid green — the single brand action colour across the app. Every
   // accent-coloured component derives from this one value via
   // ThemeProvider.deriveToken(), so changing it here re-themes the whole
-  // system. Sampled from the design's primary CTA.
-  primary: SdsColors.brand500,
+  // system. Sampled from block `2b` of the prototype: section labels and the
+  // single most important number on screen.
+  primary: SdsColors.acid500,
   danger: SdsColors.red500,
+  // Sampled — 마감 임박 and other urgency in `2b`.
+  warning: SdsColors.alert500,
+  // Not present in `2b`, so this is inherited rather than verified. Note that
+  // it is a second green next to the acid accent; if a success state ever gets
+  // designed, expect this to change.
   success: SdsColors.green500,
-  warning: SdsColors.orange500,
 } as const;
 
 export type ColorSeeds = typeof colorSeeds;
