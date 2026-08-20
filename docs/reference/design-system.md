@@ -3,7 +3,7 @@ title: Design System Component Index
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-20
 audience: internal
 ---
 
@@ -36,9 +36,15 @@ mirrors it; if the two disagree, the code wins and this file is stale.
 1. **Reuse beats create.** If something here is 80% right, use it and pass a `style`
    override. If nothing is close, ask before adding a primitive.
 2. **Accent colour comes from the theme, never a token directly.** Inside a component write
-   `useTheme().token.accent.fillColor` — not `SdsColors.brand500`. See
+   `useTheme().token.accent.fillColor` — not `SdsColors.acid500`, and not the superseded
+   `SdsColors.brand500`. The theme also picks a readable label colour for filled accents by
+   measuring them, which a raw token cannot do. See [design-tokens.md](design-tokens.md).
+3. **Greys come from `useAdaptive()`, never from `SdsColors` directly.** Every screen is dark
+   ([ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)), and
+   only `useAdaptive()` resolves to the dark surface set. A component reading `SdsColors.grey600`
+   renders a light-mode tone on a dark ground. Twenty components still do; see
    [design-tokens.md](design-tokens.md).
-3. **No raw hex, no magic numbers.** Spacing, radius, colour and type all have tokens.
+4. **No raw hex, no magic numbers.** Spacing, radius, colour and type all have tokens.
 
 ## Compound components
 

@@ -3,7 +3,7 @@ title: Drive Every Accent Colour From One Theme Seed
 type: adr
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-16
+last-updated: 2026-08-20
 audience: internal
 ---
 
@@ -13,7 +13,17 @@ audience: internal
 
 ## Status
 
-Accepted.
+Accepted, and since **exercised**.
+
+The seed changed once, from the violet described below to the acid green sampled from the
+prototype ([ADR 0006](0006-adopt-the-prototype-as-the-design-source-of-truth.md)). It cost one
+line in `foundation/colors.ts` plus one fix in the derivation — `deriveAccentTheme` had
+hardcoded white as the label on a filled accent, which held only while the accent was dark. It
+now measures the fill's luminance instead, so the seed is swappable at any lightness rather
+than only within one.
+
+The Context below describes the violet that prompted this ADR. It is history, not the current
+palette — see [../reference/design-tokens.md](../reference/design-tokens.md).
 
 ## Context
 
@@ -62,7 +72,8 @@ that caught it.
 
 ## Consequences
 
-- Changing `colorSeeds.primary` now genuinely re-themes the app.
+- Changing `colorSeeds.primary` genuinely re-themes the app. Demonstrated, not assumed — see
+  Status.
 - **A new rule applies to all component code:** read accent colour from
   `useTheme().token.accent`, never from the colour token directly. A component that reaches
   past the theme reintroduces exactly the problem this ADR removed.

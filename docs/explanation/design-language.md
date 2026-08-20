@@ -3,7 +3,7 @@ title: Design Language
 type: explanation
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-20
 audience: internal
 ---
 
@@ -110,7 +110,11 @@ scoped in [../reference/design-tokens.md](../reference/design-tokens.md).
 ## The single-seed rule
 
 Every accent-bearing component derives its colour from one value, `colorSeeds.primary`,
-through `token.accent`. Nothing reads `SdsColors.brand500` directly.
+through `token.accent`. Nothing reads the accent token directly.
+
+The rule has since been tested. The seed moved from violet to the acid green sampled from the
+prototype, and the cost was one line plus one fix in the derivation — which had assumed a dark
+accent and hardcoded a white label on it. It now measures instead.
 
 This is not tidiness. In the system as inherited, only one component honoured the seed and
 eleven others hardcoded the accent — so changing the brand colour re-themed a single button

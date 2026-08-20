@@ -44,8 +44,10 @@ There are two ways to get a colour, and choosing wrong is what breaks re-theming
 const { token } = useTheme();
 <View style={{ backgroundColor: token.accent.fillColor }} />
 
-// Wrong — pins the value, survives a re-theme, and silently goes off-brand
-<View style={{ backgroundColor: SdsColors.brand500 }} />
+// Wrong — pins the value, survives a re-theme, and silently goes off-brand.
+// This exact mistake is why `brand500` is still referenced in screens that were
+// never written: the token outlived the palette.
+<View style={{ backgroundColor: SdsColors.acid500 }} />
 ```
 
 The `accent` group is derived in `src/design-system/core/ThemeProvider.tsx`:
