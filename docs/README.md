@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -50,6 +50,7 @@ procedure that does: joining the backend developer's Firebase project.
 | [screens.md](reference/screens.md) | Every Figma frame mapped to node id, theme, route and status, plus the flow slices to build in |
 | [figma-workflow.md](reference/figma-workflow.md) | How to drive the Figma MCP against this particular file, and the traps it sets |
 | [backend-contract.md](reference/backend-contract.md) | The Firestore collections, field names and Cloud Function signatures both codebases implement against. The referee when they disagree |
+| [external-apis.md](reference/external-apis.md) | The third-party services the app is expected to call — tourism data, routing, maps, the assistant — and what the backend must own instead. Handed over by the design team; still a proposal |
 
 ### explanation
 
