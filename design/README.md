@@ -3,7 +3,7 @@ title: Design Source
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -13,13 +13,20 @@ audience: internal
 
 ## Summary
 
-`2026-08-19-prototype.html` is a self-contained, offline interactive prototype. Open it in a
+`2026-08-20-prototype.html` is a self-contained, offline interactive prototype. Open it in a
 browser; it needs no server and no network. Everything is bundled — fonts, tiles, images —
 which is why it is large.
 
 It outranks the Figma file wherever the two disagree. See
 [ADR 0006](../docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) for
 why, and what that broke.
+
+The `2026-08-20` drop replaces `2026-08-19` and is additive against it: block `1a` gains an
+assistant screen (`chat`) and a route screen (`course`), a floating assistant button on the
+five tabbed screens, and one entry in the assistant's own menu that opens the existing
+language screen. Section 2 is byte-identical, so no colour, type or corner decision moved.
+The API surface those two screens imply is
+[external-apis.md](../docs/reference/external-apis.md), which arrived with them.
 
 > [!WARNING]
 > This is an exploration document, not a single finished design. It contains **applied**
@@ -32,7 +39,7 @@ why, and what that broke.
 
 | Block | What it is | Status |
 | --- | --- | --- |
-| `1a` | The full flow. 21 screens, 5 bottom tabs, every flowchart branch clickable. Map on real OSM tiles with real coordinates — visited pins one colour, unvisited another | **Applied. This is the build target** |
+| `1a` | The full flow — every screen listed in the prototype's own screen index, 5 bottom tabs, every flowchart branch clickable. Map on real OSM tiles with real coordinates — visited pins one colour, unvisited another | **Applied. This is the build target** |
 | `1b` | GPS verification, three options: A 레이더 · B 근접 게이지 + 속도 검증 · C 방향 나침반 + 홀드 | **A applied** to `1a` |
 | `1c` | Ticket card, three options: A 홀로그램 무지개 · B 다크 + 옐로우 포일 · C 레트로 반권 | **A applied** — but see [Open](#open) |
 | `1d` | Raffle confirmation motion, three options, playable | Applied variant not marked |
@@ -68,7 +75,9 @@ Decide before the affected screen is built.
 | --- | --- | --- |
 | 1 | Ticket card: keep `1c`-A 홀로그램 무지개, or switch to `1c`-C 레트로 반권? | A was applied before `2b` was chosen. A rainbow hologram and a black-and-acid print ledger are not obviously one product, and the prototype's own next-steps note proposes the swap |
 | 2 | Which `1d` raffle motion? | None is marked applied |
-| 3 | Are all four languages in scope for the 공모전? | Copy is written in `ko`, `en`, `ja`, `zh`; the app registers two locales |
+| 3 | Are all four languages in scope for the 공모전? | Copy is written in `ko`, `en`, `ja`, `zh`; the app registers two locales. The `2026-08-20` drop widened this — the assistant's copy also arrived in all four |
+| 4 | 편집: was narrowing the cutout scale to 88–112% and dropping 좌우반전 deliberate? | It reads as an anti-fake measure — a cutout you cannot shrink, enlarge or mirror is harder to composite dishonestly. If so it belongs with the other verification constraints rather than buried in a slider range. Blocks 편집 |
+| 5 | Should 추천 코스 be reachable from anywhere but the assistant? | Today the assistant's 지도에서 코스 보기 card is the only entry, and 지도 has none. The drop also ships 추천 코스 지도에 담기 copy in all four locales with no control wired to it, which suggests a second path was intended |
 
 ## How to use it
 

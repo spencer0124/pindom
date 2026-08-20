@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -13,7 +13,7 @@ audience: internal
 
 ## Summary
 
-**The prototype is the inventory.** `design/2026-08-19-prototype.html` block `1a` contains the
+**The prototype is the inventory.** `design/2026-08-20-prototype.html` block `1a` contains the
 screens PINDOM builds; see [`design/README.md`](../../design/README.md) and
 [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md). The Figma
 file is kept for traceability only — its node ids remain the addressable names for frames that
@@ -61,6 +61,8 @@ profile, language and vault sit at the root rather than under `/my`.
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | skeleton |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | skeleton — now **per-artist boards** |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | skeleton |
+| `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
+| `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | skeleton |
 | `profile` | 프로필 편집 | — | `/profile` *(proposed)* | **missing** |
 | `language` | 언어 | — | `/language` *(proposed)* | **missing** |
@@ -73,7 +75,7 @@ profile, language and vault sit at the root rather than under `/my`.
 - **`/onboarding` is no longer undesigned.** It was previously a real gap — flowchart only,
   no frame. The prototype designs it.
 - **Five screens are new**, with no frame behind them: `artistSearch`, `tear`, `profile`,
-  `language`, `vault`.
+  `language`, `vault`. The `2026-08-20` drop added two more, below.
 - **장소/상세 grew** a photo gallery, a review list with tier badges and likes, and a stats
   row (인증 · 사진 · 거리).
 - **커뮤니티 is now segmented by artist.** Posts carry a board id; the feed is per 최애, not
@@ -83,6 +85,30 @@ profile, language and vault sit at the root rather than under `/my`.
 > The prototype's 마이페이지 has a global light/dark toggle. It is **not** adopted — see
 > [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md). Do not
 > build a theme setting.
+
+### What the 2026-08-20 drop added
+
+The drop is additive against the one before it. Block `2b` is byte-identical and blocks `1b`,
+`1c` and `1d` are untouched, so no colour, type, corner or variant decision moved.
+
+- **Two screens are new**, `chat` and `course`, both in the table above.
+- **A floating assistant button** sits on the five tabbed screens — 홈, 지도, 컬렉션,
+  커뮤니티, 마이페이지 — and is the only way into `chat`. `course` is in turn reachable only
+  from `chat`, through a 지도에서 코스 보기 card the assistant surfaces after a route answer.
+- **편집 tightened.** The cutout scale slider narrowed from 50–150% to 88–112%, reads
+  원본 비율 at exactly 100, and the 좌우반전 button is gone. Build the narrowed range; the
+  open question about why is in [`design/README.md`](../../design/README.md).
+- **The assistant's copy ships in ko, en, ja and zh**, which sharpens the standing question
+  about whether all four locales are in scope.
+
+> [!IMPORTANT]
+> **Nothing in this repo calls a model API.** The prototype's assistant makes its own model
+> call, but that is prototype scaffolding, not the design. The answers, the route behind
+> 지도에서 코스 보기, and 답변 신고하기 are all the backend's, reached through
+> `src/lib/repositories/` like every other data source
+> ([ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md)). `chat`
+> submits a message and renders what comes back — it does not pick a provider, hold a key, or
+> build a prompt.
 
 ## Section 1 — abandoned
 
@@ -113,6 +139,7 @@ building them apart is how three incompatible route signatures happen.
 | Tickets & raffle | 컬렉션, 응모, 티켓 절취, 응모완료 | ticket balance, tier, `raffleId` |
 | Community | 커뮤니티, 글쓰기 | board (artist), feed page, draft post |
 | Profile | 마이페이지, 프로필 편집, 언어, 보관함 | user, followed artists, vault |
+| Assistant | Pindom AI, 추천 코스 | selected artist, conversation history, the course the answer produced |
 
 > [!NOTE]
 > Slice membership follows the flow, not the visual grouping. 공개설정 belongs to Capture
@@ -162,6 +189,10 @@ flowchart TD
   MY -->|언어| LANG[언어]
   MY -->|보관함| VAULT[보관함]
   MY -->|최애 추가| ART
+
+  HOME & MAP & COLL & COMM & MY -->|AI 버튼| CHAT[Pindom AI]
+  CHAT -->|지도에서 코스 보기| COURSE[추천 코스]
+  CHAT -->|답변 언어 바꾸기| LANG
 ```
 
 ## Related

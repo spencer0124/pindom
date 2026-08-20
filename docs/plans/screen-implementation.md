@@ -3,7 +3,7 @@ title: Screen Implementation Plan
 type: plan
 status: draft
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -142,13 +142,14 @@ One slice per session, in the order below. Slice membership and screens are in
 | 4 | Tickets & raffle | Consumes what capture produces. Includes the 절취 step |
 | 5 | Community | Per-artist boards, so it needs Auth's artist shape but nothing else |
 | 6 | Profile | Includes 프로필 편집, 언어 and 보관함 — three small screens, least shared state |
+| 7 | Assistant | Last because it is the only slice whose content comes from a backend capability that does not exist yet. The screens are buildable against fixtures — a canned conversation and a fixed course — and 추천 코스 needs Discovery's place shape |
 
 Screens inside a slice share state and navigation params. Building 응모 → 티켓 절취 → 응모완료
 together means the route params match; building them a week apart means they do not.
 
 ## Per-screen loop
 
-1. Open the screen in the prototype — `design/2026-08-19-prototype.html`, block `1a`. Its
+1. Open the screen in the prototype — `design/2026-08-20-prototype.html`, block `1a`. Its
    identifiers are the `Screen` column of [../reference/screens.md](../reference/screens.md),
    so `screen === 'place'` finds 장소/상세 immediately.
 2. Read layout, copy, flow and interaction states from `1a`; read colour, type, corners and
@@ -171,9 +172,9 @@ together means the route params match; building them a week apart means they do 
 - **Pretendard.** The font swap is item 5 of the token work and needs files this repo does not
   have. It changes metrics, so do it before the layouts are finely tuned — but after the
   palette, which is what makes screens buildable at all.
-- **The three open design questions** in [`design/README.md`](../../design/README.md): the
-  ticket card variant, the raffle motion, and whether all four locales ship. Only the first
-  blocks a screen (티켓 발행), and not until Phase 5 slice 4.
+- **The open design questions** in [`design/README.md`](../../design/README.md). Two of them
+  block a screen: the ticket card variant blocks 티켓 발행 in slice 4, and the narrowed cutout
+  scale blocks 편집 in slice 3. The rest can be answered while building.
 - **Firebase integration.** Screens bind to fixtures until the backend developer has a project
   and functions to point at. Because the switch lives in `src/lib/repositories/`, flipping
   `EXPO_PUBLIC_USE_MOCKS` is the whole migration — nothing under `app/` changes. The runbook is

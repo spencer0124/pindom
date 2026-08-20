@@ -3,7 +3,7 @@ title: Adopt the Interactive Prototype as the Design Source of Truth
 type: adr
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -14,7 +14,7 @@ audience: internal
 ## Status
 
 Accepted. The prototype is committed at
-[`design/2026-08-19-prototype.html`](../../design/2026-08-19-prototype.html); see
+[`design/2026-08-20-prototype.html`](../../design/2026-08-20-prototype.html); see
 [`design/README.md`](../../design/README.md) for how to read it and what it leaves open.
 
 Nothing has been rebuilt against it yet. The design system still ships the purple ramp and

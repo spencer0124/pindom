@@ -3,7 +3,7 @@ title: Design Tokens
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -67,7 +67,7 @@ Changing that one value re-themes every accent-bearing component. See
 
 ## The 2b surface
 
-Sampled from block `2b` of [`design/2026-08-19-prototype.html`](../../design/2026-08-19-prototype.html)
+Sampled from block `2b` of [`design/2026-08-20-prototype.html`](../../design/2026-08-20-prototype.html)
 — 인쇄물, 블랙 & 애시드. Its own description: 실물 티켓·스탬프 대장 느낌. 각진 모서리와
 모노스페이스 수치가 "수집 기록"을 강조합니다.
 

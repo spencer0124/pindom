@@ -3,7 +3,7 @@ title: Architecture Overview
 type: explanation
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -153,7 +153,7 @@ Treat the on-screen radius and countdown as **feedback**, not as the check.
 ```mermaid
 flowchart TB
   APP["pindom (this repo)<br/>Expo · React Native"]
-  PROTO["design/2026-08-19-prototype.html<br/>layout · copy · flow · colour"]
+  PROTO["design/2026-08-20-prototype.html<br/>layout · copy · flow · colour"]
   FIG["Figma<br/>OZ8H9E7WDdruFIhQ7UBgcy"]
   NAVER["Naver Maps SDK"]
   SDS["skkuverse-app<br/>@skkuverse/sds"]

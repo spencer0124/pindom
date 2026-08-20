@@ -5,7 +5,7 @@
  * instead of hardcoded hex values.
  *
  * The live palette is the `2b` group at the bottom, sampled from
- * `design/2026-08-19-prototype.html` — 인쇄물, 블랙 & 애시드. It is a single dark
+ * `design/2026-08-20-prototype.html` — 인쇄물, 블랙 & 애시드. It is a single dark
  * ground with one accent, and secondary tone comes from a **white-alpha ladder**
  * rather than a grey scale, which is why the TDS greys below have nothing to
  * contribute to a PINDOM screen.
@@ -81,7 +81,7 @@ export const SdsColors = {
   darkSurfaceRaisedAlt: '#383839',
 
   // ══ 2b — the live palette ══════════════════════════════════════════════
-  // Sampled from block `2b` of design/2026-08-19-prototype.html. See
+  // Sampled from block `2b` of design/2026-08-20-prototype.html. See
   // docs/reference/design-tokens.md for where each value appears.
 
   // ── Ground. Three steps, all near-black; `2b` has no mid-tone surface ──
