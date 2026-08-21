@@ -97,7 +97,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
     // Added only when the config files exist; see the note at the top.
     ...(firebaseConfigured
-      ? ['@react-native-firebase/app', '@react-native-firebase/auth']
+      ? [
+          // `disableSPM` is not optional here, it is what makes this build link.
+          // firebase-ios-sdk's Swift Package products are automatic libraries, so
+          // every react-native-firebase pod that resolves Firebase through SPM
+          // embeds its own copy. Under the static linkage the Naver Map SDK
+          // requires (see expo-build-properties below) those copies collide as
+          // duplicate symbols and `pod install` refuses outright. Opting out of
+          // SPM routes Firebase through CocoaPods, which handles static frameworks.
+          ['@react-native-firebase/app', { ios: { disableSPM: true } }] as [
+            string,
+            Record<string, unknown>,
+          ],
+          '@react-native-firebase/auth',
+        ]
       : []),
     [
       'expo-splash-screen',
