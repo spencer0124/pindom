@@ -162,20 +162,25 @@ files first is what makes `/sds-preview` a usable verification surface at all.
 > obvious, and briefly *worse-looking* than before. Expect that, and finish the layer you
 > started rather than leaving a half-dark app.
 
-### Open question — every surface is one step too deep
+### Settled — the surfaces were one step too deep
 
-Sampled from the running app: the screen canvas renders `#0B0B0B` and the tab bar `#131313`.
-[../reference/design-tokens.md](../reference/design-tokens.md) sampled block `2b` the other way —
-the device canvas is `#131313`, chrome is `#171719`, and `#0B0B0B` is the deepest ground, the ink
-used *on* an acid chip.
+Sampled from the running app, the canvas rendered `#0B0B0B` and the tab bar `#131313`.
+[../reference/design-tokens.md](../reference/design-tokens.md) sampled block `2b` the other way:
+the device canvas is `#131313`, chrome is `#171719`, and `#0B0B0B` is not a surface at all — it is
+the ink used *on* an acid chip, which `onAccent()` in `ThemeProvider` is the one place that reads.
 
-The cause is in `getAdaptiveColors`: it maps `greyBackground` (the light page ground) to `ground`
-and `background` (light cards) to `groundRaised`, preserving the light-mode *relationship* —
-raised surfaces sit above the page. The relationship is right; the depth it is anchored at is not.
+`getAdaptiveColors` had inverted the light ladder faithfully — page ground below, raised surfaces
+above — but anchored the pair a step lower than `2b` puts it. The relationship was right; the
+depth was not.
 
-- [ ] Decide whether `greyBackground` should map to `groundRaised` and the chrome tokens shift up
-      with it. **One line in `getAdaptiveColors` moves every surface in the app**, so settle it
-      with `/sds-preview` open and against a real screen, not in isolation
+- [x] Surfaces shifted up one step: `greyBackground` → `groundRaised`, and `background` /
+      `layeredBackground` / `floatedBackground` → `groundChrome`. Verified on device: canvas
+      `#131313`, tab bar `#171719`
+
+The deciding evidence was not the surface table but the contrast table further down that document,
+which states its ratios were **measured against the canvas `#131313`**. Running on `#0B0B0B` meant
+the recorded accessibility figures did not describe what was on screen, which is a worse failure
+than a shade being off.
 
 ### Order: by what 홈 and Discovery actually need
 

@@ -46,11 +46,21 @@ export function getAdaptiveColors(preference: ColorPreference) {
       grey100: SdsColors.groundChrome,
       grey50: SdsColors.groundRaised,
 
-      // Surfaces. Deeper reads as further back, matching the light set where
-      // the page ground (#F7F7F8) sits behind the cards (#FFFFFF).
-      background: SdsColors.groundRaised,
-      greyBackground: SdsColors.ground,
-      layeredBackground: SdsColors.groundRaised,
+      // Surfaces, one step up from where this mapping first put them.
+      //
+      // The relationship is unchanged and still mirrors the light set — one page
+      // ground with the raised surfaces above it — but 2b anchors it higher than
+      // an inversion of the light ladder would suggest. The direction assigns
+      // #131313 to the canvas and #171719 to frames and bars, and #0B0B0B is not
+      // a surface in it at all: it is the ink used *on* an acid chip, which is
+      // the one place it is read from (see onAccent in ThemeProvider).
+      //
+      // This is also what makes the contrast table in
+      // docs/reference/design-tokens.md describe the screen: those ratios were
+      // measured against #131313.
+      background: SdsColors.groundChrome,
+      greyBackground: SdsColors.groundRaised,
+      layeredBackground: SdsColors.groundChrome,
       floatedBackground: SdsColors.groundChrome,
     };
   }
