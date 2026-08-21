@@ -10,6 +10,7 @@ import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { StarIcon as PhosphorStar } from 'phosphor-react-native';
 import { SdsColors } from '@/design-system/tokens';
+import { useAdaptive } from '../../core';
 import { Txt } from '../txt';
 
 function StarIcon({ size, color }: { size: number; color: string }) {
@@ -66,6 +67,7 @@ export type RatingProps = EditableRatingProps | ReadOnlyRatingProps;
 // ── Component ──
 
 export default function Rating(props: RatingProps) {
+  const adaptive = useAdaptive();
   const {
     value,
     max = 5,
@@ -102,7 +104,7 @@ export default function Rating(props: RatingProps) {
     if (variant === 'compact') {
       return (
         <View style={[styles.row, style]}>
-          <Txt typography="t6" fontWeight="semiBold" color={SdsColors.grey900}>
+          <Txt typography="t6" fontWeight="semiBold" color={adaptive.grey900}>
             {value.toFixed(1)}
           </Txt>
           <StarIcon size={starSize} color={activeColor} />
@@ -114,7 +116,7 @@ export default function Rating(props: RatingProps) {
       return (
         <View style={[styles.row, { gap: 2 }, style]}>
           <StarIcon size={starSize} color={activeColor} />
-          <Txt typography="t7" fontWeight="medium" color={SdsColors.grey600}>
+          <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
             {value.toFixed(1)}
           </Txt>
         </View>

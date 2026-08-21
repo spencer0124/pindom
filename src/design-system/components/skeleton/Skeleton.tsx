@@ -11,6 +11,7 @@
  */
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
+import { useAdaptive } from '../../core';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -19,7 +20,6 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import { SdsColors } from '@/design-system/tokens';
 
 // ── Context for shared animation value ──
 
@@ -68,6 +68,8 @@ function SkeletonBlock({
 }: SkeletonProps) {
   const ctx = useContext(SkeletonContext);
 
+  const adaptive = useAdaptive();
+
   const shimmerStyle = useAnimatedStyle(() => {
     if (!ctx) return {};
     // Shimmer: opacity oscillates between 0.3 and 1
@@ -82,7 +84,7 @@ function SkeletonBlock({
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: SdsColors.grey100,
+          backgroundColor: adaptive.grey100,
         },
         shimmerStyle,
         style,

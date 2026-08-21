@@ -21,7 +21,6 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { SdsColors } from '@/design-system/tokens';
 import { useAdaptive } from '../../core';
 import { Txt } from '../txt';
 import type { FontWeightKeys, TypographyKeys } from '../../foundation/typography';
@@ -184,11 +183,12 @@ function DescriptionParagraph({
   numberOfLines,
   style,
 }: DescriptionParagraphProps) {
+  const adaptive = useAdaptive();
   return (
     <Txt
       typography={typography}
       fontWeight={fontWeight}
-      color={color ?? SdsColors.grey500}
+      color={color ?? adaptive.grey500}
       numberOfLines={numberOfLines}
       style={style}
     >

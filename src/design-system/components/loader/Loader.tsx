@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { SdsColors } from '@/design-system/tokens';
-import { useTheme } from '../../core';
+import { useAdaptive, useTheme } from '../../core';
 import { Txt } from '../txt';
 
 // ── Size map ──
@@ -73,6 +73,7 @@ function LoaderMain({ size = 'large', type = 'primary', label, delay, customStro
   const [visible, setVisible] = useState(!delay);
   const rotation = useSharedValue(0);
   const { token } = useTheme();
+  const adaptive = useAdaptive();
   const px = customSize ?? sizeMap[size];
   const color = customStrokeColor ?? typeColor(type, token.accent.fillColor);
   const strokeWidth = px < 30 ? 2.5 : 3;
@@ -129,7 +130,7 @@ function LoaderMain({ size = 'large', type = 'primary', label, delay, customStro
       {label != null && (
         <Txt
           typography="t7"
-          color={type === 'light' ? '#FFFFFFDE' : SdsColors.grey600}
+          color={type === 'light' ? '#FFFFFFDE' : adaptive.grey600}
           style={styles.label}
         >
           {label}

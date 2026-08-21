@@ -11,7 +11,11 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { SdsColors } from '@/design-system/tokens';
 import { readableOn } from '../utils/color';
-import { colorSeeds } from '../foundation/colors';
+import { colorSeeds, type getAdaptiveColors } from '../foundation/colors';
+import { useAdaptive } from './AdaptiveColorProvider';
+
+/** The preference-resolved palette the derive step reads its greys from. */
+type AdaptiveColors = ReturnType<typeof getAdaptiveColors>;
 
 // ── Seed Token ──
 
@@ -171,16 +175,23 @@ function onAccent(fill: string): string {
   });
 }
 
-function deriveButtonTheme(seed: SeedToken): ButtonDerivedTheme {
+function deriveButtonTheme(seed: SeedToken, adaptive: AdaptiveColors): ButtonDerivedTheme {
   const primary = seed.color.primary;
   return {
     backgroundFillColor: primary,
     textFillColor: onAccent(primary),
-    backgroundWeakColor: SdsColors.grey100,
+    // Read from the adaptive palette, not the raw tokens: these two are the
+    // surface behind a weak button and the dot inside a filled one, so both
+    // have to follow the colour preference. Pinned to SdsColors they painted
+    // #F2F4F6 and #FFFFFF on the 2b ground.
+    backgroundWeakColor: adaptive.grey100,
     textWeakColor: primary,
     dimFillColor: hexToRgba(primary, 0.25),
+    // TODO(2b): the greyOpacity family is not in the adaptive map, so this dim
+    // stays a 2% near-black — near-invisible as press feedback on a dark
+    // button. Extending the map is a token decision, not a substitution.
     dimWeakColor: SdsColors.greyOpacity50,
-    loaderFillColor: SdsColors.background,
+    loaderFillColor: adaptive.background,
     loaderWeakColor: primary,
   };
 }
@@ -202,9 +213,10 @@ function deriveAccentTheme(seed: SeedToken): AccentDerivedTheme {
   };
 }
 
-function deriveToken(seed: SeedToken): DerivedToken {
+function deriveToken(seed: SeedToken, adaptive: AdaptiveColors): DerivedToken {
   return {
-    button: deriveButtonTheme(seed),
+    button: deriveButtonTheme(seed, adaptive),
+    // The accent group derives everything from the seed, so it needs no palette.
     accent: deriveAccentTheme(seed),
   };
 }
@@ -232,6 +244,7 @@ export interface ThemeProviderProps {
 
 export function ThemeProvider({ token: customToken, children }: ThemeProviderProps) {
   const parentTheme = useContext(ThemeContext);
+  const adaptive = useAdaptive();
 
   const value = useMemo<ThemeContextValue>(() => {
     const baseSeed = parentTheme?.token ?? defaultSeedToken;
@@ -243,7 +256,7 @@ export function ThemeProvider({ token: customToken, children }: ThemeProviderPro
       },
     };
 
-    const derived = deriveToken(seed);
+    const derived = deriveToken(seed, adaptive);
 
     // Allow overriding derived tokens directly
     const mergedButton: ButtonDerivedTheme = {
@@ -262,17 +275,21 @@ export function ThemeProvider({ token: customToken, children }: ThemeProviderPro
         accent: mergedAccent,
       },
     };
-  }, [customToken, parentTheme]);
+  }, [customToken, parentTheme, adaptive]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
+  // Called unconditionally — hooks cannot sit inside the branch below. With no
+  // AdaptiveColorProvider mounted this returns the light default, which is the
+  // same assumption the fallback already made.
+  const adaptive = useAdaptive();
   if (!ctx) {
     // Fallback: return default theme if no provider
     const seed = defaultSeedToken;
-    return { token: { ...seed, ...deriveToken(seed) } };
+    return { token: { ...seed, ...deriveToken(seed, adaptive) } };
   }
   return ctx;
 }

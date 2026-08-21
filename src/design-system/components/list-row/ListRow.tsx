@@ -24,7 +24,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SdsColors } from '@/design-system/tokens';
 import { CaretRightIcon } from 'phosphor-react-native';
 import { useAdaptive } from '../../core';
 import { Txt, type TxtProps } from '../txt';
@@ -66,9 +65,10 @@ function resolveVerticalPadding(vp?: ListRowProps['verticalPadding']): number {
 // ── Arrow icon ──
 
 function RightArrow() {
+  const adaptive = useAdaptive();
   return (
     <View style={{ marginLeft: 4 }}>
-      <CaretRightIcon size={18} color={SdsColors.grey400} />
+      <CaretRightIcon size={18} color={adaptive.grey400} />
     </View>
   );
 }
@@ -205,62 +205,77 @@ type ListRowTextsProps =
   | ({ type: '3RowTypeB' } & Texts3RowBaseProps)
   | ({ type: '3RowTypeC' } & Texts3RowBaseProps);
 
+/**
+ * The two rungs of the secondary-text ladder ListRow uses. Named rather than
+ * `string` so the table below cannot drift into an arbitrary colour: every row
+ * in the app inherits whatever this settles on.
+ */
+type LadderKey = 'grey500' | 'grey600';
+
+interface SlotConfig {
+  typography: TypographyKeys;
+  fontWeight: FontWeightKeys;
+  /**
+   * A key into the adaptive palette, not a colour. The table is module scope and
+   * a resolved value here would pin the light ladder — which is what made every
+   * secondary line render dark-on-dark under `2b`.
+   */
+  colorKey?: LadderKey;
+}
+
 // Typography/weight for each text layout variant
 const textConfig: Record<
   string,
-  {
-    top: { typography: TypographyKeys; fontWeight: FontWeightKeys; color?: string };
-    middle?: { typography: TypographyKeys; fontWeight: FontWeightKeys; color?: string };
-    bottom?: { typography: TypographyKeys; fontWeight: FontWeightKeys; color?: string };
-  }
+  { top: SlotConfig; middle?: SlotConfig; bottom?: SlotConfig }
 > = {
   '1RowTypeA': { top: { typography: 't5', fontWeight: 'regular' } },
   '1RowTypeB': { top: { typography: 't5', fontWeight: 'bold' } },
   '1RowTypeC': { top: { typography: 't6', fontWeight: 'regular' } },
   '2RowTypeA': {
     top: { typography: 't5', fontWeight: 'regular' },
-    bottom: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    bottom: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
   },
   '2RowTypeB': {
     top: { typography: 't5', fontWeight: 'bold' },
-    bottom: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    bottom: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
   },
   '2RowTypeC': {
-    top: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    top: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
     bottom: { typography: 't5', fontWeight: 'regular' },
   },
   '2RowTypeD': {
-    top: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    top: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
     bottom: { typography: 't5', fontWeight: 'bold' },
   },
   '2RowTypeE': {
     top: { typography: 't5', fontWeight: 'regular' },
-    bottom: { typography: 't7', fontWeight: 'regular', color: SdsColors.grey500 },
+    bottom: { typography: 't7', fontWeight: 'regular', colorKey: 'grey500' },
   },
   '2RowTypeF': {
     top: { typography: 't5', fontWeight: 'bold' },
-    bottom: { typography: 't7', fontWeight: 'regular', color: SdsColors.grey500 },
+    bottom: { typography: 't7', fontWeight: 'regular', colorKey: 'grey500' },
   },
   '3RowTypeA': {
-    top: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    top: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
     middle: { typography: 't5', fontWeight: 'regular' },
-    bottom: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    bottom: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
   },
   '3RowTypeB': {
-    top: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    top: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
     middle: { typography: 't5', fontWeight: 'bold' },
-    bottom: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    bottom: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
   },
   '3RowTypeC': {
     top: { typography: 't5', fontWeight: 'bold' },
-    middle: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
-    bottom: { typography: 't6', fontWeight: 'regular', color: SdsColors.grey600 },
+    middle: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
+    bottom: { typography: 't6', fontWeight: 'regular', colorKey: 'grey600' },
   },
 };
 
 function renderTextSlot(
   content: ReactNode,
-  config: { typography: TypographyKeys; fontWeight: FontWeightKeys; color?: string },
+  config: SlotConfig,
+  adaptive: ReturnType<typeof useAdaptive>,
   overrideProps?: Omit<TxtProps, 'children'>,
 ) {
   if (content == null) return null;
@@ -269,7 +284,7 @@ function renderTextSlot(
       <Txt
         typography={config.typography}
         fontWeight={config.fontWeight}
-        color={config.color}
+        color={config.colorKey && adaptive[config.colorKey]}
         {...overrideProps}
       >
         {String(content)}
@@ -280,16 +295,18 @@ function renderTextSlot(
 }
 
 function ListRowTexts(props: ListRowTextsProps) {
+  const adaptive = useAdaptive();
   const config = textConfig[props.type] ?? textConfig['1RowTypeA'];
 
   return (
     <View style={styles.textsContainer}>
-      {renderTextSlot(props.top, config.top, props.topProps)}
+      {renderTextSlot(props.top, config.top, adaptive, props.topProps)}
       {'middle' in props && config.middle && (
         <View style={{ marginTop: 2 }}>
           {renderTextSlot(
             (props as Texts3RowBaseProps).middle,
             config.middle,
+            adaptive,
             (props as Texts3RowBaseProps).middleProps,
           )}
         </View>
@@ -299,6 +316,7 @@ function ListRowTexts(props: ListRowTextsProps) {
           {renderTextSlot(
             (props as Texts2RowBaseProps).bottom,
             config.bottom,
+            adaptive,
             (props as Texts2RowBaseProps).bottomProps,
           )}
         </View>
@@ -314,11 +332,12 @@ function ListRowLeftText({
   style,
   ...props
 }: TxtProps & { children: string }) {
+  const adaptive = useAdaptive();
   return (
     <Txt
       typography="t6"
       fontWeight="regular"
-      color={SdsColors.grey600}
+      color={adaptive.grey600}
       style={[{ width: 80 }, style]}
       {...props}
     >

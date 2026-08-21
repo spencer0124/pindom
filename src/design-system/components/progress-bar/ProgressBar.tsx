@@ -8,8 +8,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SdsColors } from '@/design-system/tokens';
-import { useTheme } from '../../core';
+import { useAdaptive, useTheme } from '../../core';
 
 // ── Size → height ──
 
@@ -41,6 +40,7 @@ export function ProgressBar({
   const fillWidth = useSharedValue(0);
   const height = sizeHeight[size];
   const { token } = useTheme();
+  const adaptive = useAdaptive();
   const fillColor = color ?? token.accent.fillColor;
   const clampedProgress = Math.min(100, Math.max(0, progress));
 
@@ -67,7 +67,9 @@ export function ProgressBar({
       onLayout={onLayout}
       style={[
         styles.track,
-        { height, borderRadius: height / 2 },
+        // The track colour follows the preference, so it cannot live in the
+        // module-scope StyleSheet below.
+        { height, borderRadius: height / 2, backgroundColor: adaptive.grey100 },
         style,
       ]}
     >
@@ -85,7 +87,6 @@ export function ProgressBar({
 const styles = StyleSheet.create({
   track: {
     width: '100%',
-    backgroundColor: SdsColors.grey100,
     overflow: 'hidden',
   },
   fill: {

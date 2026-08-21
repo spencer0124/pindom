@@ -187,23 +187,48 @@ order the build reaches them.
 `TICKETS OWNED`, a tier gauge, a `CLOSING TODAY` badge, and a `NEARBY LOCATIONS` list of numbered
 rows with distances.
 
-- [ ] `ListRow` — the 촬영지 rows, and by a wide margin the largest single job here
-- [ ] `SearchField` — 지도 and 최애 찾기
-- [ ] `Rating` — 장소/상세 reviews
-- [ ] `BottomSheet` — the 장소 preview surface
-- [ ] `Loader`, `ProgressBar`, `Skeleton`, `Button`, `ListHeader` — one or two call sites each
+**Tier 1 is done.**
+
+- [x] `ListRow` — the 촬영지 rows, and by a wide margin the largest single job here
+- [x] `SearchField` · `Rating` · `BottomSheet` · `Loader` · `ProgressBar` · `Skeleton` · `ListHeader`
+- [x] `Button` — see the layer below; its own file needed nothing
 - [x] `Tab` — nothing to do
 
-`/sds-preview` now renders dark, which makes it do its job immediately: `Button`'s `weak` variant
-paints `#F2F4F6` — a pinned light grey — as a bright slab on the `2b` ground, and `light` does the
-same. That is the whole failure mode in one screenshot, and it is why the exit criterion below is
-written against the preview rather than against a file count.
+### There is a third layer: the derived theme
 
-The sizes are wildly uneven and that should drive sequencing: most of Tier 1 is one or two
-substitutions, while `ListRow` alone carries the whole secondary-text ladder — a different grey
-per row slot, which is precisely what `2b` replaces with white at an alpha. Do the cheap ones
-first to get a clean `/sds-preview` early, then spend the time on `ListRow`, because whatever
-ladder it settles on is the one every list in the app inherits.
+The model above — components read `SdsColors`, so convert the components — missed a layer, and
+`Button` is how it showed up. `/sds-preview` rendered its `weak` variant as a `#F2F4F6` slab on the
+dark ground, but `Button.tsx` never reads that value. It comes from `token.button` in
+`ThemeProvider`, where `deriveButtonTheme` pinned `SdsColors.grey100` and `SdsColors.background`.
+
+A grep for `SdsColors` in `components/` cannot find that, so **the component counts above understate
+the work**. `deriveButtonTheme` now takes the resolved palette; `ThemeProvider` sits inside
+`AdaptiveColorProvider`, so the hook is available to pass it.
+
+> [!NOTE]
+> Not every fixed colour in a component is a defect. `Button`'s `typeToColor` and `Loader`'s
+> `typeColor` name variants — `type="dark"` means *a dark button*, not *the dark theme* — so those
+> greys are correct pinned and were left alone. The rule is whether the value describes the
+> surface or the request.
+
+### Two gaps this opened, both deferred
+
+- [ ] **The `greyOpacity*` family is not in the adaptive map.** `getAdaptiveColors` overrides the
+      grey ladder and the surfaces but not the translucent greys, so `Button`'s `dimWeakColor` stays
+      a 2% near-black — near-invisible as press feedback on a dark button — and `Rating`'s
+      `inactiveColor` stays a light-mode tint. Adding keys to the map is a token decision, not a
+      substitution
+- [ ] **`Button`'s `light` variant is a raw hex**, `'#FFFFFFDE'`, with `whiteOpacity900` written in
+      the comment beside it. `Loader` repeats it. The token exists; the literal should go
+
+### How ListRow was converted, because the shape matters
+
+Its ladder lived in a module-scope preset table with resolved colours in it, which no hook can
+reach. The table now stores a **key** into the palette (`colorKey: 'grey600'`) typed to the two
+rungs ListRow actually uses, and the slot renderer resolves it against `useAdaptive()` at render.
+
+Any other component whose colours live in a module-scope table wants this shape rather than a
+hoisted hook: keep the table declarative, resolve at the edge.
 
 **Tier 2 — deferred to the slice that first needs it.** `Dialog`, `BottomCTA`, `TextField`,
 `Checkbox`, `SegmentedControl`, `Radio`, `AccordionList`, `BadgeNavRow`, `NumericSpinner`,

@@ -8,7 +8,6 @@
  */
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { SdsColors } from '@/design-system/tokens';
 import { useAdaptive } from '../../core';
 import { Txt } from '../txt';
 import GorhomBottomSheet, {
@@ -79,6 +78,7 @@ function SdsBottomSheet({
   contentStyle,
 }: SdsBottomSheetProps) {
   const sheetRef = useRef<GorhomBottomSheet>(null);
+  const adaptive = useAdaptive();
 
   useEffect(() => {
     if (open) {
@@ -116,8 +116,8 @@ function SdsBottomSheet({
       onChange={handleSheetChanges}
       backdropComponent={renderBackdrop}
       enablePanDownToClose
-      handleIndicatorStyle={styles.handleIndicator}
-      backgroundStyle={styles.background}
+      handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: adaptive.grey300 }]}
+      backgroundStyle={[styles.background, { backgroundColor: adaptive.background }]}
       style={style}
     >
       <BottomSheetView style={[styles.content, contentStyle]}>
@@ -136,13 +136,11 @@ export const BottomSheet = Object.assign(SdsBottomSheet, {
 
 const styles = StyleSheet.create({
   handleIndicator: {
-    backgroundColor: SdsColors.grey300,
     width: 36,
     height: 4,
     borderRadius: 2,
   },
   background: {
-    backgroundColor: SdsColors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
