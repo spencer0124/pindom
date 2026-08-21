@@ -28,7 +28,8 @@ export function setActiveLocale(locale: Locale): void {
 /**
  * Resolve a localized string map to a plain string.
  *
- * Firestore stores any user-visible string that varies by language as `{ ko, en, ja, zh }`.
+ * Firestore stores any user-visible string that varies by language as `{ ko, en }` — the
+ * shipped locales. The prototype's helper emits two more; those keys are read as absent.
  * Resolving here, at the boundary, is the same move as turning a `Timestamp` into a `Date`:
  * every screen would otherwise have to pick a language out of a map, identically.
  *

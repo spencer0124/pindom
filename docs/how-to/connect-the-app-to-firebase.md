@@ -3,7 +3,7 @@ title: Connect the App to Firebase
 type: how-to
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -272,6 +272,7 @@ Everything Firebase-adjacent, reachable from here.
 | Document | What you will find |
 | --- | --- |
 | [backend-contract.md](../reference/backend-contract.md) | The Firestore collections, field names, and the three Cloud Function signatures. **The document the backend dev implements against** |
+| [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | Every finding from the backend developer's review of that contract, and the decision taken on it. Read it when you want to know *why* a field is shaped the way it is |
 | [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) | Why Firebase sits behind `src/lib/repositories/`, and why `src/lib/api/` is superseded |
 | [architecture.md](../explanation/architecture.md) | The product loop, the repo layout, and the trust boundary that makes GPS adjudication server-side |
 | [screen-implementation.md](../plans/screen-implementation.md) | The order to build screens in, and the fixture layer this page's switch depends on |

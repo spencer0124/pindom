@@ -62,8 +62,7 @@ export const authRepository: AuthRepository = {
 };
 
 export const placeRepository: PlaceRepository = {
-  listNearby: async (lat, lng, radiusMeters) =>
-    (await impl()).places.listNearby(lat, lng, radiusMeters),
+  listAll: async (lat, lng) => (await impl()).places.listAll(lat, lng),
   listRecommended: async (lat, lng) =>
     (await impl()).places.listRecommended(lat, lng),
   getById: async (placeId) => (await impl()).places.getById(placeId),
@@ -89,7 +88,8 @@ export const ticketRepository: TicketRepository = {
 export const raffleRepository: RaffleRepository = {
   list: async () => (await impl()).raffles.list(),
   getById: async (raffleId) => (await impl()).raffles.getById(raffleId),
-  enter: async (raffleId) => (await impl()).raffles.enter(raffleId),
+  enter: async (raffleId, idempotencyKey) =>
+    (await impl()).raffles.enter(raffleId, idempotencyKey),
 };
 
 export const postRepository: PostRepository = {

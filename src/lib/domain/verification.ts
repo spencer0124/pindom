@@ -5,8 +5,23 @@
  */
 export type VerificationFailureReason =
   | 'out_of_radius'
+  /**
+   * Rejected on implied speed. Only pairs of readings that moved 200m or more are
+   * evaluated, because GPS jitter alone reads as 100km/h over a short interval. Above
+   * 150km/h within a session, or 300km/h against the last issued ticket, is a rejection.
+   */
   | 'implausible_speed'
-  | 'poor_accuracy';
+  /** The device reported an error radius wider than the gate, so "within 50m" cannot mean anything. */
+  | 'poor_accuracy'
+  /**
+   * The device reported that its location came from a mock provider.
+   *
+   * Android only — iOS exposes no equivalent, so the client sends `false` there. The flag
+   * is self-reported and App Check is **not** in the initial release, so a patched build
+   * can suppress it; it catches the common case of a Fake GPS app driven from developer
+   * options, not a modified binary.
+   */
+  | 'mock_location';
 
 /**
  * One GPS sample, submitted while /verify/gps is open.
@@ -19,9 +34,21 @@ export interface LocationReading {
   placeId: string;
   lat: number;
   lng: number;
-  /** Metres of uncertainty, as reported by the device */
+  /**
+   * Metres of uncertainty, as reported by the device.
+   *
+   * The server rejects readings above its accuracy gate with `poor_accuracy`, and does not
+   * append them to the session — a wildly uncertain sample would poison the speed check.
+   */
   accuracy: number;
   capturedAt: Date;
+  /**
+   * Whether the device reported the position as coming from a mock provider.
+   *
+   * Android reports this; iOS has no equivalent API, so send `false` there. See
+   * `mock_location` on `VerificationFailureReason` for what it does and does not catch.
+   */
+  isMock: boolean;
   /** Omitted on the first reading of a session; echoed back on later ones */
   sessionId?: string;
 }
@@ -34,6 +61,13 @@ export interface LocationReading {
  * is what proves the user passed verification.
  */
 export interface VerificationGrant {
+  /**
+   * Opaque to the client — pass it back to `issueTicket` unchanged.
+   *
+   * Server-side it is the verification session's own id, so ownership, expiry and
+   * single-use are all read off the session document rather than a separate token record.
+   * That is an implementation detail of the server and must not be relied on here.
+   */
   token: string;
   expiresAt: Date;
 }

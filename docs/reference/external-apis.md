@@ -32,6 +32,15 @@ audience: internal
 > [architecture.md](../explanation/architecture.md) for where the trust boundary sits. What is
 > genuinely open **for the client** is §3 — which renderer draws the map, since that one runs
 > in the app.
+>
+> **Two §7 rows have since been settled elsewhere, and the contract wins.** The GPS row's
+> 하루 1회 is not the cooldown that was agreed — it is **30 days**, per user per place, enforced
+> only in `issueTicket`. And 다국어 UI 문구's `ko / en / ja / zh` is wider than what ships: the
+> launch set is **`ko` and `en`**. Both rows are left verbatim above because this is a handover
+> document; read them against
+> [backend-contract.md](backend-contract.md) and the
+> [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md), which are
+> authoritative.
 
 작성 기준: 2026-08 · 프로토타입은 목업 데이터로 동작하며 실제 호출은 붙어 있지 않습니다.
 

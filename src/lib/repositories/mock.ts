@@ -63,6 +63,30 @@ const nextId = (prefix: string) => `${prefix}-${(sequence += 1)}`;
 
 const FEED_PAGE_SIZE = 4;
 
+/**
+ * Crockford Base32 — uppercase and digits without `I`, `L`, `O` or `U`.
+ *
+ * Those four are dropped because a ticket serial is meant to be read off the barcode and
+ * said out loud, and `1`/`I` and `0`/`O` do not survive that.
+ */
+const SERIAL_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+/**
+ * A fixture serial in the server's `PD-XXXX-XXXX-XXXX` shape.
+ *
+ * The real value is 8 random bytes minted inside `issueTicket`; this only has to *look*
+ * like one, so it is derived from the sequence and stays stable across a fixture run.
+ */
+function mockSerial(seed: number): string {
+  const group = (offset: number) =>
+    Array.from(
+      { length: 4 },
+      (_, i) =>
+        SERIAL_ALPHABET[(seed * 7 + offset * 31 + i * 13) % SERIAL_ALPHABET.length],
+    ).join('');
+  return `PD-${group(0)}-${group(1)}-${group(2)}`;
+}
+
 // ── Helpers ──
 
 function requireSession(): Session | null {
@@ -166,12 +190,13 @@ export const mockRepositories: Repositories = {
   },
 
   places: {
-    async listNearby(lat, lng, radius = 50_000) {
-      const near = mockPlaces
+    async listAll(lat, lng) {
+      // Every place, nearest first — 지도 shows the whole country, so nothing is
+      // filtered out by distance here. Distance is for ordering and display only.
+      const all = [...mockPlaces]
         .map((p) => withDistance(p, { lat, lng }))
-        .filter((p) => p.distanceMeters <= radius)
         .sort((a, b) => a.distanceMeters - b.distanceMeters);
-      return mockDelay(ResultHelper.ok(near));
+      return mockDelay(ResultHelper.ok(all));
     },
 
     async listRecommended(lat, lng) {
@@ -290,7 +315,7 @@ export const mockRepositories: Repositories = {
         placeId: place.id,
         placeName: place.name,
         photoUrl: `https://picsum.photos/seed/${nextId('shot')}/900/1200`,
-        serial: `PDM-MOCK-${String(sequence).padStart(4, '0')}`,
+        serial: mockSerial(sequence),
         visibility,
         issuedAt: new Date(),
         spent: false,
@@ -317,7 +342,9 @@ export const mockRepositories: Repositories = {
       );
     },
 
-    async enter(raffleId) {
+    // `idempotencyKey` is accepted to match the real repository's shape. The fixture
+    // has no retry path to collapse, so it is not used — see RaffleRepository.enter.
+    async enter(raffleId, _idempotencyKey) {
       if (!session) return mockDelay(unauthenticated<RaffleEntry>());
 
       const raffle = mockRaffles.find((r) => r.id === raffleId);

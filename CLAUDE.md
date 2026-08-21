@@ -34,9 +34,10 @@ outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design
 
 ## Hard constraints
 
-- **The client never decides whether a GPS verification passed.** The 50m radius and speed
-  checks are anti-spoofing and must be adjudicated server-side. The client submits a
-  reading. On-screen distance is feedback, not the check.
+- **The client never decides whether a GPS verification passed.** The radius, speed, accuracy
+  and mock-provider checks are anti-spoofing and must be adjudicated server-side. The client
+  submits a reading. On-screen distance is feedback, not the check. The exact gates are in
+  [docs/reference/backend-contract.md](docs/reference/backend-contract.md).
 - **No theme toggle.** Every screen is dark under direction `2b`, and that is a property of
   the build, not a user preference. The prototype's 마이페이지 has a toggle; it is **not**
   adopted. See [ADR 0004](docs/decisions/0004-per-screen-theme-not-global-dark-mode.md) and

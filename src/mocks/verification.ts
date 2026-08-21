@@ -29,10 +29,13 @@ export const mockVerificationSequence: Omit<VerificationResult, 'sessionId'>[] =
     reason: 'out_of_radius',
   },
   {
+    // Inside the radius but refused anyway: the server gates on accuracy first, and at
+    // ±72m "within 50m" cannot mean anything. The gate is a global 65m, so this number
+    // has to sit above it — see the 2026-08-21 contract review resolutions.
     verified: false,
     distanceMeters: 32,
     requiredRadiusMeters: 50,
-    accuracyMeters: 48,
+    accuracyMeters: 72,
     reason: 'poor_accuracy',
   },
   {

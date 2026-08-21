@@ -42,6 +42,14 @@ export interface FirebaseFailure {
   code: string;
   message: string;
   errorCode?: string;
+  /**
+   * The one failure that carries data as well as a code.
+   *
+   * `issueTicket` rejects a re-issue inside the per-place cooldown with
+   * `errorCode: 'cooldown_active'` and the date it lifts. 장소/상세 renders that date, so it
+   * has to survive the trip through this envelope rather than being buried in the message.
+   */
+  nextAvailableAt?: Date;
 }
 
 export type AppFailure =
@@ -82,11 +90,13 @@ export const Failure = {
     code: string,
     message: string,
     errorCode?: string,
+    nextAvailableAt?: Date,
   ): FirebaseFailure => ({
     type: 'firebase',
     code,
     message,
     ...(errorCode !== undefined && { errorCode }),
+    ...(nextAvailableAt !== undefined && { nextAvailableAt }),
   }),
 } as const;
 

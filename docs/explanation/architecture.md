@@ -130,11 +130,14 @@ This is the part of the architecture most likely to be got wrong, so it is state
 
 **The client must never decide whether a verification passed.**
 
-GPS인증 checks two things: that the user is within 50m of the place, and that their
-movement speed is plausible. The second exists purely to defeat location spoofing — the
-design says so out loud, labelling the row `이동속도 검증 (스푸핑 방지)`.
+GPS인증 submits a reading and the server judges it on four gates: the reported accuracy is
+tight enough to mean anything, the device did not flag the position as mocked, the user is
+within the place's radius, and the implied speed since the last reading is plausible. The
+last exists purely to defeat location spoofing — the design says so out loud, labelling the
+row `이동속도 검증 (스푸핑 방지)`. The thresholds are in
+[../reference/backend-contract.md](../reference/backend-contract.md).
 
-Both checks are trivially bypassed if the client is the authority: a spoofed coordinate
+Every one of them is trivially bypassed if the client is the authority: a spoofed coordinate
 and a patched build are all it takes, and the reward is a ticket with real value attached.
 The client's job is to **collect a reading and submit it**. The server decides, issues the
 ticket, and is the only thing that may write a ticket record.

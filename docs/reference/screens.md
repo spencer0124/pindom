@@ -98,8 +98,10 @@ The drop is additive against the one before it. Block `2b` is byte-identical and
 - **편집 tightened.** The cutout scale slider narrowed from 50–150% to 88–112%, reads
   원본 비율 at exactly 100, and the 좌우반전 button is gone. Build the narrowed range; the
   open question about why is in [`design/README.md`](../../design/README.md).
-- **The assistant's copy ships in ko, en, ja and zh**, which sharpens the standing question
-  about whether all four locales are in scope.
+- **The assistant's copy ships in ko, en, ja and zh.** That question is now settled the other
+  way: the app ships `ko` and `en` only, and the prototype's extra two are read as absent at the
+  repository boundary. See the
+  [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md).
 
 > [!IMPORTANT]
 > **Nothing in this repo calls a model API.** The prototype's assistant makes its own model

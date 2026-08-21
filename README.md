@@ -98,5 +98,7 @@ switch is `EXPO_PUBLIC_USE_MOCKS`; see
 [ADR 0005](docs/decisions/0005-keep-firebase-behind-a-repository-boundary.md)
 and [connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md).
 
-The GPS check (50m radius + speed) is an anti-spoofing measure and **must be
-adjudicated server-side** — the client submits a reading, it does not decide.
+The GPS check — radius, implied speed, reported accuracy, and the mock-provider flag —
+is an anti-spoofing measure and **must be adjudicated server-side**: the client submits a
+reading, it does not decide. The thresholds live in
+[backend-contract.md](docs/reference/backend-contract.md).

@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: draft
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-19
+last-updated: 2026-08-21
 audience: internal
 ---
 
@@ -22,17 +22,18 @@ makes it the first thing to change when a shape changes, and the last word in an
 about what a field is called.
 
 > [!WARNING]
-> Status is `draft`. Fields are derived from what the prototype displays — see
-> [`design/README.md`](../../design/README.md) — not from an agreed backend. Everything here is
-> proposed until the backend developer has reviewed it. Disagreements should be resolved by
+> Status is `draft`. Fields were derived from what the prototype displays — see
+> [`design/README.md`](../../design/README.md) — and the backend developer's first review has
+> been folded in, but the questions below are still open. Disagreements should be resolved by
 > editing this page, not by working around it in one codebase.
 
 > [!NOTE]
-> **This document grew substantially on 2026-08-19.** The prototype
-> ([ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)) added
-> Artist, Review, Course, Tier and Vault, and made the community feed per-artist. If you read
-> an earlier version, re-read `artists`, `reviews`, `courses`, and the changed fields on
-> `users`, `places`, `posts` and `tickets`.
+> **The backend developer's first review has been applied, on 2026-08-21.** Every finding and
+> the decision taken on it is recorded in the
+> [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md), which is the
+> changelog for this page. If you read an earlier version, re-read `verifyLocation`,
+> `issueTicket`, `enterRaffle` and the write-ownership table — `places.geohash` is gone, the
+> shipped locales narrowed, and the ticket read rule now splits `get` from `list`.
 
 ## Conventions
 
@@ -43,8 +44,8 @@ about what a field is called.
 | Dates | Firestore `Timestamp`. Never a string, never a number |
 | Coordinates | Firestore `GeoPoint` |
 | Absent values | omit the field. Firestore reads a missing field as `undefined`, never `null`, so the app types them `field?: T` |
-| Money-like counters | written only by Cloud Functions, never by a client |
-| Localized strings | a map keyed by locale: `{ ko, en, ja, zh }`. The prototype's copy helper is `L(ko, en, ja, zh)`, so any user-visible string that differs per language is a map, not a string |
+| Money-like counters | written only by Cloud Functions, never by a client — except the one-time `users/{uid}` create at sign-up, where the client writes literal zeros and rules pin them there |
+| Localized strings | a map keyed by locale: `{ ko, en }` — the shipped set. The prototype's copy helper is `L(ko, en, ja, zh)` and still emits four; the two extra keys are not part of the contract and are read as absent. Any user-visible string that differs per language is a map, not a string |
 
 ## Collections
 
@@ -67,15 +68,17 @@ coordinate must come from here, never from the client.
 | `photoCount` | `number` | 사진 stat on 장소/상세 |
 | `reviewCount` | `number` | **Function-only.** Denormalised count for the 리뷰 header |
 | `location` | `GeoPoint` | |
-| `geohash` | `string` | Required for the 지도 nearby query |
 | `radiusMeters` | `number` | Verification radius. Defaults to 50; per-place so it stays tunable without a deploy |
 | `coverImageUrl` | `string` | |
-| `ticketCount` | `number` | How many tickets have been minted here. Feeds 홈 recommendations |
+| `ticketCount` | `number` | **Function-only.** How many tickets have been minted here. Feeds 홈 recommendations |
 | `createdAt` | `Timestamp` | |
 
 ### `users/{uid}` — 마이페이지
 
-Document id is the Firebase Auth uid. Created on sign-up.
+Document id is the Firebase Auth uid. **Created by the client** immediately after sign-up, with
+`ticketBalance`, `ticketsIssued` and `placesVisited` written as literal `0`; rules reject the
+create if any is nonzero. There is no Auth `onCreate` trigger — a fourth function would be one
+more deployment unit, and three lines of rules give the same guarantee.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -86,10 +89,10 @@ Document id is the Firebase Auth uid. Created on sign-up.
 | `followedArtistIds` | `string[]` | The 최애 set chosen at 최애 찾기 and edited on 프로필 편집. Keys the home screen and the community boards |
 | `ticketBalance` | `number` | **Function-only.** Read by 홈 and the 잔여 티켓 충족 branch on 응모 |
 | `ticketsIssued` | `number` | **Function-only.** 마이페이지 stat |
-| `placesVisited` | `number` | **Function-only.** 마이페이지 stat |
+| `placesVisited` | `number` | **Function-only.** 마이페이지 stat. Increments only on the caller's **first** ticket at a given place |
 | `tier` | `'club10' \| 'club20' \| 'clubGo'` | **Function-only.** Derived from `ticketsIssued`; rendered as a badge beside the nickname and on every post |
 | `profileVisibility` | `'public' \| 'private'` | Set on 프로필 편집 |
-| `locale` | `'ko' \| 'en' \| 'ja' \| 'zh'` | Set on 언어 |
+| `locale` | `'ko' \| 'en'` | Set on 언어. `ko` is the default |
 | `createdAt` | `Timestamp` | |
 
 ### `artists/{artistId}` — 최애
@@ -162,7 +165,7 @@ of an accepted verification — see the
 | `placeId` | `string` | |
 | `placeName` | `string` | Denormalised — 티켓 발행 and 컬렉션 render it without a second read |
 | `photoUrl` | `string` | Download URL for the uploaded photo |
-| `serial` | `string` | Rendered as the barcode on 티켓 발행 |
+| `serial` | `string` | `PD-XXXX-XXXX-XXXX`, Crockford Base32 — uppercase and digits without `I`, `L`, `O`, `U`. 8 random bytes, minted server-side, no collision check. Rendered as a **Code128** barcode on 티켓 발행 |
 | `visibility` | `'public' \| 'private'` | Set on 공개설정. `private` puts it in 보관함 rather than the public collection |
 | `issuedAt` | `Timestamp` | |
 | `spent` | `boolean` | Rendered as the `USED` stub state on 티켓 절취 |
@@ -188,6 +191,11 @@ Seeded by the backend.
 
 Written **only** by `enterRaffle`, which must debit the balance and create the entry in one
 transaction.
+
+The document id is `{uid}_{raffleId}_{idempotencyKey}`. **The id is the idempotency
+mechanism** — a document already at that id means the entry happened, so the transaction returns
+the existing `entryId` without debiting again. Firestore guarantees id uniqueness within a
+collection, so no lookup and no separate idempotency collection is needed.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -229,10 +237,11 @@ only passes the `sessionId` back on subsequent calls.
 | --- | --- | --- |
 | `userId` | `string` | |
 | `placeId` | `string` | |
-| `readings` | `array` | `{ location: GeoPoint, accuracy: number, capturedAt: Timestamp, distanceMeters: number }` |
-| `status` | `'active' \| 'verified' \| 'expired'` | |
+| `readings` | `array` | `{ location: GeoPoint, accuracy: number, capturedAt: Timestamp, distanceMeters: number }`. Capped at the **5 most recent** — appending past that drops the oldest, because Firestore rewrites the whole document per element |
+| `status` | `'active' \| 'verified' \| 'consumed' \| 'expired'` | `consumed` is how a spent grant is recorded |
 | `grantExpiresAt` | `Timestamp?` | Set when a reading is accepted |
 | `startedAt` | `Timestamp` | |
+| `expiresAt` | `Timestamp` | `startedAt` + 24h, for a Firestore TTL policy. `grantExpiresAt` cannot serve this — it is optional and a failed session never has one |
 
 ## Cloud Functions
 
@@ -258,6 +267,7 @@ have no `sqrt` and no trigonometry — a haversine distance is not expressible i
   lng: number;
   accuracy: number;      // metres, from the device
   capturedAt: string;    // ISO 8601
+  isMock: boolean;       // device reported a mock provider. Android reports it; iOS sends false
   sessionId?: string;    // omitted on the first call of a session
 }
 
@@ -268,8 +278,8 @@ have no `sqrt` and no trigonometry — a haversine distance is not expressible i
   distanceMeters: number;
   requiredRadiusMeters: number;
   accuracyMeters: number;
-  reason?: 'out_of_radius' | 'implausible_speed' | 'poor_accuracy';
-  grant?: { token: string; expiresAt: string };  // present only when verified
+  reason?: 'out_of_radius' | 'implausible_speed' | 'poor_accuracy' | 'mock_location';
+  grant?: { token: string; expiresAt: string };  // present only when verified; token IS the sessionId
 }
 ```
 
@@ -283,6 +293,54 @@ have no `sqrt` and no trigonometry — a haversine distance is not expressible i
 The `grant` is what actually unlocks the camera. Gating the shutter in the UI is an affordance
 a patched build skips, so `issueTicket` requires the grant rather than trusting the client to
 have passed through 카메라.
+
+The `grant.token` **is** the session id. Ownership, expiry and single-use are read off the
+session document — `userId`, `grantExpiresAt`, and `status` moving to `consumed` — so there is
+no separate token record. Knowing someone else's session id gains nothing, because the `userId`
+check still fails and clients cannot write the collection.
+
+#### What the function adjudicates
+
+Three gates, applied in this order. Each is a rejection, not a throw.
+
+| Gate | Rule | `reason` |
+| --- | --- | --- |
+| Mock provider | `isMock` is `true` | `mock_location` |
+| Accuracy | `accuracy` above **65** metres | `poor_accuracy` |
+| Radius | Beyond the place's `radiusMeters` | `out_of_radius` |
+| Speed | Implied speed above the thresholds below | `implausible_speed` |
+
+**Accuracy is gated first, and at a global 65 m.** The device's `accuracy` is an error radius:
+at `accuracy: 200` the user is somewhere within 200 m of the reported point, which makes a 50 m
+verdict meaningless. 65 m rather than 50 m because Android in a city centre reports 40–60 m
+routinely and legitimate users would otherwise bounce; the worst case admits someone 115 m away.
+It is global rather than a per-place field, which would become a value nobody maintains by hand
+as places multiply.
+
+**A reading rejected for accuracy is not appended to `readings`.** A sample with 200 m of error
+in that array would poison the speed calculation below and could get a legitimate user judged a
+spoofer.
+
+**Speed is triggered by distance, not by elapsed time.** GPS jitter alone reads as 100 km/h over
+a short interval, so only pairs that moved far enough are evaluated:
+
+| Comparison | Rule |
+| --- | --- |
+| Between two readings in a session | Evaluated only when they are **200 m or more** apart. Reject above **150 km/h** |
+| Against the user's last issued ticket | Reject above **300 km/h** — covers KTX and domestic flights |
+
+Distance is computed after subtracting the reported accuracy radius. A time-based trigger was
+rejected during review: "skip the check when the readings are under 30 seconds apart" is evaded
+permanently by moving the coordinate every 28 seconds, so the condition itself was the hole.
+
+> [!NOTE]
+> **Firebase App Check is not in the initial release.** It was proposed as the first tier of
+> anti-spoofing — the one that blocks patched builds, emulators and direct function calls — and
+> deferring it means `isMock` is an honest-client signal rather than a control, and that iOS,
+> which has no mock-location API at all, rests on the radius and speed checks alone. This is a
+> recorded, accepted risk; see the
+> [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md). Turning App
+> Check on later changes nothing on this page.
 
 ### `issueTicket`
 
@@ -298,18 +356,41 @@ have passed through 카메라.
 { ticketId: string; serial: string; ticketBalance: number }
 ```
 
-Validates the grant is unexpired, unused, and belongs to the caller; confirms the object at
-`photoPath` exists and is owned by the caller; then, in one transaction:
+Validates the grant is unexpired, unused, and belongs to the caller; confirms the caller is not
+inside the per-place cooldown; confirms the object at `photoPath` exists and is owned by the
+caller; then, in one transaction:
 
 1. writes the ticket,
 2. increments `users/{uid}.ticketBalance` and `ticketsIssued`, and recomputes `tier`,
-3. increments `places/{placeId}.ticketCount` and `photoCount`,
-4. writes a `places/{placeId}/gallery` entry **if** `visibility` is `public`.
+3. increments `users/{uid}.placesVisited` **only if this is the caller's first ticket at this
+   place** — the cooldown check already queries for it, so an empty result is a first visit,
+4. increments `places/{placeId}.ticketCount` and `photoCount`,
+5. writes a `places/{placeId}/gallery` entry **if** `visibility` is `public`.
 
 Consumes the grant, so one verification mints one ticket.
 
-Errors: `failed-precondition` with `details.errorCode` of `grant_expired` or `grant_consumed`;
-`not-found` if the photo is missing.
+Errors: `failed-precondition` with `details.errorCode` of `grant_expired`, `grant_consumed`, or
+`cooldown_active`; `not-found` if the photo is missing. `cooldown_active` also carries
+`details.nextAvailableAt` (ISO 8601), because 장소/상세 renders the date rather than a message.
+
+#### Cooldown
+
+One place can be minted more than once by the same user, after **30 days**. A daily window
+reopens inside a single trip; a once-per-place lock removes any reason to return at all.
+
+| Item | Value |
+| --- | --- |
+| Window | 30 days, same user and same place |
+| Enforced in | **`issueTicket` only** |
+| Measured from | That user's last `issuedAt` for that place |
+
+`verifyLocation` deliberately does **not** check it. Two copies of one rule diverge, and the
+authority to mint belongs to one function.
+
+The client may read its own tickets, so 장소/상세 shows the next available date up front and
+disables the 인증 entry point while the cooldown is active. That is guidance rather than
+adjudication — the server stays the only enforcer — and the two cannot disagree, because both
+read the same ticket documents.
 
 The response returns the recomputed `tier` as well, because 티켓 발행 shows the tier progress
 note immediately after minting.
@@ -318,7 +399,7 @@ note immediately after minting.
 
 ```ts
 // request
-{ raffleId: string; idempotencyKey: string }
+{ raffleId: string; idempotencyKey: string }   // key: [A-Za-z0-9_-]{1,64}
 
 // response
 { entryId: string; ticketBalance: number }
@@ -333,9 +414,14 @@ tickets have real value attached.
 > 응모완료; the server sees one `enterRaffle` call at the end of it. There is no `tearTicket`
 > function, and the `STUB` / `USED` states are rendered from `spent`.
 
+`idempotencyKey` must be letters, digits, `-` and `_` only, 1–64 characters, because a document
+id cannot contain `/`. A UUID satisfies it. **The app generates it once when 응모 opens and
+reuses it for every retry of that entry** — a key minted per call makes each retry a fresh entry,
+and one dropped response then costs the user their tickets twice.
+
 Errors: `failed-precondition` with `details.errorCode` of `insufficient_tickets` — this is the
 No branch of `잔여 티켓 충족?` on 응모, so the app needs the code, not just a message;
-`deadline-exceeded` for a closed raffle.
+`deadline-exceeded` for a closed raffle; `invalid-argument` for a malformed `idempotencyKey`.
 
 ## Cloud Storage
 
@@ -347,9 +433,26 @@ No branch of `잔여 티켓 충족?` on 응모, so the app needs the code, not j
 The client uploads the photo itself and passes only the resulting path to `issueTicket`. Going
 through a function would mean the image crosses the function boundary twice for no benefit.
 
+**EXIF is stripped by the app, on both paths.** Because the upload goes straight to Storage,
+there is no moment at which the server holds the file — so this cannot be a backend job without
+adding a Storage-triggered function that re-reads and re-writes every upload. Re-encoding an
+image drops EXIF as a side effect, so one resize or compress pass before upload covers it.
+
+This is consistent with the trust boundary rather than an exception to it: GPS adjudication
+cannot trust the client because a ticket has real value and therefore an attacker, whereas EXIF
+is the user's own privacy in their own photo, and patching the app to keep it harms only the
+person who did. The coordinate is recorded in `verificationSessions` regardless, so nothing is
+lost. Rules are unchanged — the size cap and `contentType` check stay where they are.
+
 ## Write ownership
 
 This table is the specification for `firestore.rules`.
+
+> [!WARNING]
+> **Rules are not filters.** They judge whether a *query* is safe, and refuse it whole if it is
+> not. A ticket list query without a matching condition does not come back narrowed to public
+> tickets — it comes back `permission-denied`, and the symptom does not distinguish a rules
+> problem from a query problem. Read the `tickets` row below with that in mind.
 
 | Collection | Client read | Client write |
 | --- | --- | --- |
@@ -358,8 +461,8 @@ This table is the specification for `firestore.rules`.
 | `places` | any signed-in user | never |
 | `places/*/reviews` | any signed-in user | create, update and delete **own**, one per place. Never `likeCount` or the denormalised author fields |
 | `places/*/gallery` | any signed-in user | **never** — written by `issueTicket` |
-| `users` | own document; `nickname`, `avatarUrl` and `tier` of others | own `nickname`, `avatarUrl`, `bio`, `followedArtistIds`, `profileVisibility`, `locale`. **Never** `tier` or the counters |
-| `tickets` | own tickets, public and private alike (보관함 is just `visibility == 'private'`); others' only where `visibility == 'public'` | **never** — `issueTicket` only, except toggling own `visibility` |
+| `users` | own document; `nickname`, `avatarUrl` and `tier` of others | **create** own document once, with `ticketBalance`, `ticketsIssued` and `placesVisited` at literal `0` — reject the create otherwise. **update** own `nickname`, `avatarUrl`, `bio`, `followedArtistIds`, `profileVisibility`, `locale` — all six. **Never** `tier` or the counters |
+| `tickets` | **`get`** — own, or `visibility == 'public'`. **`list`** — only when the query itself carries `userId == request.auth.uid` (보관함 is that query plus `visibility == 'private'`) | **never** — `issueTicket` only, except toggling own `visibility` |
 | `raffles` | any signed-in user | never |
 | `raffleEntries` | own entries | **never** — `enterRaffle` only |
 | `posts` | any signed-in user | create own; update and delete own. Never the counts, and never `authorTier` |
@@ -367,22 +470,20 @@ This table is the specification for `firestore.rules`.
 
 ## Open questions
 
-Unresolved. Each needs a decision before the matching screen is built.
+Still unresolved. Each needs a decision before the matching screen is built. The questions this
+page opened on speed, cooldown, `serial`, EXIF and locales were answered in the
+[2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) and
+now live in the sections above rather than here.
 
-| # | Question | Proposal |
+| Question | Proposal | Blocking |
 | --- | --- | --- |
-| 1 | Speed-check threshold and window | Reject above 150 km/h implied between two readings in a session, and above 300 km/h implied against the user's last issued ticket |
-| 2 | Can one place be minted more than once per user? | Yes, with a cooldown. Otherwise 컬렉션 fills once and the loop ends |
-| 3 | How is `serial` generated? | Any collision-free scheme; the prototype renders `No.0417`-style numbers |
-| 4 | Is EXIF stripped on upload? | Strip it. It is a location leak on a public feed, and the GeoPoint is already recorded |
-| 5 | Accuracy gate | Reject readings above some `accuracy`, or the 50m check is meaningless when the device reports ±200m |
-| 6 | **Tier thresholds** | The keys are `club10` / `club20` / `clubGo` and the prototype shows a `TIER 10—19` label with a 0–10–20 gauge, so 10 and 20 issued tickets are the likely boundaries. Confirm, and decide whether tier is per-artist or global |
-| 7 | **Can a user review a place they have not verified?** | No. Requiring a ticket keeps 리뷰 consistent with the rest of the product — everything is earned by being there |
-| 8 | **Which locales ship?** | The prototype writes copy in `ko`, `en`, `ja`, `zh`. Seeded content has to exist in each one shipped, so this is a content cost, not just a config flag |
-| 9 | **Is `followedArtistIds` capped?** | 홈 is keyed to one selected artist at a time. Decide whether the set is capped and how the active one is chosen |
+| **Tier thresholds** | The keys are `club10` / `club20` / `clubGo` and the prototype shows a `TIER 10—19` label with a 0–10–20 gauge, so 10 and 20 issued tickets are the likely boundaries. Confirm, and decide whether tier is per-artist or global | **Yes.** `issueTicket` recomputes `tier` inside its transaction, so the function cannot be written without this |
+| **Can a user review a place they have not verified?** | No. Requiring a ticket keeps 리뷰 consistent with the rest of the product — everything is earned by being there | Before 리뷰 is built |
+| **Is `followedArtistIds` capped?** | 홈 is keyed to one selected artist at a time. Decide whether the set is capped and how the active one is chosen | Before 최애 찾기 is built |
 
 ## Related
 
+- [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) — every finding from the backend developer's review and the decision taken on it. **The changelog behind this page's current state**
 - [`design/README.md`](../../design/README.md) — the prototype these shapes are read from
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why this document grew
 - [connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md) — how the app joins the project, and what to do before it does

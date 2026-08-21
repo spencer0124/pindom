@@ -78,6 +78,8 @@ copied to a second place is a value that will disagree with the first.
 | Document | Summary |
 | --- | --- |
 | [screen-implementation.md](plans/screen-implementation.md) | The order to build the designed screens in: shell, then one golden screen, then flow slices |
+| [2026-08-21-backend-contract-review-resolutions.md](plans/2026-08-21-backend-contract-review-resolutions.md) | One round of the backend developer's review of the contract: every finding, the decision taken, and what the contract and the app each owe as a result. Dated, because more rounds are expected |
+| [2026-08-21-contract-alignment-checklist.md](plans/2026-08-21-contract-alignment-checklist.md) | What landed on `main` from that round, what the backend developer can build against now, and what each side still owes. **Start here if you are picking the backend up** |
 
 ## Outside this folder
 

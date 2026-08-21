@@ -25,11 +25,11 @@ let cachedPlatform: string | null = null;
 function resolveLocale(): string {
   const locales = getLocales();
   const lang = locales[0]?.languageCode ?? 'en';
+  // Only the shipped locales — see LOCALES in src/lib/domain/locale.ts. Anything else
+  // falls to English rather than being echoed back as a locale the app does not carry.
   switch (lang) {
     case 'ko':
       return 'ko';
-    case 'zh':
-      return 'zh';
     default:
       return 'en';
   }

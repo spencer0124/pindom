@@ -18,6 +18,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   startAfter,
   updateDoc,
   where,
@@ -98,14 +99,20 @@ function toFailure(error: unknown): AppFailure {
   const e = error as {
     code?: unknown;
     message?: unknown;
-    details?: { errorCode?: unknown };
+    details?: { errorCode?: unknown; nextAvailableAt?: unknown };
   };
   const code = typeof e?.code === 'string' ? e.code : 'unknown';
   const message =
     typeof e?.message === 'string' ? e.message : '요청을 처리하지 못했습니다.';
   const errorCode =
     typeof e?.details?.errorCode === 'string' ? e.details.errorCode : undefined;
-  return Failure.firebase(code, message, errorCode);
+  // `cooldown_active` is the one failure that carries a value: the ISO date the
+  // per-place cooldown lifts, which 장소/상세 renders.
+  const raw = e?.details?.nextAvailableAt;
+  const parsed = typeof raw === 'string' ? new Date(raw) : undefined;
+  const nextAvailableAt =
+    parsed && !Number.isNaN(parsed.getTime()) ? parsed : undefined;
+  return Failure.firebase(code, message, errorCode, nextAvailableAt);
 }
 
 /** Every repository call funnels through here, so nothing throws past this file. */
@@ -361,13 +368,22 @@ export const firebaseRepositories: Repositories = {
     signUp: (email, password, nickname) =>
       attempt(async () => {
         const cred = await createUserWithEmailAndPassword(auth(), email, password);
-        // The user document is created here rather than by a trigger, so the
-        // nickname from 회원가입 is not lost. Rules must restrict this write to
-        // the caller's own uid and reject the counter fields.
-        await addDoc(collection(db(), 'users'), {
-          uid: cred.user.uid,
+        // The client creates this document rather than an Auth trigger: a fourth
+        // Cloud Function would be one more deployment unit, and rules give the same
+        // guarantee in three lines. Two things are load-bearing —
+        //
+        //   1. the document **id** is the uid, not a `uid` field. Rules match on
+        //      `request.auth.uid == uid`, so a generated id is refused outright.
+        //   2. the three counters are written as an explicit `0`. Rules reject the
+        //      create unless they are, which is what stops a client minting a balance.
+        //
+        // See docs/plans/2026-08-21-backend-contract-review-resolutions.md, finding D.
+        await setDoc(doc(db(), 'users', cred.user.uid), {
           email,
           nickname,
+          ticketBalance: 0,
+          ticketsIssued: 0,
+          placesVisited: 0,
           createdAt: serverTimestamp(),
         });
         return { userId: cred.user.uid, email };
@@ -384,14 +400,20 @@ export const firebaseRepositories: Repositories = {
 
   places: {
     /**
-     * Distance is filtered client-side against every place.
+     * Reads the whole collection on purpose.
      *
-     * That is correct while the seeded 촬영지 list is small and wrong once it
-     * is not: Firestore cannot express a radius query directly, so this needs a
-     * geohash range query (the `geohash` field is already in the contract) or
-     * multi-field inequalities before the collection grows.
+     * 지도 has to know every 촬영지 at once — it opens showing the country and zooms in,
+     * and a pin that vanished for being far away would be a bug, not an optimisation. So
+     * there is nothing to narrow here, which is also why `places.geohash` was dropped from
+     * the contract: a "fetch what is near me" index has no role in a screen that needs all
+     * of them.
+     *
+     * Distance is attached for ordering and display only. Seeded 촬영지 do not grow like
+     * user data, and MMKV caches the result. Past roughly a thousand places this becomes
+     * heavy — and the answer then is a map-only projection or an `updatedAt` incremental
+     * fetch, still not a geo index, because the nationwide requirement does not go away.
      */
-    listNearby: (lat, lng, radius = 50_000) =>
+    listAll: (lat, lng) =>
       attempt(async () => {
         const snap = await getDocs(collection(db(), 'places'));
         return snap.docs
@@ -400,7 +422,6 @@ export const firebaseRepositories: Repositories = {
             ...p,
             distanceMeters: distanceMeters({ lat, lng }, p),
           }))
-          .filter((p) => p.distanceMeters <= radius)
           .sort((a, b) => a.distanceMeters - b.distanceMeters);
       }),
 
@@ -486,6 +507,7 @@ export const firebaseRepositories: Repositories = {
           lng: reading.lng,
           accuracy: reading.accuracy,
           capturedAt: reading.capturedAt.toISOString(),
+          isMock: reading.isMock,
           ...(reading.sessionId && { sessionId: reading.sessionId }),
         });
         const d = res.data as DocData;
@@ -497,9 +519,17 @@ export const firebaseRepositories: Repositories = {
           requiredRadiusMeters: Number(d.requiredRadiusMeters ?? 50),
           accuracyMeters: Number(d.accuracyMeters ?? 0),
           ...(typeof d.reason === 'string' && {
+            // Keep this list in step with `VerificationFailureReason`. A reason the
+            // server sends but this array omits does not throw — it silently becomes
+            // the fallback, and 인증 실패 then explains the wrong failure.
             reason: oneOf(
               d.reason,
-              ['out_of_radius', 'implausible_speed', 'poor_accuracy'] as const,
+              [
+                'out_of_radius',
+                'implausible_speed',
+                'poor_accuracy',
+                'mock_location',
+              ] as const,
               'out_of_radius',
             ),
           }),
@@ -568,13 +598,13 @@ export const firebaseRepositories: Repositories = {
      * `toFailure` lifts that out of `HttpsError.details` so 응모 can branch on
      * a code rather than parsing a message.
      */
-    enter: (raffleId) =>
+    enter: (raffleId, idempotencyKey) =>
       attempt(async () => {
         const call = httpsCallable(fns(), 'enterRaffle');
-        const res = await call({
-          raffleId,
-          idempotencyKey: `${requireUid()}-${raffleId}-${Date.now()}`,
-        });
+        // The key comes from the caller and must be the same across retries — the
+        // server derives the entry document's id from it, so a per-call key (a
+        // timestamp, previously) makes every retry a fresh entry and debits twice.
+        const res = await call({ raffleId, idempotencyKey });
         const d = res.data as DocData;
         const entry: RaffleEntry = {
           id: String(d.entryId ?? ''),

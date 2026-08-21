@@ -57,12 +57,18 @@ export interface CourseRepository {
 }
 
 export interface PlaceRepository {
-  /** 지도 — pins within `radiusMeters` of the given position. */
-  listNearby(
-    lat: number,
-    lng: number,
-    radiusMeters?: number,
-  ): Promise<Result<PlaceWithDistance[]>>;
+  /**
+   * 지도 — **every** 촬영지, nearest first.
+   *
+   * Not a radius query. 지도 opens at a scale showing the whole country and zooms in, so a
+   * pin must not disappear for being far away; nearby pins are clustered by the renderer,
+   * which is a display concern rather than a fetch one. `places.geohash` was dropped from
+   * the contract for the same reason — see the 2026-08-21 review resolutions.
+   *
+   * `lat`/`lng` only attach `distanceMeters` for ordering and display. That number is
+   * feedback: the 50m check is adjudicated server-side against the stored coordinate.
+   */
+  listAll(lat: number, lng: number): Promise<Result<PlaceWithDistance[]>>;
   /** 홈 — 추천 촬영지, ordered by popularity rather than proximity. */
   listRecommended(
     lat?: number,
@@ -112,8 +118,17 @@ export interface RaffleRepository {
    * 응모. Fails with `errorCode: 'insufficient_tickets'` when the balance is
    * short — that code is the No edge of 잔여 티켓 충족, so branch on it rather
    * than on the message.
+   *
+   * `idempotencyKey` **must be generated once when 응모 opens and reused for every retry
+   * of that entry.** The server builds the entry document's id out of it, so a repeat call
+   * with the same key returns the existing entry instead of debiting again. A key minted
+   * per call — from a timestamp, say — makes every retry look like a fresh entry, and one
+   * dropped response then costs the user their tickets twice.
+   *
+   * Format is fixed by the server: letters, digits, `-` and `_` only, 1–64 characters.
+   * A UUID satisfies it.
    */
-  enter(raffleId: string): Promise<Result<RaffleEntry>>;
+  enter(raffleId: string, idempotencyKey: string): Promise<Result<RaffleEntry>>;
 }
 
 export interface PostRepository {
