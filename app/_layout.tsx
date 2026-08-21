@@ -19,7 +19,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <SDSProvider colorPreference="dark">
-          <StatusBar style="dark" />
+          {/* `style` names the status bar *content*, not the background: on the `2b`
+              ground the glyphs have to be light. Verified on device — under "dark"
+              the clock and battery were near-invisible. */}
+          <StatusBar style="light" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="onboarding" />

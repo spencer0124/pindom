@@ -41,6 +41,8 @@ import {
   // Tier 4
   ErrorPage,
   Result,
+  useAdaptive,
+  useTheme,
 } from '@/design-system';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -55,15 +57,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function SubSection({ label, children }: { label: string; children: React.ReactNode }) {
+  const adaptive = useAdaptive();
   return (
     <View style={styles.subSection}>
-      <Txt typography="t7" color={SdsColors.grey500} style={styles.subLabel}>{label}</Txt>
+      <Txt typography="t7" color={adaptive.grey500} style={styles.subLabel}>{label}</Txt>
       {children}
     </View>
   );
 }
 
 export default function SDSPreviewScreen() {
+  // Greys and surfaces follow the root layout's `colorPreference`; the accent
+  // comes from the seed. Fixed semantics (red/green/yellow) stay on SdsColors —
+  // they are not brand-dependent. See docs/reference/design-tokens.md.
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
   // ── Tier 1 state ──
   const [switchOn, setSwitchOn] = useState(false);
   const [checkLine, setCheckLine] = useState(false);
@@ -120,7 +128,7 @@ export default function SDSPreviewScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: adaptive.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* ════════════════════════════════════════════
             TIER 1 COMPONENTS
@@ -131,15 +139,15 @@ export default function SDSPreviewScreen() {
           <Txt typography="t1" fontWeight="bold">t1 Bold — Hero</Txt>
           <Txt typography="t3" fontWeight="bold">t3 Bold — Screen Title</Txt>
           <Txt typography="t5">t5 Regular — Body (default)</Txt>
-          <Txt typography="t6" color={SdsColors.grey600}>t6 Grey — Small body</Txt>
-          <Txt typography="t7" color={SdsColors.grey500}>t7 Caption</Txt>
+          <Txt typography="t6" color={adaptive.grey600}>t6 Grey — Small body</Txt>
+          <Txt typography="t7" color={adaptive.grey500}>t7 Caption</Txt>
         </Section>
 
         <Border />
 
         {/* ── Button ── */}
         <Section title="Button — Press Animation">
-          <Txt typography="t6" color={SdsColors.grey600}>
+          <Txt typography="t6" color={adaptive.grey600}>
             inline: scale down + dim overlay (꾹 누르기)
           </Txt>
           <View style={styles.row}>
@@ -156,7 +164,7 @@ export default function SDSPreviewScreen() {
             <Button size="tiny" type="dark" onPress={() => setCount(c => c + 1)}>Dark</Button>
             <Button size="tiny" type="light" onPress={() => setCount(c => c + 1)}>Light</Button>
           </View>
-          <Txt typography="t6" color={SdsColors.grey600}>
+          <Txt typography="t6" color={adaptive.grey600}>
             block: dim overlay only (scale 없음)
           </Txt>
           <Button display="block" onPress={() => setCount(c => c + 1)}>Block Display</Button>
@@ -171,7 +179,7 @@ export default function SDSPreviewScreen() {
         {/* ── Badge ── */}
         <Section title="Badge">
           <View style={styles.row}>
-            <Badge size="large" color={SdsColors.brand500} backgroundColor={SdsColors.brand50}>Large</Badge>
+            <Badge size="large" color={token.accent.fillColor} backgroundColor={token.accent.weakColor}>Large</Badge>
             <Badge size="medium" color={SdsColors.green500} backgroundColor={SdsColors.green50}>Medium</Badge>
             <Badge size="small">Small</Badge>
             <Badge size="tiny" color={SdsColors.red500} backgroundColor={SdsColors.red50}>Tiny</Badge>
@@ -187,7 +195,7 @@ export default function SDSPreviewScreen() {
             <Switch checked={switchOn} onCheckedChange={setSwitchOn} />
           </View>
           <View style={styles.row}>
-            <Txt typography="t5" color={SdsColors.grey500}>Disabled:</Txt>
+            <Txt typography="t5" color={adaptive.grey500}>Disabled:</Txt>
             <Switch checked disabled />
           </View>
         </Section>
@@ -205,7 +213,7 @@ export default function SDSPreviewScreen() {
           </Checkbox.Circle>
           <View style={{ height: 12 }} />
           <Checkbox.Line checked disabled>
-            <Txt typography="t5" color={SdsColors.grey400}>Disabled Checked</Txt>
+            <Txt typography="t5" color={adaptive.grey400}>Disabled Checked</Txt>
           </Checkbox.Line>
         </Section>
 
@@ -223,7 +231,7 @@ export default function SDSPreviewScreen() {
             contents={
               <ListRow.Texts type="2RowTypeA" top="Two-line title" bottom="Subtitle text here" />
             }
-            right={<Badge size="small" color={SdsColors.brand500} backgroundColor={SdsColors.brand50}>New</Badge>}
+            right={<Badge size="small" color={token.accent.fillColor} backgroundColor={token.accent.weakColor}>New</Badge>}
             onPress={() => {}}
           />
           <Border type="padding24" />
@@ -259,21 +267,21 @@ export default function SDSPreviewScreen() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   paddingVertical: 10,
-                  backgroundColor: highlighted ? SdsColors.brand50 : undefined,
+                  backgroundColor: highlighted ? token.accent.weakColor : undefined,
                 }}
               >
                 <Txt
                   typography="t7"
                   fontWeight={highlighted ? 'medium' : 'regular'}
-                  color={highlighted ? SdsColors.brand500 : SdsColors.grey700}
+                  color={highlighted ? token.accent.fillColor : adaptive.grey700}
                   style={{ flex: 1 }}
                 >
                   {item.name}
                 </Txt>
                 <Badge
                   size="tiny"
-                  color={highlighted ? SdsColors.brand500 : SdsColors.grey400}
-                  backgroundColor={highlighted ? SdsColors.brand50 : SdsColors.grey100}
+                  color={highlighted ? token.accent.fillColor : adaptive.grey400}
+                  backgroundColor={highlighted ? token.accent.weakColor : adaptive.grey100}
                 >
                   {item.id}
                 </Badge>
@@ -307,7 +315,7 @@ export default function SDSPreviewScreen() {
           </SubSection>
           <SubSection label="color / typography variants">
             <View style={styles.row}>
-              <TextButton typography="t5" variant="arrow" color={SdsColors.brand500} fontWeight="bold" onPress={() => {}}>Brand Bold</TextButton>
+              <TextButton typography="t5" variant="arrow" color={token.accent.fillColor} fontWeight="bold" onPress={() => {}}>Brand Bold</TextButton>
               <TextButton typography="t7" variant="underline" color={SdsColors.red500} onPress={() => {}}>Red t7</TextButton>
               <TextButton typography="t6" variant="clear" color={SdsColors.green500} onPress={() => {}}>Green t6</TextButton>
             </View>
@@ -329,41 +337,41 @@ export default function SDSPreviewScreen() {
             <View style={styles.row}>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <IconButton
-                  icon={<Txt typography="t6" fontWeight="bold" color={SdsColors.grey700}>+</Txt>}
+                  icon={<Txt typography="t6" fontWeight="bold" color={adaptive.grey700}>+</Txt>}
                   variant="fill"
                   onPress={() => {}}
                 />
-                <Txt typography="t7" color={SdsColors.grey400}>fill</Txt>
+                <Txt typography="t7" color={adaptive.grey400}>fill</Txt>
               </View>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <IconButton
-                  icon={<Txt typography="t6" fontWeight="bold" color={SdsColors.grey700}>X</Txt>}
+                  icon={<Txt typography="t6" fontWeight="bold" color={adaptive.grey700}>X</Txt>}
                   variant="border"
                   onPress={() => {}}
                 />
-                <Txt typography="t7" color={SdsColors.grey400}>border</Txt>
+                <Txt typography="t7" color={adaptive.grey400}>border</Txt>
               </View>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <IconButton
-                  icon={<Txt typography="t6" fontWeight="bold" color={SdsColors.brand500}>i</Txt>}
+                  icon={<Txt typography="t6" fontWeight="bold" color={token.accent.fillColor}>i</Txt>}
                   variant="clear"
                   onPress={() => {}}
                 />
-                <Txt typography="t7" color={SdsColors.grey400}>clear</Txt>
+                <Txt typography="t7" color={adaptive.grey400}>clear</Txt>
               </View>
             </View>
           </SubSection>
           <SubSection label="disabled / custom bgColor">
             <View style={styles.row}>
               <IconButton
-                icon={<Txt typography="t6" fontWeight="bold" color={SdsColors.grey400}>D</Txt>}
+                icon={<Txt typography="t6" fontWeight="bold" color={adaptive.grey400}>D</Txt>}
                 variant="fill"
                 disabled
               />
               <IconButton
                 icon={<Txt typography="t6" fontWeight="bold" color="#FFFFFF">C</Txt>}
                 variant="fill"
-                bgColor={SdsColors.brand500}
+                bgColor={token.accent.fillColor}
                 onPress={() => {}}
               />
               <IconButton
@@ -376,7 +384,7 @@ export default function SDSPreviewScreen() {
           </SubSection>
           <SubSection label="press animation (꾹 누르기)">
             <IconButton
-              icon={<Txt typography="t5" fontWeight="bold" color={SdsColors.brand500}>A</Txt>}
+              icon={<Txt typography="t5" fontWeight="bold" color={token.accent.fillColor}>A</Txt>}
               variant="fill"
               iconSize={32}
               label="Large icon button"
@@ -446,10 +454,10 @@ export default function SDSPreviewScreen() {
           <SubSection label="borderType: none + right + custom color">
             <ListFooter
               borderType="none"
-              title={<ListFooter.Title color={SdsColors.grey600} fontWeight="bold">더 보기</ListFooter.Title>}
+              title={<ListFooter.Title color={adaptive.grey600} fontWeight="bold">더 보기</ListFooter.Title>}
               right={
                 <ListFooter.Right>
-                  <Txt typography="t7" color={SdsColors.grey600}>›</Txt>
+                  <Txt typography="t7" color={adaptive.grey600}>›</Txt>
                 </ListFooter.Right>
               }
               onPress={() => {}}
@@ -458,7 +466,7 @@ export default function SDSPreviewScreen() {
           <SubSection label="non-pressable (no onPress)">
             <ListFooter
               borderType="none"
-              title={<ListFooter.Title color={SdsColors.grey400}>표시만 하는 푸터</ListFooter.Title>}
+              title={<ListFooter.Title color={adaptive.grey400}>표시만 하는 푸터</ListFooter.Title>}
             />
           </SubSection>
         </Section>
@@ -509,15 +517,15 @@ export default function SDSPreviewScreen() {
             <View style={styles.row}>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Loader size="small" type="primary" />
-                <Txt typography="t7" color={SdsColors.grey500}>small</Txt>
+                <Txt typography="t7" color={adaptive.grey500}>small</Txt>
               </View>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Loader size="medium" type="primary" />
-                <Txt typography="t7" color={SdsColors.grey500}>medium</Txt>
+                <Txt typography="t7" color={adaptive.grey500}>medium</Txt>
               </View>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Loader size="large" type="primary" />
-                <Txt typography="t7" color={SdsColors.grey500}>large</Txt>
+                <Txt typography="t7" color={adaptive.grey500}>large</Txt>
               </View>
             </View>
           </SubSection>
@@ -525,13 +533,13 @@ export default function SDSPreviewScreen() {
             <View style={styles.row}>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Loader size="medium" type="primary" />
-                <Txt typography="t7" color={SdsColors.grey500}>primary</Txt>
+                <Txt typography="t7" color={adaptive.grey500}>primary</Txt>
               </View>
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Loader size="medium" type="dark" />
-                <Txt typography="t7" color={SdsColors.grey500}>dark</Txt>
+                <Txt typography="t7" color={adaptive.grey500}>dark</Txt>
               </View>
-              <View style={{ alignItems: 'center', gap: 4, backgroundColor: SdsColors.grey900, padding: 12, borderRadius: 8 }}>
+              <View style={{ alignItems: 'center', gap: 4, backgroundColor: adaptive.grey900, padding: 12, borderRadius: 8 }}>
                 <Loader size="medium" type="light" />
                 <Txt typography="t7" color="#FFFFFF">light</Txt>
               </View>
@@ -553,7 +561,7 @@ export default function SDSPreviewScreen() {
 
         {/* ── ProgressBar ── */}
         <Section title="ProgressBar">
-          <Txt typography="t6" color={SdsColors.grey600}>{`자동 progress: ${progress}%`}</Txt>
+          <Txt typography="t6" color={adaptive.grey600}>{`자동 progress: ${progress}%`}</Txt>
           <SubSection label="size: light (2px)">
             <ProgressBar progress={progress} size="light" withAnimation />
           </SubSection>
@@ -571,7 +579,7 @@ export default function SDSPreviewScreen() {
               <ProgressBar progress={0} size="normal" />
               <ProgressBar progress={25} size="normal" color={SdsColors.red500} />
               <ProgressBar progress={50} size="normal" color="#FF6600" />
-              <ProgressBar progress={75} size="normal" color={SdsColors.brand500} />
+              <ProgressBar progress={75} size="normal" color={token.accent.fillColor} />
               <ProgressBar progress={100} size="normal" color={SdsColors.green500} />
             </View>
           </SubSection>
@@ -588,7 +596,7 @@ export default function SDSPreviewScreen() {
               onChangeText={setSearchText}
             />
             {searchText.length > 0 && (
-              <Txt typography="t7" color={SdsColors.grey500}>{`입력: "${searchText}"`}</Txt>
+              <Txt typography="t7" color={adaptive.grey500}>{`입력: "${searchText}"`}</Txt>
             )}
           </SubSection>
           <SubSection label="hasClearButton: true">
@@ -724,7 +732,7 @@ export default function SDSPreviewScreen() {
             <View style={styles.row}>
               {(['weak', 'medium', 'strong'] as const).map((preset) => (
                 <Shadow key={preset} shadow={preset}>
-                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16 }}>
+                  <View style={{ backgroundColor: adaptive.layeredBackground, borderRadius: 12, padding: 16 }}>
                     <Txt typography="t7">{preset}</Txt>
                   </View>
                 </Shadow>
@@ -746,10 +754,10 @@ export default function SDSPreviewScreen() {
                 <Txt typography="t5">Option B</Txt>
               </Radio.Option>
               <Radio.Option value="c" disabled>
-                <Txt typography="t5" color={SdsColors.grey400}>Option C (disabled)</Txt>
+                <Txt typography="t5" color={adaptive.grey400}>Option C (disabled)</Txt>
               </Radio.Option>
             </Radio>
-            <Txt typography="t7" color={SdsColors.grey500}>{`Selected: ${radioValue}`}</Txt>
+            <Txt typography="t7" color={adaptive.grey500}>{`Selected: ${radioValue}`}</Txt>
           </SubSection>
         </Section>
 
@@ -759,7 +767,7 @@ export default function SDSPreviewScreen() {
         <Section title="Rating">
           <SubSection label="editable (tap stars)">
             <Rating value={ratingValue} onValueChange={setRatingValue} size="large" />
-            <Txt typography="t7" color={SdsColors.grey500}>{`Value: ${ratingValue}`}</Txt>
+            <Txt typography="t7" color={adaptive.grey500}>{`Value: ${ratingValue}`}</Txt>
           </SubSection>
           <SubSection label="readOnly: full / compact / iconOnly">
             <View style={styles.row}>
@@ -804,7 +812,7 @@ export default function SDSPreviewScreen() {
               <SegmentedControl.Item value="second">Second</SegmentedControl.Item>
               <SegmentedControl.Item value="third">Third</SegmentedControl.Item>
             </SegmentedControl>
-            <Txt typography="t7" color={SdsColors.grey500}>{`Selected: ${segmentValue}`}</Txt>
+            <Txt typography="t7" color={adaptive.grey500}>{`Selected: ${segmentValue}`}</Txt>
           </SubSection>
         </Section>
 
@@ -818,7 +826,7 @@ export default function SDSPreviewScreen() {
               <Tab.Item value="search">Search</Tab.Item>
               <Tab.Item value="profile" redBean>Profile</Tab.Item>
             </Tab>
-            <Txt typography="t7" color={SdsColors.grey500}>{`Active: ${tabValue}`}</Txt>
+            <Txt typography="t7" color={adaptive.grey500}>{`Active: ${tabValue}`}</Txt>
           </SubSection>
           <SubSection label="fluid (scroll)">
             <Tab defaultValue="tab1" fluid size="small">
@@ -843,7 +851,7 @@ export default function SDSPreviewScreen() {
               maxNumber={10}
               size="medium"
             />
-            <Txt typography="t7" color={SdsColors.grey500}>{`Value: ${spinnerValue}`}</Txt>
+            <Txt typography="t7" color={adaptive.grey500}>{`Value: ${spinnerValue}`}</Txt>
           </SubSection>
           <SubSection label="sizes: tiny / small / medium / large">
             <View style={styles.row}>
@@ -903,7 +911,7 @@ export default function SDSPreviewScreen() {
         <Section title="Gradient">
           <SubSection label="Linear: blue → purple (180deg)">
             <Gradient.Linear
-              colors={[SdsColors.brand500, '#9333ea']}
+              colors={[token.accent.fillColor, '#9333ea']}
               degree="135deg"
               style={{ height: 80, borderRadius: 12 }}
             />
@@ -914,7 +922,7 @@ export default function SDSPreviewScreen() {
               cx={0.5}
               cy={0.5}
               r={0.5}
-              style={{ height: 80, borderRadius: 12, backgroundColor: SdsColors.grey100 }}
+              style={{ height: 80, borderRadius: 12, backgroundColor: adaptive.grey100 }}
             />
           </SubSection>
         </Section>
@@ -928,7 +936,7 @@ export default function SDSPreviewScreen() {
         {/* ── ErrorPage ── */}
         <Section title="ErrorPage">
           <SubSection label="statusCode: 404">
-            <View style={{ height: 300, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 300, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <ErrorPage
                 statusCode={404}
                 onPressRightButton={() => {}}
@@ -937,14 +945,14 @@ export default function SDSPreviewScreen() {
             </View>
           </SubSection>
           <SubSection label="statusCode: 500 (default)">
-            <View style={{ height: 300, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 300, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <ErrorPage
                 onPressRightButton={() => {}}
               />
             </View>
           </SubSection>
           <SubSection label="custom title + subtitle">
-            <View style={{ height: 300, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 300, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <ErrorPage
                 statusCode={500}
                 title="서비스 점검 중이에요"
@@ -960,7 +968,7 @@ export default function SDSPreviewScreen() {
         {/* ── Result ── */}
         <Section title="Result">
           <SubSection label="success: figure + title + description + button">
-            <View style={{ height: 280, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 280, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <Result
                 figure={<Txt typography="t1">✅</Txt>}
                 title="송금을 완료했어요"
@@ -970,7 +978,7 @@ export default function SDSPreviewScreen() {
             </View>
           </SubSection>
           <SubSection label="error: retry button">
-            <View style={{ height: 280, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 280, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <Result
                 figure={<Txt typography="t1">⚠️</Txt>}
                 title="다시 시도해주세요"
@@ -980,7 +988,7 @@ export default function SDSPreviewScreen() {
             </View>
           </SubSection>
           <SubSection label="minimal: title only">
-            <View style={{ height: 160, borderWidth: 1, borderColor: SdsColors.grey200, borderRadius: 12, overflow: 'hidden' }}>
+            <View style={{ height: 160, borderWidth: 1, borderColor: adaptive.grey200, borderRadius: 12, overflow: 'hidden' }}>
               <Result title="처리 중이에요" />
             </View>
           </SubSection>
@@ -1015,14 +1023,14 @@ export default function SDSPreviewScreen() {
       <Dialog.Alert
         open={alertCustomOpen}
         title={
-          <Txt typography="t4" fontWeight="bold" color={SdsColors.brand500} style={{ textAlign: 'center' }}>
+          <Txt typography="t4" fontWeight="bold" color={token.accent.fillColor} style={{ textAlign: 'center' }}>
             커스텀 타이틀
           </Txt>
         }
         description="ReactNode 타이틀, 커스텀 버튼 텍스트"
         content={
-          <View style={{ padding: 12, backgroundColor: SdsColors.grey50, borderRadius: 8, marginBottom: 8 }}>
-            <Txt typography="t7" color={SdsColors.grey600}>추가 컨텐츠 영역</Txt>
+          <View style={{ padding: 12, backgroundColor: adaptive.grey50, borderRadius: 8, marginBottom: 8 }}>
+            <Txt typography="t7" color={adaptive.grey600}>추가 컨텐츠 영역</Txt>
           </View>
         }
         buttonText="닫기"
@@ -1142,7 +1150,6 @@ const SAMPLE_SECTIONS: AccordionSection<SpaceItem>[] = [
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SdsColors.background,
   },
   scroll: {
     paddingBottom: 40,

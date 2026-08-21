@@ -6,7 +6,7 @@ import {
   TicketIcon,
   UserIcon,
 } from 'phosphor-react-native';
-import { SdsColors, useTheme } from '@/design-system';
+import { useAdaptive, useTheme } from '@/design-system';
 
 /**
  * Five-tab bar, ordered as the 홈 design shows it:
@@ -19,16 +19,20 @@ import { SdsColors, useTheme } from '@/design-system';
  */
 export default function TabsLayout() {
   const { token } = useTheme();
+  // Same keys as before, resolved against the root layout's `colorPreference`
+  // instead of pinned to the light values — a white bar under the dark screens
+  // is what reading `SdsColors` directly produced.
+  const adaptive = useAdaptive();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: token.accent.fillColor,
-        tabBarInactiveTintColor: SdsColors.grey500,
+        tabBarInactiveTintColor: adaptive.grey500,
         tabBarStyle: {
-          backgroundColor: SdsColors.background,
-          borderTopColor: SdsColors.grey200,
+          backgroundColor: adaptive.background,
+          borderTopColor: adaptive.grey200,
         },
         tabBarLabelStyle: { fontSize: 11 },
       }}
