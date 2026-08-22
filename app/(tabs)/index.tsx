@@ -175,7 +175,7 @@ export default function HomeScreen() {
           <CourseCards
             courses={courses}
             artistName={artistName}
-            onSelect={() => router.push('/course' as never)}
+            onSelect={(courseId) => router.push({ pathname: '/course', params: { courseId } } as never)}
           />
         </View>
       </ScrollView>

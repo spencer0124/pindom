@@ -62,7 +62,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — per-artist boards, a paged feed, no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
-| `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
+| `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩 |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
@@ -209,6 +209,7 @@ flowchart TD
 - [../plans/2026-08-22-auth-slice-checklist.md](../plans/2026-08-22-auth-slice-checklist.md) — how 온보딩 and 최애 찾기 were built, and the session gate
 - [../plans/2026-08-22-community-slice-checklist.md](../plans/2026-08-22-community-slice-checklist.md) — how 커뮤니티 and 글쓰기 were built, and why there is no 전체
 - [../plans/2026-08-22-profile-slice-checklist.md](../plans/2026-08-22-profile-slice-checklist.md) — how 마이페이지 and its three small screens were built
+- [../plans/2026-08-22-assistant-slice-checklist.md](../plans/2026-08-22-assistant-slice-checklist.md) — how Pindom AI and 추천 코스 were built, and the function the backend needs to provide
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with

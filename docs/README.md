@@ -88,6 +88,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-22-auth-slice-checklist.md](plans/2026-08-22-auth-slice-checklist.md) | 온보딩 and 최애 찾기 — the landing with sign-in folded in, the session gate on the tabs, and the follow that re-keys 홈 |
 | [2026-08-22-community-slice-checklist.md](plans/2026-08-22-community-slice-checklist.md) | 커뮤니티 and 글쓰기 — per-최애 boards on the contract's per-board feed, paging, and the pin that carries a ticket |
 | [2026-08-22-profile-slice-checklist.md](plans/2026-08-22-profile-slice-checklist.md) | 마이페이지, 프로필 편집, 언어 and 보관함 — the user document's screens, the sign-out, and what 1a asks for that the contract cannot serve |
+| [2026-08-22-assistant-slice-checklist.md](plans/2026-08-22-assistant-slice-checklist.md) | Pindom AI and 추천 코스 — built against a fixture, with the `askAssistant` request and response the client expects from the backend |
 
 ## Outside this folder
 
