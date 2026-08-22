@@ -60,7 +60,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — per-artist boards, a paged feed, no 전체 |
-| `write` | 글쓰기 | `33:1686` | `/post/write` | skeleton |
+| `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | skeleton |
@@ -207,6 +207,7 @@ flowchart TD
 - [../plans/2026-08-22-capture-slice-checklist.md](../plans/2026-08-22-capture-slice-checklist.md) — how the Capture slice was built, and what the device run found
 - [../plans/2026-08-22-tickets-slice-checklist.md](../plans/2026-08-22-tickets-slice-checklist.md) — how the Tickets & raffle slice was built, and where the tier gauge and the contract disagree
 - [../plans/2026-08-22-auth-slice-checklist.md](../plans/2026-08-22-auth-slice-checklist.md) — how 온보딩 and 최애 찾기 were built, and the session gate
+- [../plans/2026-08-22-community-slice-checklist.md](../plans/2026-08-22-community-slice-checklist.md) — how 커뮤니티 and 글쓰기 were built, and why there is no 전체
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with

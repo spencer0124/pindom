@@ -1,0 +1,88 @@
+---
+title: Community Slice Checklist
+type: plan
+status: accepted
+owner: zoyoong124@gmail.com
+last-updated: 2026-08-22
+audience: internal
+---
+
+# Community Slice Checklist
+
+> The punch list for 커뮤니티 and 글쓰기 — per-최애 boards, a paged feed, and a post with a pin. Start here if you are picking either up.
+
+## Summary
+
+[screens.md](../reference/screens.md) groups these two because they share the board, the
+feed page and the draft. The board is the 최애 — the contract made the feed per artist after
+the Figma frames were drawn — and it travels to 글쓰기 as a route param, because a post always
+belongs to one.
+
+Sources, per [design/README.md](../../design/README.md): layout, copy and flow from block `1a`;
+colour, type and corners from `2b`. Figma `33:1717`, `33:2922` and `33:1686` are the earlier
+frames.
+
+## Checklist
+
+### 1 — 커뮤니티 (`app/(tabs)/community.tsx`)
+
+- [x] 커뮤니티 · 글쓰기, the board chips, the `{최애} 게시판 · 멤버 n` block, the feed.
+- [x] The board opens on the 최애 Discovery has selected; the chips switch it; a board that is
+      no longer followed is never sat on.
+- [x] A post row: avatar, nickname, time, the tier badge; the body; the pin with 지도에서 보기
+      when the post carries a `placeId`; `♡ n` and `답글 n`.
+- [x] The feed **pages on `cursor`** — `onEndReached` asks for the next page — and re-reads
+      silently on focus, so a post made on 글쓰기 is at the top when the user comes back.
+
+### 2 — 글쓰기 (`app/post/write.tsx`)
+
+- [x] 취소 · 글쓰기 · 등록, the composer, the pin toggle, the note.
+- [x] The pin attaches the most recently verified 촬영지 — the newest ticket — and the post
+      carries its `placeId` and `ticketId`. With no ticket yet the toggle says so and stays off.
+- [x] 등록 creates the post on the board that opened the screen, then goes back.
+
+### 3 — Shared ground
+
+- [x] `tierLabel` moves out of 촬영 팁's `ReviewList` into `src/features/shared/` — one author
+      wears one badge on a tip and on a post.
+
+### 4 — Close out
+
+- [x] `yarn typecheck` and `yarn lint` clean.
+- [x] [screens.md](../reference/screens.md) — both screens to `built`.
+- [x] [docs/README.md](../README.md) — index this document.
+
+## What the device run found
+
+| Found | Fix |
+| --- | --- |
+| `useMemo(() => new Date(), [state])` to age the posts tripped `exhaustive-deps` | The instant is stamped by the feed hook when a page lands (`loadedAt`) — the honest place for it |
+
+### Copy the prototype does not have
+
+| Where | Line |
+| --- | --- |
+| 커뮤니티, no board followed | 팔로우한 최애의 게시판이 여기 열려요 |
+| 커뮤니티, empty board | 아직 글이 없어요 |
+| 글쓰기, no ticket to pin | 인증한 촬영지가 아직 없어요 |
+
+## Where the sources disagree
+
+| # | `1a` prototype | Contract / `2b` | Taken | Why |
+| --- | --- | --- | --- | --- |
+| 1 | A 전체 chip before the boards | `posts.feed(boardId)` — per board, **never global**; the wrong id silently shows another fandom | No 전체 | A 전체 feed would have to fan out across boards and merge by time on the client. Left off rather than faked |
+| 2 | Rows are text, a pin and counts | `posts.imageUrls` — the feed is 인증샷 자랑 | `1a`'s row; no photo | Layout is `1a`'s axis. The field is there for the day the row grows a photo |
+| 3 | The tier badge is pink on pink | `2b` | An acid hairline | Colour |
+| 4 | `♡ n` | Nothing in the contract writes `likeCount` from the client | A figure, not a control | Same as 촬영 팁's 도움됐어요 |
+
+## Still open
+
+- **Posts have no detail screen.** `posts.getById` exists and a row's 답글 n goes nowhere; the
+  prototype has no post screen either.
+- **The photo field is unrendered** (disagreement 2). When the row grows a photo, the upload
+  goes through the same Storage path rule as tickets — `posts/{uid}/…`.
+
+## Related
+
+- [screens.md](../reference/screens.md) — the slice table these two come from
+- [backend-contract.md](../reference/backend-contract.md) — `posts`, the per-board feed, the Storage path

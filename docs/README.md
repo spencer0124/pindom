@@ -86,6 +86,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-22-capture-slice-checklist.md](plans/2026-08-22-capture-slice-checklist.md) | The core loop — GPS인증 through 티켓 발행 — built on the Discovery place shape and walked on a simulator: what landed, what the device run found, the copy the prototype does not have, and where `1a`, `2b` and the contract disagreed |
 | [2026-08-22-tickets-slice-checklist.md](plans/2026-08-22-tickets-slice-checklist.md) | 컬렉션 → 응모 → 티켓 절취 → 응모완료, built on the ticket Capture mints: what landed, what the device run found, and where 1a's tier gauge and the contract's tier disagree |
 | [2026-08-22-auth-slice-checklist.md](plans/2026-08-22-auth-slice-checklist.md) | 온보딩 and 최애 찾기 — the landing with sign-in folded in, the session gate on the tabs, and the follow that re-keys 홈 |
+| [2026-08-22-community-slice-checklist.md](plans/2026-08-22-community-slice-checklist.md) | 커뮤니티 and 글쓰기 — per-최애 boards on the contract's per-board feed, paging, and the pin that carries a ticket |
 
 ## Outside this folder
 
