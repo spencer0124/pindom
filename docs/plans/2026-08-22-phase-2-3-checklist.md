@@ -256,11 +256,33 @@ hoisted hook: keep the table declarative, resolve at the edge.
 Not "every component converted" — **`/sds-preview` shows a dark canvas, no light-on-dark
 component among the Tier 1 set, and no violet.** That is enough ground to build 홈 on.
 
-## Phase 4 — the golden screen
+## Phase 4 — the golden screen (landed)
 
-Out of scope for this checklist, listed so the finish line is visible: build 홈
-(`app/(tabs)/index.tsx`) against `placeRepository`, `userRepository` and `raffleRepository`, review
-it line by line, and then point every later screen prompt at it.
+홈 is built and running: `app/(tabs)/index.tsx` plus `src/features/home/`. Later screens should
+match its conventions, which are listed in the comment at the top of that file.
+
+Three things it settled that were not obvious from the plan:
+
+- **홈 has four blocks, not three.** {최애} 지역 코스 is below the fold in `1a` and absent from
+  `2b`'s mockup, so it is easy to miss entirely. Recorded in
+  [../reference/screens.md](../reference/screens.md)
+- **`2b`'s English section labels are a type treatment, not copy.** `TICKETS OWNED` and
+  `NEARBY LOCATIONS` are its typographic signature — uppercase and tracked out. The strings
+  themselves stay Korean, because copy is `1a`'s axis and Korean UI copy is final
+- **The thumbnail beat the row numeral.** `2b` draws `01 / 02 / 03` where `1a` has a photo. The
+  numeral is type; the thumbnail carries the 미인증 / 인증 완료 state, which is content — and
+  content is `1a`'s axis
+
+### Two questions 홈 raised, both left open
+
+- [ ] **`listRecommended` is documented as popularity-ordered, and the section is labelled 거리순.**
+      홈 currently sorts what it gets by distance so the label is honest, which makes the section
+      "the nearest of the popular ones" rather than the nearest overall. Whether the contract or
+      the label should move is the backend contract's call, not the screen's
+- [ ] **The `ticket card` gap in [../reference/design-system.md](../reference/design-system.md) is
+      not what 홈 needed.** That entry describes the collectible ticket — block `1c`, needed by
+      컬렉션, 티켓 발행 and 응모완료. 홈's card is a balance summary with one consumer, so it was
+      built in `src/features/home/` and promotes if a second appears. The gap itself is still open
 
 ## Appendix — running it again
 

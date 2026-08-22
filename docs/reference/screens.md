@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
@@ -46,7 +46,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | --- | --- | --- | --- | --- |
 | `onboard` | 온보딩 + 시작화면 | `33:2801` | `/onboarding` | skeleton — **absorbs 시작화면**; email sign-in is folded in |
 | `artistSearch` | 최애 찾기 | — | `/artist/search` *(proposed)* | **missing** |
-| `home` | 홈 | `33:2617` | `/(tabs)/index` | skeleton |
+| `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | skeleton |
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | skeleton — gains 갤러리 and 리뷰 |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | skeleton — 레이더 interaction (`1b`-A) |
@@ -80,6 +80,9 @@ profile, language and vault sit at the root rather than under `/my`.
   row (인증 · 사진 · 거리).
 - **커뮤니티 is now segmented by artist.** Posts carry a board id; the feed is per 최애, not
   global.
+- **홈 has four blocks, not three.** 마감 임박 응모, {최애}의 촬영지 and {최애} 지역 코스 sit under
+  the 보유 티켓 summary. The 지역 코스 block is easy to miss — it is below the fold in `1a` and
+  absent from `2b`'s mockup, which shows only the first two.
 
 > [!NOTE]
 > The prototype's 마이페이지 has a global light/dark toggle. It is **not** adopted — see
