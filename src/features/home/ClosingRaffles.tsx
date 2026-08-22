@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { Raffle } from '@/lib/domain';
 import { SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
-import { HomeShape } from './homeStyles';
+import { Shape } from '@/features/shared';
 
 /** 오늘 마감 / D-2 — the badge 1a puts at the top of each cell. */
 function deadlineLabel(closesAt: Date, now: Date): string {
@@ -59,7 +59,7 @@ export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) 
             accessibilityRole="button"
             style={[
               styles.cell,
-              index > 0 && { borderLeftWidth: HomeShape.rowRule, borderLeftColor: adaptive.grey200 },
+              index > 0 && { borderLeftWidth: Shape.rowRule, borderLeftColor: adaptive.grey200 },
             ]}
           >
             <Txt
@@ -87,7 +87,7 @@ export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) 
 const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
   },
   cell: {
     flex: 1,
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   empty: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
     paddingVertical: 8,
   },
 });

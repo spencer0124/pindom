@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { Course } from '@/lib/domain';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
-import { HomeShape } from './homeStyles';
+import { Shape } from '@/features/shared';
 
 interface CourseCardsProps {
   courses: Course[];
@@ -57,7 +57,7 @@ export function CourseCards({ courses, artistName, onSelect }: CourseCardsProps)
 
 const styles = StyleSheet.create({
   track: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
     gap: 10,
   },
   card: {
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   empty: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
   },
 });

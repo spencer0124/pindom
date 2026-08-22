@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import type { User } from '@/lib/domain';
 import { Button, ProgressBar, Txt, useAdaptive, useTheme } from '@/design-system';
-import { HomeShape, sectionLabel } from './homeStyles';
+import { Shape, sectionLabel } from '@/features/shared';
 
 /** The next reward threshold. 1a writes it as 20장이면 팬사인회·굿즈가 열려요. */
 const REWARD_AT = 20;
@@ -86,7 +86,7 @@ export function TicketBalanceCard({
 
 const styles = StyleSheet.create({
   block: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
     paddingVertical: 20,
     gap: 10,
   },

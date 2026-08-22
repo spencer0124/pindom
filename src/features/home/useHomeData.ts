@@ -1,5 +1,5 @@
-import * as Location from 'expo-location';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { readPosition, readVisitedPlaceIds, useDiscoveryStore } from '@/features/discovery';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, Course, PlaceWithDistance, Raffle, User } from '@/lib/domain';
 import {
@@ -17,9 +17,11 @@ export interface HomeData {
   selectedArtist: Artist | null;
   /** Open raffles, soonest deadline first. 마감 임박 응모 shows the first two. */
   closingRaffles: Raffle[];
-  /** 추천 촬영지, re-sorted by distance because the section is labelled 거리순. */
+  /** 추천 촬영지 for the selected 최애, re-sorted by distance for the 거리순 label. */
   places: PlaceWithDistance[];
   courses: Course[];
+  /** Places this user has already verified, for the 인증 완료 stamp on each row. */
+  visitedPlaceIds: string[];
   /**
    * False when location permission was refused or no fix is available yet.
    *
@@ -30,76 +32,78 @@ export interface HomeData {
   hasPosition: boolean;
 }
 
+/** Everything on 홈 that does not depend on which 최애 is selected. */
+interface Base {
+  user: User;
+  artists: Artist[];
+  closingRaffles: Raffle[];
+  places: PlaceWithDistance[];
+  visitedPlaceIds: string[];
+  hasPosition: boolean;
+}
+
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ready'; data: HomeData };
 
 /**
- * Reads the user's position, then everything 홈 renders, in one hook.
+ * Reads everything 홈 renders.
  *
- * Location is asked for here because proximity is what this screen is *for* —
- * the 촬영지 list is ordered by it and the nearest distance is the one value the
- * direction paints in the accent colour. Refusal is not an error: the screen
- * renders without distances.
+ * The 최애 selection lives in `@/features/discovery` rather than here, because
+ * 지도 writes it too — see that store's note. What stays here is the split
+ * between the fetches that ignore the selection and the one that does not:
+ * changing 최애 re-fetches 코스 and re-filters the place list, but does not throw
+ * the screen back to a spinner for data that has not changed.
  *
- * TODO(온보딩): 1a asks for location and camera permission on the onboarding
- * screen. Once that screen exists the request belongs there, and 홈 should read
- * the last known position rather than prompt.
+ * Position comes from the same slice module, so the permission dialog appears
+ * once per launch no matter which Discovery screen the user opens first.
  */
-async function readPosition(): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
-    if (!granted) return null;
-
-    // Last known first: it returns immediately and 홈 only needs a distance
-    // good enough to sort by. The 50m decision is the server's, never this.
-    const last = await Location.getLastKnownPositionAsync();
-    const fix = last ?? (await Location.getCurrentPositionAsync({}));
-    return { lat: fix.coords.latitude, lng: fix.coords.longitude };
-  } catch {
-    return null;
-  }
-}
-
 export function useHomeData() {
-  const [state, setState] = useState<State>({ status: 'loading' });
+  const [base, setBase] = useState<{ status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: Base }>({
+    status: 'loading',
+  });
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
+  const seed = useDiscoveryStore((s) => s.seed);
 
   const load = useCallback(async () => {
-    setState({ status: 'loading' });
+    setBase({ status: 'loading' });
 
     const position = await readPosition();
 
-    const [userResult, artistsResult, rafflesResult, placesResult] = await Promise.all([
-      userRepository.me(),
-      artistRepository.listMine(),
-      raffleRepository.list(),
-      placeRepository.listRecommended(position?.lat, position?.lng),
-    ]);
+    const [userResult, artistsResult, rafflesResult, placesResult, visitedPlaceIds] =
+      await Promise.all([
+        userRepository.me(),
+        artistRepository.listMine(),
+        raffleRepository.list(),
+        placeRepository.listRecommended(position?.lat, position?.lng),
+        readVisitedPlaceIds(),
+      ]);
 
-    if (!userResult.ok) return setState({ status: 'error', message: failureMessage(userResult.failure) });
+    if (!userResult.ok)
+      return setBase({ status: 'error', message: failureMessage(userResult.failure) });
     if (!artistsResult.ok)
-      return setState({ status: 'error', message: failureMessage(artistsResult.failure) });
+      return setBase({ status: 'error', message: failureMessage(artistsResult.failure) });
     if (!rafflesResult.ok)
-      return setState({ status: 'error', message: failureMessage(rafflesResult.failure) });
+      return setBase({ status: 'error', message: failureMessage(rafflesResult.failure) });
     if (!placesResult.ok)
-      return setState({ status: 'error', message: failureMessage(placesResult.failure) });
+      return setBase({ status: 'error', message: failureMessage(placesResult.failure) });
 
     const artists = artistsResult.data;
-    const selectedArtist =
-      artists.find((a) => a.id === userResult.data.followedArtistIds[0]) ?? artists[0] ?? null;
+    // A default, not a decision — `seed` is a no-op once the user has picked.
+    seed(
+      artists.find((a) => a.id === userResult.data.followedArtistIds[0])?.id ??
+        artists[0]?.id ??
+        null,
+    );
 
-    // Courses are per-artist, so this one cannot join the batch above.
-    const coursesResult = selectedArtist
-      ? await courseRepository.listForArtist(selectedArtist.id)
-      : null;
-
-    setState({
+    setBase({
       status: 'ready',
       data: {
         user: userResult.data,
         artists,
-        selectedArtist,
         closingRaffles: rafflesResult.data
           .filter((r) => r.status === 'open')
           .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime()),
@@ -107,15 +111,54 @@ export function useHomeData() {
         // the order shown is by distance. See docs/plans for the note on that
         // mismatch between the contract and the design.
         places: [...placesResult.data].sort((a, b) => a.distanceMeters - b.distanceMeters),
-        courses: coursesResult?.ok ? coursesResult.data : [],
+        visitedPlaceIds,
         hasPosition: position != null,
       },
     });
-  }, []);
+  }, [seed]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // 코스 are per-artist, so this cannot join the batch above and has to re-run
+  // when the selection changes. A failure here empties the section rather than
+  // failing the screen: 홈 is still useful without it.
+  useEffect(() => {
+    if (selectedArtistId == null) {
+      setCourses([]);
+      return;
+    }
+    let live = true;
+    void courseRepository.listForArtist(selectedArtistId).then((result) => {
+      if (live) setCourses(result.ok ? result.data : []);
+    });
+    return () => {
+      live = false;
+    };
+  }, [selectedArtistId]);
+
+  const state = useMemo<State>(() => {
+    if (base.status !== 'ready') return base;
+
+    const selectedArtist = base.data.artists.find((a) => a.id === selectedArtistId) ?? null;
+
+    return {
+      status: 'ready',
+      data: {
+        ...base.data,
+        selectedArtist,
+        // The section is titled {최애}의 촬영지, so it has to be that 최애's.
+        // `listRecommended` ranks across every artist — the filter is the
+        // screen's, because the title is the screen's.
+        places:
+          selectedArtist != null
+            ? base.data.places.filter((p) => p.artistIds.includes(selectedArtist.id))
+            : base.data.places,
+        courses,
+      },
+    };
+  }, [base, courses, selectedArtistId]);
 
   return { state, reload: load };
 }

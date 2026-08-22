@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { Artist } from '@/lib/domain';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
-import { HomeShape } from './homeStyles';
+import { Shape } from '@/features/shared';
 
 const CHIP = 56;
 
@@ -93,7 +93,7 @@ export function ArtistChips({ artists, selectedId, onSelect, onAdd }: ArtistChip
 
 const styles = StyleSheet.create({
   track: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
     gap: 14,
     paddingBottom: 4,
   },
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   chip: {
     width: CHIP,
     height: CHIP,
-    borderRadius: HomeShape.chipRadius,
+    borderRadius: Shape.chipRadius,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

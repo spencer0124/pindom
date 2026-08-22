@@ -109,4 +109,32 @@ export const mockPlaces: Place[] = [
     reviewCount: 0,
     createdAt: new Date('2026-05-20T09:00:00+09:00'),
   },
+  {
+    // Deliberately untouched by every ticket in `tickets.ts`, and with all four
+    // counters at zero.
+    //
+    // Without one such place the fixtures cover only half of what the Discovery
+    // screens draw: 지도's 미방문 · 인증 가능 row, its muted pin, and 장소/상세's
+    // empty 갤러리 and empty 촬영 팁 are all unreachable when the demo user has
+    // already stood everywhere. A screen state nobody can reach is a screen
+    // state nobody checks.
+    id: 'place-hyeopjae',
+    roman: 'Hyeopjae Beach',
+    region: '제주 한림',
+    workKind: 'self',
+    artistIds: ['artist-lumina'],
+    name: '협재 해수욕장',
+    description: '비양도가 정면에 들어오는 지점입니다. 만조에는 백사장이 절반으로 줄어요.',
+    address: '제주특별자치도 제주시 한림읍 협재리 2497-1',
+    workTitle: '루미나로그 EP.12',
+    lat: 33.3940,
+    lng: 126.2396,
+    radiusMeters: 50,
+    coverImageUrl: 'https://picsum.photos/seed/hyeopjae/1200/800',
+    ticketCount: 0,
+    verifyCount: 0,
+    photoCount: 0,
+    reviewCount: 0,
+    createdAt: new Date('2026-08-18T09:00:00+09:00'),
+  },
 ];

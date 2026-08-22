@@ -3,16 +3,15 @@ import { useMemo } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorPage, Loader, Txt, useAdaptive, useTheme } from '@/design-system';
+import { useDiscoveryStore } from '@/features/discovery';
 import {
   ArtistChips,
   ClosingRaffles,
   CourseCards,
-  HomeShape,
-  PlaceList,
-  SectionHeader,
   TicketBalanceCard,
   useHomeData,
 } from '@/features/home';
+import { PlaceList, Rule, SectionHeader, Shape } from '@/features/shared';
 
 /**
  * 홈 — the reference screen.
@@ -36,6 +35,7 @@ export default function HomeScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const { state, reload } = useHomeData();
+  const selectArtist = useDiscoveryStore((s) => s.select);
 
   // Pinned once per render pass so every deadline in this tree is measured
   // against the same instant.
@@ -67,8 +67,16 @@ export default function HomeScreen() {
     );
   }
 
-  const { user, artists, selectedArtist, closingRaffles, places, courses, hasPosition } =
-    state.data;
+  const {
+    user,
+    artists,
+    selectedArtist,
+    closingRaffles,
+    places,
+    courses,
+    visitedPlaceIds,
+    hasPosition,
+  } = state.data;
   const artistName = selectedArtist?.name;
 
   return (
@@ -102,10 +110,9 @@ export default function HomeScreen() {
         <ArtistChips
           artists={artists}
           selectedId={selectedArtist?.id}
-          onSelect={() => {
-            // TODO(최애 찾기): switching the selected 최애 re-keys every section.
-            // It belongs with the artist slice, which owns that state.
-          }}
+          // Re-keys every section below, and 지도 with them — the selection is
+          // the Discovery slice's, not this screen's.
+          onSelect={selectArtist}
           onAdd={() => router.push('/artist/search' as never)}
         />
 
@@ -143,6 +150,7 @@ export default function HomeScreen() {
             places={places.slice(0, 3)}
             artistName={artistName}
             hasPosition={hasPosition}
+            verifiedPlaceIds={visitedPlaceIds}
             onSelect={(placeId) => router.push(`/place/${placeId}` as never)}
           />
         </View>
@@ -164,12 +172,6 @@ export default function HomeScreen() {
   );
 }
 
-/** The 2px divider between blocks. 2b builds structure from these, not from cards. */
-function Rule() {
-  const adaptive = useAdaptive();
-  return <View style={[styles.rule, { borderTopColor: adaptive.grey200 }]} />;
-}
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -178,7 +180,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   header: {
-    paddingHorizontal: HomeShape.gutter,
+    paddingHorizontal: Shape.gutter,
     paddingTop: 8,
     paddingBottom: 18,
     gap: 2,
@@ -186,10 +188,6 @@ const styles = StyleSheet.create({
   wordmark: {
     letterSpacing: 3,
     marginBottom: 6,
-  },
-  rule: {
-    borderTopWidth: HomeShape.sectionRule,
-    marginVertical: 18,
   },
   section: {
     gap: 2,

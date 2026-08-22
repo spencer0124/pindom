@@ -90,12 +90,11 @@ export const typographyMap: Record<TypographyKeys, TypographyStyle> = {
   st13: { fontSize: 11, lineHeight: 16.5 }, // = SdsTypo.sub13
 };
 
-/**
- * Default font family. Re-exported from the token layer so there is exactly one
- * definition — it used to be declared here as well, and two copies of a constant are two
- * chances to change one and forget the other.
- */
-export { FONT_FAMILY };
+// `FONT_FAMILY` is defined in the token layer and imported above for the maps
+// below. It is deliberately **not** re-exported: `@/design-system` re-exports
+// both `./tokens` and `./foundation` with `export *`, so a pass-through here
+// puts the same name on the barrel twice and `import/export` fails the lint.
+// Import it from `@/design-system` or `../../tokens`.
 
 /**
  * Font family per weight.

@@ -10,8 +10,8 @@ import React, { forwardRef, type ComponentProps, type ReactNode } from 'react';
 import { StyleSheet, Text, type StyleProp, type TextStyle } from 'react-native';
 import { useAdaptive } from '../../core';
 import { useTypographyTheme } from '../../core/TypographyProvider';
+import { FONT_FAMILY } from '../../tokens';
 import {
-  FONT_FAMILY,
   fontFamilyByWeight,
   fontWeightMap,
   type FontWeightKeys,
