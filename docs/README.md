@@ -84,6 +84,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-22-phase-2-3-checklist.md](plans/2026-08-22-phase-2-3-checklist.md) | The punch list standing between this repo and its first real screen: getting the app onto a simulator, and finishing the `2b` re-skin far enough to build 홈 on. **Start here if you are picking the app up** |
 | [2026-08-22-discovery-slice-checklist.md](plans/2026-08-22-discovery-slice-checklist.md) | The second flow slice — 지도 and 장소/상세 — built on the state 홈 already reads: what landed, where the prototype and the Figma frames disagreed, and what the prototype asks for that the contract cannot serve |
 | [2026-08-22-capture-slice-checklist.md](plans/2026-08-22-capture-slice-checklist.md) | The core loop — GPS인증 through 티켓 발행 — built on the Discovery place shape and walked on a simulator: what landed, what the device run found, the copy the prototype does not have, and where `1a`, `2b` and the contract disagreed |
+| [2026-08-22-tickets-slice-checklist.md](plans/2026-08-22-tickets-slice-checklist.md) | 컬렉션 → 응모 → 티켓 절취 → 응모완료, built on the ticket Capture mints: what landed, what the device run found, and where 1a's tier gauge and the contract's tier disagree |
 
 ## Outside this folder
 

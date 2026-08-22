@@ -58,7 +58,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
 | `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
-| `done` | 응모완료 | `33:1830` | `/raffle/done` | skeleton |
+| `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | skeleton — now **per-artist boards** |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | skeleton |
 | `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
@@ -205,6 +205,7 @@ flowchart TD
 - [`design/README.md`](../../design/README.md) — the prototype these screens come from
 - [../plans/2026-08-22-discovery-slice-checklist.md](../plans/2026-08-22-discovery-slice-checklist.md) — how the Discovery slice was built, and where its two sources disagreed
 - [../plans/2026-08-22-capture-slice-checklist.md](../plans/2026-08-22-capture-slice-checklist.md) — how the Capture slice was built, and what the device run found
+- [../plans/2026-08-22-tickets-slice-checklist.md](../plans/2026-08-22-tickets-slice-checklist.md) — how the Tickets & raffle slice was built, and where the tier gauge and the contract disagree
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with
