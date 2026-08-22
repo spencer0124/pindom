@@ -66,7 +66,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩 |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
-| `vault` | 보관함 | — | `/vault` *(proposed)* | **missing** — private tickets |
+| `vault` | 보관함 | — | `/vault` | **built** — private tickets, 공개 전환 per row |
 
 ### What changed against the Figma frames
 
@@ -208,6 +208,7 @@ flowchart TD
 - [../plans/2026-08-22-tickets-slice-checklist.md](../plans/2026-08-22-tickets-slice-checklist.md) — how the Tickets & raffle slice was built, and where the tier gauge and the contract disagree
 - [../plans/2026-08-22-auth-slice-checklist.md](../plans/2026-08-22-auth-slice-checklist.md) — how 온보딩 and 최애 찾기 were built, and the session gate
 - [../plans/2026-08-22-community-slice-checklist.md](../plans/2026-08-22-community-slice-checklist.md) — how 커뮤니티 and 글쓰기 were built, and why there is no 전체
+- [../plans/2026-08-22-profile-slice-checklist.md](../plans/2026-08-22-profile-slice-checklist.md) — how 마이페이지 and its three small screens were built
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with
