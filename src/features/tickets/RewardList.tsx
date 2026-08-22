@@ -34,6 +34,7 @@ export function RewardList({ raffles, balance, selectedId, onSelect }: RewardLis
             key={raffle.id}
             onPress={() => onSelect(raffle.id)}
             accessibilityRole="radio"
+            accessibilityLabel={raffle.title}
             accessibilityState={{ selected: on }}
             style={[
               styles.row,
