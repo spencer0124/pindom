@@ -44,9 +44,10 @@ async function read(): Promise<Position | null> {
  * Returns null when permission was refused or no fix is available. That is not
  * an error: the screens render without distances.
  *
- * TODO(온보딩): 1a asks for location and camera permission on the onboarding
- * screen. Once that screen exists the request belongs there, and this becomes a
- * read of the last known position rather than a prompt.
+ * 온보딩 asks for the permission after sign-in, where 1a's note places it, so
+ * on a normal run this is a read of the last known position rather than a
+ * prompt. The request stays here for the paths that skip 온보딩 — a fixture
+ * session, a deep link — where it is still the first thing to ask.
  */
 export function readPosition(refresh = false): Promise<Position | null> {
   if (cached != null && !refresh) return Promise.resolve(cached);

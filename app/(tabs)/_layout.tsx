@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import {
   ChatCircleIcon,
   HouseIcon,
@@ -6,7 +6,8 @@ import {
   TicketIcon,
   UserIcon,
 } from 'phosphor-react-native';
-import { useAdaptive, useTheme } from '@/design-system';
+import { Loader, useAdaptive, useTheme } from '@/design-system';
+import { useSession } from '@/features/auth';
 
 /**
  * Five-tab bar, ordered as the 홈 design shows it:
@@ -23,6 +24,16 @@ export default function TabsLayout() {
   // instead of pinned to the light values — a white bar under the dark screens
   // is what reading `SdsColors` directly produced.
   const adaptive = useAdaptive();
+  const { state } = useSession();
+
+  // No session, no tabs: the flow starts at 온보딩, and every tabbed screen
+  // assumes a signed-in user. The fixture path signs one in by default.
+  if (state.status === 'loading') {
+    return <Loader.Centered label="" />;
+  }
+  if (state.session == null) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <Tabs

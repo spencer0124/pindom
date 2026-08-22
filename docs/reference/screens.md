@@ -44,7 +44,7 @@ profile, language and vault sit at the root rather than under `/my`.
 
 | Screen | Frame | Node | Route | Status |
 | --- | --- | --- | --- | --- |
-| `onboard` | 온보딩 + 시작화면 | `33:2801` | `/onboarding` | skeleton — **absorbs 시작화면**; email sign-in is folded in |
+| `onboard` | 온보딩 + 시작화면 | `33:2801` | `/onboarding` | **built** — absorbs 시작화면; email sign-in folded in; the tabs redirect here without a session |
 | `artistSearch` | 최애 찾기 | — | `/artist/search` *(proposed)* | **missing** |
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
@@ -71,7 +71,7 @@ profile, language and vault sit at the root rather than under `/my`.
 ### What changed against the Figma frames
 
 - **`/login` is gone.** 시작화면 (`33:2801`) is absorbed into 온보딩; email sign-in happens
-  there. Delete `app/login.tsx` when 온보딩 is built.
+  there. `app/login.tsx` was deleted when 온보딩 was built.
 - **`/onboarding` is no longer undesigned.** It was previously a real gap — flowchart only,
   no frame. The prototype designs it.
 - **Five screens are new**, with no frame behind them: `artistSearch`, `tear`, `profile`,
