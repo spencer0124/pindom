@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
@@ -79,7 +79,8 @@ copied to a second place is a value that will disagree with the first.
 | --- | --- |
 | [screen-implementation.md](plans/screen-implementation.md) | The order to build the designed screens in: shell, then one golden screen, then flow slices |
 | [2026-08-21-backend-contract-review-resolutions.md](plans/2026-08-21-backend-contract-review-resolutions.md) | One round of the backend developer's review of the contract: every finding, the decision taken, and what the contract and the app each owe as a result. Dated, because more rounds are expected |
-| [2026-08-21-contract-alignment-checklist.md](plans/2026-08-21-contract-alignment-checklist.md) | What landed on `main` from that round, what the backend developer can build against now, and what each side still owes. **Start here if you are picking the backend up** |
+| [2026-08-21-contract-alignment-checklist.md](plans/2026-08-21-contract-alignment-checklist.md) | What landed on `main` from that round, and what each side still owed. **Superseded** by the reconciliation below, apart from its screen-level TODO list |
+| [2026-08-22-backend-handoff-reconciliation.md](plans/2026-08-22-backend-handoff-reconciliation.md) | The backend is deployed. What the running system does differently from the contract, the values it chose for the blanks, and what the app still owes. **Start here if you are picking the backend up** |
 | [2026-08-22-phase-2-3-checklist.md](plans/2026-08-22-phase-2-3-checklist.md) | The punch list standing between this repo and its first real screen: getting the app onto a simulator, and finishing the `2b` re-skin far enough to build 홈 on. **Start here if you are picking the app up** |
 
 ## Outside this folder

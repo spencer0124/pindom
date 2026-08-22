@@ -3,7 +3,7 @@ title: Connect the App to Firebase
 type: how-to
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
@@ -45,10 +45,21 @@ bricks. The division of labour, and why it is drawn here, is in
 > files are in place, and the packages are installed. The steps below remain the procedure —
 > for a fresh clone, a second developer, or a new Firebase project — but you do not need to
 > repeat them.
+
+> [!IMPORTANT]
+> **The backend is live as of 2026-08-22.** Firestore and Storage rules are deployed, all three
+> Cloud Functions are deployed to `asia-northeast3`, five composite indexes and the session TTL
+> policy are active, and 최애·촬영지·코스·응모 are seeded. There is no backend work in flight.
 >
-> What is *not* done: no Firestore collections, no rules, no deployed functions. Stay on
-> fixtures (`EXPO_PUBLIC_USE_MOCKS=true`) until the backend developer says otherwise, or every
-> screen goes blank against an empty database.
+> So `EXPO_PUBLIC_USE_MOCKS=false` now returns real data rather than blank screens — but the
+> seeded database is emptier than the fixtures in one way that will look like a bug: **every
+> counter is `0`**, on purpose. 홈's recommendation strip orders by `ticketCount`, so before the
+> first ticket is minted its order is arbitrary rather than wrong. `posts` is not seeded at all,
+> so 커뮤니티 is empty until someone writes.
+>
+> What the deployed backend does differently from what the contract said is in the
+> [handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md). Read it before
+> you flip the switch.
 
 ## How Firebase recognises your app
 
@@ -166,6 +177,36 @@ Dropping the config files in does **not** silently switch you to live data — a
 `EXPO_PUBLIC_USE_MOCKS` always wins, so you choose when to cross over. With the variable unset,
 fixtures turn off automatically once Firebase becomes reachable.
 
+#### What is actually in there
+
+The seed came from `src/mocks/`, so the ids are the ones you already know. Hard-code them freely
+while developing:
+
+| Collection | Ids |
+| --- | --- |
+| `artists` | `artist-lumina` · `artist-echoline` · `artist-nightpost` |
+| `places` | `place-jumunjin` · `place-gamcheon` · `place-namsan` · `place-cheonggye` · `place-eurwangni` |
+| `courses` | `course-gangneung` · `course-seoul-night` |
+| `raffles` | `raffle-fansign` · `raffle-album` · `raffle-concert` · `raffle-closed` |
+
+**To exercise GPS인증 for real, send a coordinate within 50 m of `place-jumunjin`** —
+`37.8983, 128.8306`. The simulator's location override reaches it; you do not need to be in 강릉.
+Two things it will not do for you:
+
+- The reading's `accuracy` still has to come back at **65 m or better**, or the call is rejected
+  for `poor_accuracy` before position is even considered.
+- On Android, an override sets the system's mock-provider flag. Once the app populates `isMock`
+  honestly, the same override starts returning `mock_location`. Test the happy path on iOS, or on
+  a device.
+
+The fixtures' scripted 84m → 66m → 32m countdown does not exist against the live backend —
+`verifyLocation` judges whatever coordinate you actually send.
+
+> [!NOTE]
+> **The seeded English copy is placeholder text.** The backend translated `src/mocks/` into
+> `{ ko, en }` maps, but the Korean originals were themselves stand-ins written before rights
+> clearance. Anything odd you see under `locale: 'en'` is a copy task, not a bug.
+
 ### 5. Use it in code
 
 > [!WARNING]
@@ -189,10 +230,21 @@ await signInWithEmailAndPassword(getAuth(app), email, password);
 // Read a document
 const snapshot = await getDoc(doc(getFirestore(app), 'places', placeId));
 
-// Call a Cloud Function
-const verify = httpsCallable(getFunctions(app), 'verifyLocation');
-const result = await verify({ placeId, lat, lng, accuracy });
+// Call a Cloud Function — the region is not optional, see step 1
+const verify = httpsCallable(getFunctions(app, 'asia-northeast3'), 'verifyLocation');
+const result = await verify({
+  placeId,
+  lat,
+  lng,
+  accuracy,
+  capturedAt: new Date().toISOString(),  // must be within ±5 min of server time
+  isMock,                                // Android reports it; iOS sends false
+});
 ```
+
+Every field above is required. `getFunctions(app)` without the region resolves to `us-central1`
+and fails `not-found`; a stale `capturedAt` fails `invalid-argument`. The full request and
+response shapes are in [backend-contract.md](../reference/backend-contract.md).
 
 No URL, no API key, no `EXPO_PUBLIC_` variable — the config files from step 2 carry all of it.
 
@@ -242,8 +294,9 @@ One `if` per repository function. Screens are identical either way, because they
 
 Keep the switch after integration. It is worth more than it costs:
 
-- Developing offline, or before the backend dev has seeded a collection.
-- Building a screen whose Cloud Function is not deployed yet.
+- Developing offline, or on a flight, or against a collection that is seeded but empty.
+- Walking a flow end to end without travelling — the fixtures script a 84m → 66m → 32m
+  verification countdown that the live backend, judging real coordinates, will not reproduce.
 - **Demoing at the 공모전 if the venue network fails.** For an app built on GPS and photo
   upload, that is a real risk, and a boolean is cheap insurance against it.
 
@@ -258,9 +311,16 @@ afternoon if you do not recognise them.
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | A field renders `undefined` | Field-name mismatch. Firestore has no schema and never errors on a wrong key | Check [backend-contract.md](../reference/backend-contract.md). It is the referee, not either codebase |
-| `permission-denied` on a read that should work | Firestore rules, not your code | Send the collection path to the backend dev |
-| Callable throws `not-found` | The function is not deployed, **or** the region is wrong. PINDOM deploys to `asia-northeast3`, but `getFunctions(app)` defaults to `us-central1` | Check `EXPO_PUBLIC_FUNCTIONS_REGION`. If it is right, the function is not deployed yet |
+| `permission-denied` on a **ticket list** | The query is missing `where('userId', '==', uid)`. Rules judge the query, not the results, so an unconstrained list is refused whole rather than narrowed | Add the condition. 보관함 is that same query plus `visibility == 'private'` |
+| `permission-denied` on **saving a profile** | The write carried a field outside the permitted six. Adding something innocuous like `updatedAt` is enough | Send only `nickname`, `avatarUrl`, `bio`, `followedArtistIds`, `profileVisibility`, `locale` |
+| `permission-denied` on **writing a post or review** | `authorNickname` or `authorTier` does not match the author's own `users` document; `createdAt` is not `serverTimestamp()`; or `likeCount` / `commentCount` is missing or nonzero — they must be present and literal `0` | Read the user document first and copy both author values from it, send the counters as `0`, and never stamp `createdAt` on the client |
+| `permission-denied` **right after sign-up** | The `users` create had a nonzero counter, or carried `tier` | The three counters are literal `0` and `tier` is omitted — it is function-only |
+| `permission-denied` on a **photo upload** | The path's uid is not the caller's, the file is not an image, or it is 10 MB or larger | Upload to `tickets/{uid}/…` or `posts/{uid}/…` and re-encode before uploading — that also strips EXIF, which is the app's job |
+| `permission-denied` on any other read | Firestore rules, not your code | Send the collection path to the backend dev |
+| Callable throws `not-found` | Almost always the region. All three functions are deployed to `asia-northeast3`, but `getFunctions(app)` defaults to `us-central1` | Pass the region explicitly. Check `EXPO_PUBLIC_FUNCTIONS_REGION`, and check the call site actually reads it |
 | `auth/operation-not-allowed` on sign-in | Email/Password is disabled in the console. Enabled for `pindom-1234`, so this only bites on a new project | Authentication → Sign-in method → Email/Password |
+| The first callable of a session takes seconds | Cold start. The functions run at `minInstances: 0`, so the first invocation pays 2–4 s of container startup | Not a fault — design the loading state to survive it. `verifyLocation` gets a warm instance before launch |
+| A verification throws `invalid-argument` | `capturedAt` is outside server time ±5 minutes — usually a simulator with a drifting clock | Fix the device clock. Do not build a flow that holds a reading and re-sends it later |
 | A date renders as `[object Object]` | Firestore returns a `Timestamp`, not a `Date` or an ISO string | Convert once, in the repository, never in a screen |
 | An optional field typed `\| null` never matches | Firestore omits absent fields entirely — they read `undefined`, never `null` | Type them `field?: T` |
 | Everything fails silently after a clean install | Bundle identifier mismatch, or the config files are missing after `prebuild --clean` | Confirm both files are at the repo root and the identifiers match step 1 |
@@ -272,6 +332,7 @@ Everything Firebase-adjacent, reachable from here.
 | Document | What you will find |
 | --- | --- |
 | [backend-contract.md](../reference/backend-contract.md) | The Firestore collections, field names, and the three Cloud Function signatures. **The document the backend dev implements against** |
+| [2026-08-22 handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) | What the deployed backend does differently from the contract, and the app changes still owed. **Read this before switching off fixtures** |
 | [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | Every finding from the backend developer's review of that contract, and the decision taken on it. Read it when you want to know *why* a field is shaped the way it is |
 | [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) | Why Firebase sits behind `src/lib/repositories/`, and why `src/lib/api/` is superseded |
 | [architecture.md](../explanation/architecture.md) | The product loop, the repo layout, and the trust boundary that makes GPS adjudication server-side |

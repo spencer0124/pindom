@@ -1,15 +1,26 @@
 ---
 title: 2026-08-21 Contract Alignment Checklist
 type: plan
-status: draft
+status: superseded
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
 # 2026-08-21 — Contract Alignment Checklist
 
-> What was landed on `main` from the backend contract review, what the backend developer can now build against, and what is still owed on each side. Start here if you are the backend developer picking this branch up.
+> What was landed on `main` from the backend contract review, what the backend developer can now build against, and what is still owed on each side. Superseded — the backend has since been built and deployed.
+
+> [!IMPORTANT]
+> **Superseded by
+> [2026-08-22 handoff reconciliation](2026-08-22-backend-handoff-reconciliation.md).** Everything
+> this page was tracking is resolved: the backend deployed the six-field `users` rule, tier
+> thresholds were decided, and the review-visit question was answered by what shipped. Start
+> there instead.
+>
+> One section is **not** carried over and is still live:
+> [Owed by the app side, not blocking anyone](#owed-by-the-app-side-not-blocking-anyone). Those
+> are screen-level TODOs rather than contract items, which is why they stayed here.
 
 ## Summary
 
@@ -22,11 +33,11 @@ The decisions behind every item are in the
 [review resolutions](2026-08-21-backend-contract-review-resolutions.md). This page is the
 tracking view — what is done, what is blocked, and on whom.
 
-> [!IMPORTANT]
-> **One item needs a reply before security rules are written.** The review's proposed
-> `users` update rule allows `nickname` and `avatarUrl` only; the contract needs all six fields
-> it lists. Written as proposed, 프로필 편집, 언어 and 최애 찾기 fail with `permission-denied`.
-> See [Owed by the app side](#owed-by-the-app-side).
+> [!NOTE]
+> **Resolved.** This page opened by warning that the review's proposed `users` update rule
+> allowed two fields where the contract needs six, and that 프로필 편집, 언어 and 최애 찾기 would
+> all fail with `permission-denied` if it shipped that way. It did not ship that way — the
+> deployed rule takes all six.
 
 ## Landed — the contract now says this
 
