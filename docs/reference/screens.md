@@ -49,7 +49,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
-| `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | skeleton — 레이더 interaction (`1b`-A) |
+| `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — `1b`-A 레이더; the verdict is the server's |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | skeleton |
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | skeleton |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | skeleton |
