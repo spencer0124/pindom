@@ -51,7 +51,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — `1b`-A 레이더; the verdict is the server's |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
-| `camera` | 카메라 | `33:2230` | `/capture/camera` | skeleton |
+| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — live view + cutout; stand-in without a camera |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | skeleton |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | skeleton |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | skeleton |
