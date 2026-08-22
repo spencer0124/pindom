@@ -3,7 +3,7 @@ title: Screen Implementation Plan
 type: plan
 status: draft
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
@@ -146,6 +146,14 @@ One slice per session, in the order below. Slice membership and screens are in
 
 Screens inside a slice share state and navigation params. Building 응모 → 티켓 절취 → 응모완료
 together means the route params match; building them a week apart means they do not.
+
+All seven slices landed on 2026-08-22, each with a checklist under `docs/plans/` recording what
+the device run found and where the sources disagreed — Discovery first (it holds the golden
+screen), then Capture, Tickets & raffle, Auth & entry, Community, Profile and Assistant. The
+order differed from the table above: Auth's reason for going first, settling the artist shape,
+was met by the Discovery store. What remains is not screens — see
+[../reference/screens.md](../reference/screens.md) — but the Naver client id, a real camera, the
+Firebase path, and the `askAssistant` function the Assistant checklist specifies.
 
 ## Per-screen loop
 

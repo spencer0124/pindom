@@ -77,7 +77,7 @@ Decide before the affected screen is built.
 | 2 | Which `1d` raffle motion? | None is marked applied |
 | 3 | ~~Are all four languages in scope for the 공모전?~~ **Closed 2026-08-21.** | Shipped locales are `ko` (default) and `en`. The prototype still writes copy in all four and that stays as it is — it is simply wider than what ships, not a contradiction. See the [review resolutions](../docs/plans/2026-08-21-backend-contract-review-resolutions.md) |
 | 4 | 편집: was narrowing the cutout scale to 88–112% and dropping 좌우반전 deliberate? | It reads as an anti-fake measure — a cutout you cannot shrink, enlarge or mirror is harder to composite dishonestly. If so it belongs with the other verification constraints rather than buried in a slider range. Blocks 편집 |
-| 5 | Should 추천 코스 be reachable from anywhere but the assistant? | Today the assistant's 지도에서 코스 보기 card is the only entry, and 지도 has none. The drop also ships 추천 코스 지도에 담기 copy in all four locales with no control wired to it, which suggests a second path was intended |
+| 5 | Should 추천 코스 be reachable from anywhere but the assistant? | Today the assistant's 지도에서 코스 보기 card is the only entry, and 지도 has none. The drop also ships 추천 코스 지도에 담기 copy in all four locales with no control wired to it, which suggests a second path was intended. **As built 2026-08-22:** 홈's 지역 코스 cards open the same screen; 지도 still has no entry. See the [Assistant checklist](../docs/plans/2026-08-22-assistant-slice-checklist.md) |
 
 ## How to use it
 

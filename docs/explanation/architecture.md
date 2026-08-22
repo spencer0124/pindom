@@ -48,7 +48,7 @@ A **flat Expo app**, not a monorepo — the version pins are in `package.json`.
 | `src/mocks/` | Typed fixtures the repositories serve when `EXPO_PUBLIC_USE_MOCKS` is on |
 | `src/lib/config.ts` | The only reader of `Constants.expoConfig.extra` |
 | `src/lib/store/` | MMKV-backed persistence adapters for Zustand |
-| `src/components/` | App-level shared components, above the design system |
+| `src/components/` | App-level shared components, above the design system. Empty since the last skeleton was replaced — what the screens share so far is feature-level and lives in `src/features/shared/` |
 | `src/features/` | Feature-scoped code |
 | `assets/` | Images and (eventually) fonts |
 | `design/` | The interactive prototype — the design authority. See [../../design/README.md](../../design/README.md) |
