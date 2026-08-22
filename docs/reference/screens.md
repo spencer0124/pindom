@@ -45,7 +45,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | Screen | Frame | Node | Route | Status |
 | --- | --- | --- | --- | --- |
 | `onboard` | 온보딩 + 시작화면 | `33:2801` | `/onboarding` | **built** — absorbs 시작화면; email sign-in folded in; the tabs redirect here without a session |
-| `artistSearch` | 최애 찾기 | — | `/artist/search` *(proposed)* | **missing** |
+| `artistSearch` | 최애 찾기 | — | `/artist/search` | **built** — a follow selects the 최애 |
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
@@ -206,6 +206,7 @@ flowchart TD
 - [../plans/2026-08-22-discovery-slice-checklist.md](../plans/2026-08-22-discovery-slice-checklist.md) — how the Discovery slice was built, and where its two sources disagreed
 - [../plans/2026-08-22-capture-slice-checklist.md](../plans/2026-08-22-capture-slice-checklist.md) — how the Capture slice was built, and what the device run found
 - [../plans/2026-08-22-tickets-slice-checklist.md](../plans/2026-08-22-tickets-slice-checklist.md) — how the Tickets & raffle slice was built, and where the tier gauge and the contract disagree
+- [../plans/2026-08-22-auth-slice-checklist.md](../plans/2026-08-22-auth-slice-checklist.md) — how 온보딩 and 최애 찾기 were built, and the session gate
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with

@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useRef } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorPage, Loader, Txt, useAdaptive, useTheme } from '@/design-system';
@@ -34,8 +34,19 @@ import { PlaceList, Rule, SectionHeader, Shape } from '@/features/shared';
 export default function HomeScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
-  const { state, reload } = useHomeData();
+  const { state, reload, refresh } = useHomeData();
   const selectArtist = useDiscoveryStore((s) => s.select);
+
+  // Re-read silently on every return to the tab, not on the first focus —
+  // 최애 찾기 changes the chips and 티켓 발행 changes the balance, and this is
+  // the screen that shows both. The loader is for the first load only.
+  const focused = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (focused.current) void refresh();
+      focused.current = true;
+    }, [refresh]),
+  );
 
   // Pinned once per render pass so every deadline in this tree is measured
   // against the same instant.

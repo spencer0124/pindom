@@ -67,9 +67,14 @@ export function useHomeData() {
 
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
   const seed = useDiscoveryStore((s) => s.seed);
+  const reconcile = useDiscoveryStore((s) => s.reconcile);
 
-  const load = useCallback(async () => {
-    setBase({ status: 'loading' });
+  const load = useCallback(async (silent = false) => {
+    // A silent load keeps the screen up while the data is re-read — used when
+    // 홈 regains focus after 최애 찾기 or 티켓 발행 changed what it shows. The
+    // fixture path is deliberately slow, and a flash of the loader on every
+    // return would read as a bug.
+    if (!silent) setBase({ status: 'loading' });
 
     const position = await readPosition();
 
@@ -98,6 +103,8 @@ export function useHomeData() {
         artists[0]?.id ??
         null,
     );
+    // And a correction when the pick is no longer followed.
+    reconcile(artists.map((a) => a.id));
 
     setBase({
       status: 'ready',
@@ -115,7 +122,7 @@ export function useHomeData() {
         hasPosition: position != null,
       },
     });
-  }, [seed]);
+  }, [seed, reconcile]);
 
   useEffect(() => {
     void load();
@@ -160,5 +167,10 @@ export function useHomeData() {
     };
   }, [base, courses, selectedArtistId]);
 
-  return { state, reload: load };
+  // Stable identities: 홈 hangs a focus effect off `refresh`, and a fresh
+  // closure per render would re-fire it on every render.
+  const reload = useCallback(() => load(), [load]);
+  const refresh = useCallback(() => load(true), [load]);
+
+  return { state, reload, refresh };
 }

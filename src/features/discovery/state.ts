@@ -11,6 +11,12 @@ interface DiscoveryState {
    * user picked on 홈.
    */
   seed: (artistId: string | null) => void;
+  /**
+   * The followed list changed under the selection. Keeps it when it is still
+   * followed; otherwise falls to the first followed artist, or to nothing.
+   * 최애 찾기 can unfollow the very artist 홈 is keyed to.
+   */
+  reconcile: (followedIds: string[]) => void;
 }
 
 /**
@@ -32,5 +38,10 @@ export const useDiscoveryStore = create<DiscoveryState>((set, get) => ({
   select: (artistId) => set({ selectedArtistId: artistId }),
   seed: (artistId) => {
     if (get().selectedArtistId == null) set({ selectedArtistId: artistId });
+  },
+  reconcile: (followedIds) => {
+    const current = get().selectedArtistId;
+    if (current != null && followedIds.includes(current)) return;
+    set({ selectedArtistId: followedIds[0] ?? null });
   },
 }));
