@@ -6,7 +6,9 @@ import {
   TicketIcon,
   UserIcon,
 } from 'phosphor-react-native';
+import { View } from 'react-native';
 import { Loader, useAdaptive, useTheme } from '@/design-system';
+import { AssistantFab } from '@/features/assistant';
 import { useSession } from '@/features/auth';
 
 /**
@@ -36,6 +38,7 @@ export default function TabsLayout() {
   }
 
   return (
+    <View style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -84,5 +87,8 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+      {/* The 2026-08-20 drop's floating assistant button, on every tab. */}
+      <AssistantFab />
+    </View>
   );
 }

@@ -61,7 +61,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — per-artist boards, a paged feed, no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
-| `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
+| `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩 |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
