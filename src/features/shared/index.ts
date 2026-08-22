@@ -6,4 +6,5 @@ export { Rule } from './Rule';
 export { SectionHeader } from './SectionHeader';
 export { Shape, sectionLabel } from './shape';
 export { TICKET_STUB_WIDTH, TicketCard, type TicketCardProps } from './TicketCard';
+export { tierLabel } from './tierLabel';
 export { workKindLabel } from './workKindLabel';

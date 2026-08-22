@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
-import type { Review, Tier } from '@/lib/domain';
-import { formatTimeAgo, Rule, Shape } from '@/features/shared';
+import type { Review } from '@/lib/domain';
+import { formatTimeAgo, Rule, Shape, tierLabel } from '@/features/shared';
 
 /**
  * The three tips 1a offers as chips on the composer.
@@ -21,11 +21,6 @@ const TIP_TAGS = ['포즈', '각도', '시간대'] as const;
  * it "denormalised, rendered as a badge". Building the prototype's label would
  * mean inventing a field, so the badge says what the data actually knows.
  */
-const tierLabel: Record<Tier, string> = {
-  club20: '20장 클럽',
-  club10: '10장 클럽',
-  clubGo: '수집 중',
-};
 
 interface ReviewListProps {
   reviews: Review[];

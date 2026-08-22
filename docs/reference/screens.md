@@ -59,7 +59,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
 | `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
-| `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | skeleton — now **per-artist boards** |
+| `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — per-artist boards, a paged feed, no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | skeleton |
 | `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
