@@ -1,6 +1,8 @@
 import type { Result } from '../api/types';
 import type {
   Artist,
+  AssistantAsk,
+  AssistantReply,
   Course,
   FeedPage,
   GalleryPhoto,
@@ -167,8 +169,21 @@ export interface UserRepository {
   setLocale(locale: Locale): Promise<Result<User>>;
 }
 
+export interface AssistantRepository {
+  /**
+   * Pindom AI. The client sends a message and the recent turns; the server
+   * owns the model, the prompt, and the tools a route answer calls. A reply
+   * that produced a route carries a `courseId`, which 지도에서 코스 보기 opens.
+   *
+   * No function for this is in the contract yet — see the Assistant checklist
+   * for the request and response the client expects.
+   */
+  ask(input: AssistantAsk): Promise<Result<AssistantReply>>;
+}
+
 export interface Repositories {
   artists: ArtistRepository;
+  assistant: AssistantRepository;
   auth: AuthRepository;
   courses: CourseRepository;
   places: PlaceRepository;

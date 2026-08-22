@@ -300,6 +300,27 @@ function toGalleryPhoto(placeId: string, id: string, d: DocData): GalleryPhoto {
 }
 
 export const firebaseRepositories: Repositories = {
+  assistant: {
+    /**
+     * Proposed, not contracted: no assistant function is in
+     * docs/reference/backend-contract.md yet. The name and the shape here are
+     * what the client sends and expects — recorded in the Assistant checklist
+     * for the backend developer — and until the function exists the call
+     * fails as `not-found`, which the chat renders as an answer it could not
+     * get rather than a crash.
+     */
+    ask: (input) =>
+      attempt(async () => {
+        const call = httpsCallable(fns(), 'askAssistant');
+        const res = await call(input);
+        const data = res.data as DocData;
+        return {
+          text: String(data.text ?? ''),
+          ...(typeof data.courseId === 'string' && { courseId: data.courseId }),
+        };
+      }),
+  },
+
   artists: {
     search: (queryText) =>
       attempt(async () => {

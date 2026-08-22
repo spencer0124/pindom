@@ -19,6 +19,7 @@ export type { Post, NewPost, FeedPage } from './post';
 export type { Raffle, RaffleEntry, RaffleStatus } from './raffle';
 export type { Ticket, TicketVisibility } from './ticket';
 export type { GalleryPhoto, NewReview, Review } from './review';
+export type { AssistantAsk, AssistantMessage, AssistantReply } from './assistant';
 export type { ProfileVisibility, Session, Tier, User } from './user';
 export type {
   LocationReading,

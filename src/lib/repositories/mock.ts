@@ -1,6 +1,7 @@
 import { Failure, ResultHelper, type Result } from '../api/types';
 import type {
   Artist,
+  AssistantReply,
   FeedPage,
   Locale,
   NewReview,
@@ -20,6 +21,7 @@ import type {
 import { distanceMeters } from '../geo';
 import {
   mockArtists,
+  mockAssistantReply,
   mockCourses,
   mockDelay,
   mockGallery,
@@ -117,6 +119,13 @@ function withDistance(
 // ── Implementation ──
 
 export const mockRepositories: Repositories = {
+  assistant: {
+    async ask(input) {
+      if (!session) return mockDelay(unauthenticated<AssistantReply>());
+      return mockDelay(ResultHelper.ok(mockAssistantReply(input)));
+    },
+  },
+
   artists: {
     async search(queryText) {
       const q = (queryText ?? '').trim();

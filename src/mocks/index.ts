@@ -15,3 +15,4 @@ export { mockGallery, mockReviews } from './reviews';
 export { mockTickets } from './tickets';
 export { mockUser } from './users';
 export { mockVerificationSequence } from './verification';
+export { mockAssistantReply } from './assistant';

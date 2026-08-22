@@ -1,6 +1,7 @@
 import { AppConfig } from '../config';
 import type {
   ArtistRepository,
+  AssistantRepository,
   AuthRepository,
   CourseRepository,
   PlaceRepository,
@@ -51,6 +52,10 @@ export const artistRepository: ArtistRepository = {
 
 export const courseRepository: CourseRepository = {
   listForArtist: async (artistId) => (await impl()).courses.listForArtist(artistId),
+};
+
+export const assistantRepository: AssistantRepository = {
+  ask: async (input) => (await impl()).assistant.ask(input),
 };
 
 export const authRepository: AuthRepository = {
