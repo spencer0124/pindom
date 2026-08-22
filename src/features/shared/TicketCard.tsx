@@ -4,7 +4,9 @@ import { Txt, useAdaptive, useTheme } from '@/design-system';
 import Svg, { Line } from 'react-native-svg';
 import { Code128 } from './Code128';
 
-const STUB_WIDTH = 94;
+/** The stub's width on the full card. 티켓 절취 tears along this boundary. */
+export const TICKET_STUB_WIDTH = 94;
+const TILE_STUB_WIDTH = 40;
 const NOTCH = 14;
 
 export interface TicketCardProps {
@@ -15,6 +17,12 @@ export interface TicketCardProps {
   issuedAt: Date;
   /** 티켓 절취 renders the spent stub; 티켓 발행 and 컬렉션 never do. */
   spent?: boolean;
+  /**
+   * `full` is the ticket — 티켓 발행 and 티켓 절취. `tile` is 컬렉션's grid cell: the
+   * same object at a quarter of the area, so the barcode and subtitle go and the
+   * stub keeps only its word.
+   */
+  size?: 'full' | 'tile';
   style?: StyleProp<ViewStyle>;
 }
 
@@ -33,7 +41,16 @@ export interface TicketCardProps {
  * Shared because 컬렉션 and 티켓 절취 draw the same object — a second ticket
  * component is how two screens end up with two tickets.
  */
-export function TicketCard({ placeName, subtitle, serial, issuedAt, spent = false, style }: TicketCardProps) {
+export function TicketCard({
+  placeName,
+  subtitle,
+  serial,
+  issuedAt,
+  spent = false,
+  size = 'full',
+  style,
+}: TicketCardProps) {
+  const tile = size === 'tile';
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const accent = token.accent.fillColor;
@@ -48,29 +65,49 @@ export function TicketCard({ placeName, subtitle, serial, issuedAt, spent = fals
       onLayout={(e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height)}
       style={[
         styles.card,
+        tile && styles.cardTile,
         { backgroundColor: adaptive.background, borderColor: adaptive.grey200 },
         style,
       ]}
     >
-      <View style={styles.main}>
+      <View style={[styles.main, tile && styles.mainTile]}>
         <View style={styles.heading}>
-          <Txt typography="st13" fontWeight="bold" color={accent} style={styles.label}>
+          <Txt
+            typography="st13"
+            fontWeight="bold"
+            color={accent}
+            style={[styles.label, tile && styles.labelTile]}
+            numberOfLines={1}
+          >
             PINDOM TICKET
           </Txt>
-          <Txt typography="t4" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
+          <Txt
+            typography={tile ? 't7' : 't4'}
+            fontWeight="bold"
+            color={adaptive.grey900}
+            numberOfLines={tile ? 2 : 1}
+          >
             {placeName}
           </Txt>
-          {subtitle != null && (
+          {subtitle != null && !tile && (
             <Txt typography="st13" color={adaptive.grey600} numberOfLines={1}>
               {subtitle}
             </Txt>
           )}
         </View>
         <View style={styles.stamp}>
-          <Txt typography="st13" color={adaptive.grey700} style={styles.mono}>
-            {formatStamp(issuedAt)} · GPS ✓
-          </Txt>
-          <Txt typography="st13" fontWeight="medium" color={accent} style={styles.mono}>
+          {!tile && (
+            <Txt typography="st13" color={adaptive.grey700} style={styles.mono}>
+              {formatStamp(issuedAt)} · GPS ✓
+            </Txt>
+          )}
+          <Txt
+            typography="st13"
+            fontWeight="medium"
+            color={spent ? adaptive.grey500 : accent}
+            style={[styles.mono, tile && styles.monoTile]}
+            numberOfLines={1}
+          >
             {serial}
           </Txt>
         </View>
@@ -109,16 +146,21 @@ export function TicketCard({ placeName, subtitle, serial, issuedAt, spent = fals
         />
       </View>
 
-      <View style={[styles.stub, spent && styles.stubSpent]}>
-        {barcodeLength > 0 && (
+      <View style={[styles.stub, tile && styles.stubTile, spent && styles.stubSpent]}>
+        {barcodeLength > 0 && !tile && (
           <View style={[styles.barcode, { width: 30, height: barcodeLength }]}>
             <View style={{ transform: [{ rotate: '90deg' }] }}>
               <Code128 value={serial} height={30} length={barcodeLength} color={adaptive.grey900} />
             </View>
           </View>
         )}
-        <Txt typography="st13" fontWeight="medium" color={adaptive.grey500} style={styles.admit}>
-          {spent ? 'USED' : 'ADMIT ONE'}
+        <Txt
+          typography="st13"
+          fontWeight="medium"
+          color={adaptive.grey500}
+          style={[styles.admit, tile && styles.admitTile]}
+        >
+          {spent ? 'USED' : tile ? 'STUB' : 'ADMIT ONE'}
         </Txt>
       </View>
     </View>
@@ -140,10 +182,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
+  cardTile: {
+    aspectRatio: 170 / 104,
+  },
   main: {
     flex: 1,
     padding: 16,
     justifyContent: 'space-between',
+  },
+  mainTile: {
+    padding: 12,
   },
   heading: {
     gap: 4,
@@ -151,8 +199,12 @@ const styles = StyleSheet.create({
   label: {
     letterSpacing: 3,
   },
+  labelTile: {
+    letterSpacing: 1.2,
+  },
   stamp: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     gap: 8,
@@ -160,6 +212,9 @@ const styles = StyleSheet.create({
   mono: {
     fontVariant: ['tabular-nums'],
     letterSpacing: 0.5,
+  },
+  monoTile: {
+    letterSpacing: 0,
   },
   perforation: {
     width: 0,
@@ -185,12 +240,15 @@ const styles = StyleSheet.create({
     bottom: -NOTCH / 2,
   },
   stub: {
-    width: STUB_WIDTH,
+    width: TICKET_STUB_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     overflow: 'hidden',
+  },
+  stubTile: {
+    width: TILE_STUB_WIDTH,
   },
   barcode: {
     alignItems: 'center',
@@ -205,5 +263,8 @@ const styles = StyleSheet.create({
     width: 80,
     marginHorizontal: -28,
     textAlign: 'center',
+  },
+  admitTile: {
+    marginHorizontal: -34,
   },
 });
