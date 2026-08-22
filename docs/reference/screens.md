@@ -64,7 +64,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `chat` | Pindom AI | — | `/chat` *(proposed)* | **missing** — assistant; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` *(proposed)* | **missing** — reachable only from `chat` |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩 |
-| `profile` | 프로필 편집 | — | `/profile` *(proposed)* | **missing** |
+| `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
 | `language` | 언어 | — | `/language` *(proposed)* | **missing** |
 | `vault` | 보관함 | — | `/vault` *(proposed)* | **missing** — private tickets |
 
