@@ -17,6 +17,7 @@ const extra = Constants.expoConfig?.extra as
       useMocks?: boolean;
       firebaseConfigured?: boolean;
       functionsRegion?: string;
+      naverMapConfigured?: boolean;
     }
   | undefined;
 
@@ -47,6 +48,16 @@ export const AppConfig = {
   firebaseConfigured: extra?.firebaseConfigured ?? false,
 
   functionsRegion: extra?.functionsRegion ?? DEFAULT_FUNCTIONS_REGION,
+
+  /**
+   * Whether `EXPO_PUBLIC_NAVER_MAP_CLIENT_ID` was set at build time.
+   *
+   * Defaults to false, which is the state of a fresh clone. The Naver SDK
+   * treats a missing client id as an authentication failure and renders an
+   * empty tile surface with no visible error, so 지도 reads this and draws a
+   * stand-in instead — a blank map and a broken map look identical.
+   */
+  naverMapConfigured: extra?.naverMapConfigured ?? false,
 
   get isProduction() {
     return this.env === 'prod';

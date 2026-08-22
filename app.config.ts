@@ -52,6 +52,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // The client defaults to us-central1. A Korean deployment is likely
     // asia-northeast3, and a mismatch surfaces as `not-found` on every call.
     functionsRegion: process.env.EXPO_PUBLIC_FUNCTIONS_REGION,
+    // Whether a Naver Maps client id was present at build time. The SDK does
+    // not fail loudly without one — it renders an empty grey rectangle — so
+    // 지도 has to know, and say so, rather than look broken.
+    naverMapConfigured: Boolean(process.env.EXPO_PUBLIC_NAVER_MAP_CLIENT_ID),
   },
 
   ios: {
