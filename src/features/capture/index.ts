@@ -5,5 +5,6 @@ export { MosaicPatch, TOOLS, ToolStrip, type ToolId } from './ToolStrip';
 export { PhotoFrame, formatStamp, type StageSize } from './PhotoFrame';
 export { Radar } from './Radar';
 export { Slider } from './Slider';
+export { useIssueTicket } from './useIssueTicket';
 export { useVerification, type VerifyCheck, type VerifyPhase } from './useVerification';
 export { VerifyChecks } from './VerifyChecks';

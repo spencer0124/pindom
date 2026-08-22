@@ -53,7 +53,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — live view + cutout; stand-in without a camera |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — composes the print; 모자이크 only |
-| `publish` | 공개설정 | `33:2120` | `/capture/visibility` | skeleton |
+| `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | skeleton |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | skeleton |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | skeleton |
