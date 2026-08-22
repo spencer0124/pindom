@@ -48,7 +48,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `artistSearch` | 최애 찾기 | — | `/artist/search` *(proposed)* | **missing** |
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
-| `place` | 장소/상세 | `33:2381` | `/place/[id]` | skeleton — gains 갤러리 and 리뷰 |
+| `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | skeleton — 레이더 interaction (`1b`-A) |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | skeleton |
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | skeleton |
@@ -203,6 +203,7 @@ flowchart TD
 ## Related
 
 - [`design/README.md`](../../design/README.md) — the prototype these screens come from
+- [../plans/2026-08-22-discovery-slice-checklist.md](../plans/2026-08-22-discovery-slice-checklist.md) — how the Discovery slice was built, and where its two sources disagreed
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with

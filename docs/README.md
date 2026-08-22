@@ -82,6 +82,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-21-contract-alignment-checklist.md](plans/2026-08-21-contract-alignment-checklist.md) | What landed on `main` from that round, and what each side still owed. **Superseded** by the reconciliation below, apart from its screen-level TODO list |
 | [2026-08-22-backend-handoff-reconciliation.md](plans/2026-08-22-backend-handoff-reconciliation.md) | The backend is deployed. What the running system does differently from the contract, the values it chose for the blanks, and what the app still owes. **Start here if you are picking the backend up** |
 | [2026-08-22-phase-2-3-checklist.md](plans/2026-08-22-phase-2-3-checklist.md) | The punch list standing between this repo and its first real screen: getting the app onto a simulator, and finishing the `2b` re-skin far enough to build 홈 on. **Start here if you are picking the app up** |
+| [2026-08-22-discovery-slice-checklist.md](plans/2026-08-22-discovery-slice-checklist.md) | The second flow slice — 지도 and 장소/상세 — built on the state 홈 already reads: what landed, where the prototype and the Figma frames disagreed, and what the prototype asks for that the contract cannot serve |
 
 ## Outside this folder
 
