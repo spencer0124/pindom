@@ -56,7 +56,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles |
-| `raffle` | 응모 | `33:1871` | `/raffle/[id]` | skeleton |
+| `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
 | `tear` | 티켓 절취 | — | `/raffle/tear` *(proposed)* | **missing** — the 반권 mechanic |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | skeleton |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | skeleton — now **per-artist boards** |
