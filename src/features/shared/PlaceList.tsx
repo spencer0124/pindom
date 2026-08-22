@@ -3,16 +3,12 @@ import type { PlaceWithDistance } from '@/lib/domain';
 import { ListRow, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import { formatDistance } from './formatDistance';
 import { Rule } from './Rule';
+import { workKindLabel } from './workKindLabel';
 
 // 1a's own thumbnail size. It is also the smallest square the 인증 완료 stamp
 // fits across on one line, which is why it is not smaller.
 const THUMB = 56;
 
-const workKindLabel: Record<PlaceWithDistance['workKind'], string> = {
-  mv: 'MV 촬영',
-  drama: '드라마 촬영',
-  self: '자체 콘텐츠',
-};
 
 interface PlaceListProps {
   places: PlaceWithDistance[];

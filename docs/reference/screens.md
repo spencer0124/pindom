@@ -54,7 +54,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — live view + cutout; stand-in without a camera |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — composes the print; 모자이크 only |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
-| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | skeleton |
+| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | skeleton |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | skeleton |
 | `tear` | 티켓 절취 | — | `/raffle/tear` *(proposed)* | **missing** — the 반권 mechanic |
@@ -204,6 +204,7 @@ flowchart TD
 
 - [`design/README.md`](../../design/README.md) — the prototype these screens come from
 - [../plans/2026-08-22-discovery-slice-checklist.md](../plans/2026-08-22-discovery-slice-checklist.md) — how the Discovery slice was built, and where its two sources disagreed
+- [../plans/2026-08-22-capture-slice-checklist.md](../plans/2026-08-22-capture-slice-checklist.md) — how the Capture slice was built, and what the device run found
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma
 - [design-tokens.md](design-tokens.md) — the `2b` surface these are drawn on
 - [design-system.md](design-system.md) — the components to build these with

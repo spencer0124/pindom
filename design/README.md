@@ -3,7 +3,7 @@ title: Design Source
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-08-22
 audience: internal
 ---
 
@@ -73,7 +73,7 @@ Decide before the affected screen is built.
 
 | # | Question | Why it matters |
 | --- | --- | --- |
-| 1 | Ticket card: keep `1c`-A 홀로그램 무지개, or switch to `1c`-C 레트로 반권? | A was applied before `2b` was chosen. A rainbow hologram and a black-and-acid print ledger are not obviously one product, and the prototype's own next-steps note proposes the swap |
+| 1 | Ticket card: keep `1c`-A 홀로그램 무지개, or switch to `1c`-C 레트로 반권? | A was applied before `2b` was chosen. A rainbow hologram and a black-and-acid print ledger are not obviously one product, and the prototype's own next-steps note proposes the swap. **Narrowed 2026-08-22:** 티켓 발행 is built as `1c`-A's layout on `2b`'s surface — the hologram is colour, which is `2b`'s axis. What remains open is only whether C's stub layout should replace A's; see the [Capture checklist](../docs/plans/2026-08-22-capture-slice-checklist.md) |
 | 2 | Which `1d` raffle motion? | None is marked applied |
 | 3 | ~~Are all four languages in scope for the 공모전?~~ **Closed 2026-08-21.** | Shipped locales are `ko` (default) and `en`. The prototype still writes copy in all four and that stays as it is — it is simply wider than what ships, not a contradiction. See the [review resolutions](../docs/plans/2026-08-21-backend-contract-review-resolutions.md) |
 | 4 | 편집: was narrowing the cutout scale to 88–112% and dropping 좌우반전 deliberate? | It reads as an anti-fake measure — a cutout you cannot shrink, enlarge or mirror is harder to composite dishonestly. If so it belongs with the other verification constraints rather than buried in a slider range. Blocks 편집 |
