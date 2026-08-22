@@ -179,6 +179,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      'expo-camera',
+      {
+        cameraPermission: '촬영지에서 사진을 찍어 티켓을 발행하기 위해 카메라를 사용합니다.',
+        // 티켓 발행 never records audio; leaving this undeclared keeps the
+        // microphone prompt out of the flow entirely.
+        recordAudioAndroid: false,
+      },
+    ],
+    [
       '@mj-studio/react-native-naver-map',
       {
         client_id: process.env.EXPO_PUBLIC_NAVER_MAP_CLIENT_ID ?? '',

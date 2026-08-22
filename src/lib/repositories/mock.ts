@@ -14,7 +14,6 @@ import type {
   RaffleEntry,
   Session,
   Ticket,
-  TicketVisibility,
   User,
   VerificationResult,
 } from '../domain';
@@ -57,6 +56,8 @@ const entries: RaffleEntry[] = [];
 
 /** How far through `mockVerificationSequence` each verify session has walked. */
 const verifyProgress = new Map<string, number>();
+/** Which 촬영지 each grant was minted for — the real function reads this off the session. */
+const grantPlaces = new Map<string, string>();
 
 let sequence = 0;
 const nextId = (prefix: string) => `${prefix}-${(sequence += 1)}`;
@@ -259,13 +260,12 @@ export const mockRepositories: Repositories = {
       const result: VerificationResult = {
         ...scripted,
         sessionId,
-        ...(scripted.verified && {
-          grant: {
-            token: nextId('grant'),
-            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-          },
-        }),
       };
+      if (scripted.verified) {
+        const token = nextId('grant');
+        grantPlaces.set(token, reading.placeId);
+        result.grant = { token, expiresAt: new Date(Date.now() + 10 * 60 * 1000) };
+      }
       return mockDelay(ResultHelper.ok(result));
     },
   },
@@ -303,18 +303,37 @@ export const mockRepositories: Repositories = {
       );
     },
 
-    async issue({ visibility }: { visibility: TicketVisibility }) {
+    async uploadPhoto(localUri) {
+      if (!session) return mockDelay(unauthenticated<string>());
+      // No Storage in the fixture path: the local file stands in for the object,
+      // and its URI is the "path" `issue` echoes back as `photoUrl`.
+      return mockDelay(ResultHelper.ok(localUri));
+    },
+
+    async issue({ grantToken, photoPath, visibility }) {
       if (!session) return mockDelay(unauthenticated<Ticket>());
 
-      // The fixture mints against the most-visited place. The real function
-      // reads the place from the grant, which the client cannot forge.
-      const place = mockPlaces[0];
+      // The place comes from the grant, as it does server-side — the client
+      // never names it. An unknown or re-used token is the `grant_expired` /
+      // `grant_consumed` pair the contract describes, collapsed to one here.
+      const placeId = grantPlaces.get(grantToken);
+      const place = mockPlaces.find((p) => p.id === placeId);
+      if (!place) {
+        return mockDelay(
+          ResultHelper.error(
+            Failure.firebase('failed-precondition', '인증이 만료됐어요.', 'grant_expired'),
+          ),
+        );
+      }
+      grantPlaces.delete(grantToken);
+
       const ticket: Ticket = {
         id: nextId('ticket'),
         userId: user.id,
         placeId: place.id,
         placeName: place.name,
-        photoUrl: `https://picsum.photos/seed/${nextId('shot')}/900/1200`,
+        artistId: place.artistIds[0],
+        photoUrl: photoPath,
         serial: mockSerial(sequence),
         visibility,
         issuedAt: new Date(),

@@ -24,6 +24,7 @@ import {
   where,
 } from '@react-native-firebase/firestore';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
+import { getStorage, putFile, ref } from '@react-native-firebase/storage';
 
 import { AppConfig } from '../config';
 import { Failure, ResultHelper, type AppFailure, type Result } from '../api/types';
@@ -90,6 +91,7 @@ const auth = () => getAuth(getApp());
  * address — see `AppConfig.functionsRegion`.
  */
 const fns = () => getFunctions(getApp(), AppConfig.functionsRegion);
+const storage = () => getStorage(getApp());
 
 const FEED_PAGE_SIZE = 10;
 
@@ -563,6 +565,16 @@ export const firebaseRepositories: Repositories = {
           throw Object.assign(new Error('티켓 없음'), { code: 'not-found' });
         }
         return toTicket(snap.id, snap.data() as DocData);
+      }),
+
+    uploadPhoto: (localUri) =>
+      attempt(async () => {
+        // `tickets/{uid}/` is what the rules and `issueTicket` both check, so the
+        // prefix is built here and nowhere else. The object name only has to be
+        // unique per user; a timestamp is enough.
+        const path = `tickets/${requireUid()}/${Date.now()}.jpg`;
+        await putFile(ref(storage(), path), localUri, { contentType: 'image/jpeg' });
+        return path;
       }),
 
     issue: (input) =>

@@ -103,6 +103,16 @@ export interface TicketRepository {
     visibility: 'public' | 'private',
   ): Promise<Result<Ticket>>;
   getById(ticketId: string): Promise<Result<Ticket>>;
+  /**
+   * Put the photo where `issue` can see it, and return the **Storage path** — not a URL.
+   *
+   * The contract has the client upload directly to `tickets/{uid}/…` and pass only the
+   * resulting path to `issueTicket`, which then confirms an object exists there and is the
+   * caller's. The path prefix is the ownership check, so this is the one place that builds
+   * it. `localUri` must already be re-encoded — the composition step does that, which is
+   * also what strips EXIF, per the contract.
+   */
+  uploadPhoto(localUri: string): Promise<Result<string>>;
   /** 티켓 발행. Requires the grant `submitReading` returned on success. */
   issue(input: {
     grantToken: string;

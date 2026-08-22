@@ -82,6 +82,7 @@ export const ticketRepository: TicketRepository = {
   setVisibility: async (ticketId, visibility) =>
     (await impl()).tickets.setVisibility(ticketId, visibility),
   getById: async (ticketId) => (await impl()).tickets.getById(ticketId),
+  uploadPhoto: async (localUri) => (await impl()).tickets.uploadPhoto(localUri),
   issue: async (input) => (await impl()).tickets.issue(input),
 };
 
