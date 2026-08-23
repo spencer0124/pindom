@@ -18,7 +18,9 @@ import { Rule, Shape } from '@/features/shared';
  * the caption field (이 컷에 대한 한 줄) has no field in the contract to land
  * in, and the serial in 발행될 티켓 is minted by the server, so it cannot be
  * printed before the button is pressed. The thumbnail is the composed print
- * — exactly what the ticket will carry.
+ * — exactly what the ticket will carry. The blocks keep 1a's order even with
+ * the caption gone: thumb, toggle, 발행될 티켓, then the CTA (fidelity
+ * decision 3).
  */
 export default function VisibilityScreen() {
   const adaptive = useAdaptive();
@@ -63,14 +65,6 @@ export default function VisibilityScreen() {
         <View style={[styles.thumb, { backgroundColor: adaptive.background }]}>
           <Image source={{ uri: composedUri }} style={StyleSheet.absoluteFill} contentFit="cover" />
         </View>
-        <View style={styles.issueNote}>
-          <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
-            발행될 티켓
-          </Txt>
-          <Txt typography="t7" color={adaptive.grey600}>
-            {place.name} · 공개 여부와 무관하게 티켓은 발행되고, 지도의 핀이 유색으로 바뀝니다.
-          </Txt>
-        </View>
       </View>
 
       <Rule />
@@ -95,6 +89,15 @@ export default function VisibilityScreen() {
       </Pressable>
 
       <Rule />
+
+      <View style={styles.issueNote}>
+        <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
+          발행될 티켓
+        </Txt>
+        <Txt typography="t7" color={adaptive.grey600}>
+          {place.name} · 공개 여부와 무관하게 티켓은 발행되고, 지도의 핀이 유색으로 바뀝니다.
+        </Txt>
+      </View>
 
       <View style={styles.footer}>
         {state.status === 'error' && (
@@ -125,8 +128,6 @@ const styles = StyleSheet.create({
     width: 64,
   },
   preview: {
-    flexDirection: 'row',
-    gap: 14,
     paddingHorizontal: Shape.gutter,
     paddingVertical: 18,
   },
@@ -136,9 +137,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   issueNote: {
-    flex: 1,
-    gap: 6,
-    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: Shape.gutter,
+    paddingVertical: 16,
   },
   toggle: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import {
@@ -14,6 +15,11 @@ import {
 } from '@/features/capture';
 import { Shape } from '@/features/shared';
 
+/** 1a's `fadeUp .4s both` on the 인증 완료 chip: 14px up from below, CSS `ease`. */
+const chipRise = FadeInDown.duration(400)
+  .easing(Easing.bezier(0.25, 0.1, 0.25, 1))
+  .withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] });
+
 /**
  * 카메라 — the live view, the 최애 cutout over it, and the shutter.
  *
@@ -26,6 +32,9 @@ import { Shape } from '@/features/shared';
  * `issueTicket` is what requires the grant, and without one the chain ends at
  * 티켓 발행하기 with `grant_expired`. The shot is the raw photo; the cutout and
  * the tools are composed on 편집, so a retake keeps the alignment.
+ *
+ * The drag that places the cutout covers the whole print, as in 1a — the
+ * `Cutout` lays its gesture over the stage, under the hint.
  */
 export default function CameraScreen() {
   const adaptive = useAdaptive();
@@ -68,7 +77,8 @@ export default function CameraScreen() {
   return (
     <View style={[styles.root, { backgroundColor: adaptive.greyBackground }]}>
       <SafeAreaView edges={['top']} style={styles.top}>
-        <View
+        <Animated.View
+          entering={chipRise}
           style={[
             styles.badge,
             { backgroundColor: token.accent.dimColor, borderColor: token.accent.fillColor },
@@ -82,7 +92,7 @@ export default function CameraScreen() {
           <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>
             GPS 인증 완료 · 원본 컷 열림
           </Txt>
-        </View>
+        </Animated.View>
       </SafeAreaView>
 
       <PhotoFrame placeName={place.name} date={now} style={styles.frame}>

@@ -36,6 +36,9 @@ export default function VerifyFailedScreen() {
   const distance = Number(params.distance);
   const radius = Number(params.radius);
   const accuracy = Number(params.accuracy);
+  // 1a tints the glyph by kind — amber for "not yet", alert for "not you".
+  // Semantic colour survives the 2b swap as a seed (fidelity decision 5).
+  const glyphColor = spoof ? colorSeeds.danger : colorSeeds.warning;
 
   const facts = spoof
     ? [
@@ -61,17 +64,8 @@ export default function VerifyFailedScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <View style={styles.body}>
-        <View
-          style={[
-            styles.glyph,
-            { borderColor: spoof ? colorSeeds.danger : adaptive.grey300 },
-          ]}
-        >
-          <Txt
-            typography="t2"
-            fontWeight="bold"
-            color={spoof ? colorSeeds.danger : adaptive.grey900}
-          >
+        <View style={[styles.glyph, { borderColor: glyphColor }]}>
+          <Txt typography="t2" fontWeight="bold" color={glyphColor}>
             {spoof ? '!' : '↻'}
           </Txt>
         </View>

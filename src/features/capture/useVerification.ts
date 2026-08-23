@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
 import { Platform } from 'react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Place, VerificationResult } from '@/lib/domain';
 import { distanceMeters } from '@/lib/geo';
@@ -22,11 +22,20 @@ type LoadState =
  *
  *   idle      — nothing submitted; the ring shows the client's own distance
  *   reading   — asking the device for a fix (위치 정확도 · 측정 중…)
- *   judging   — the reading is with the server (인증 반경 판정 · 대기)
+ *   judging   — the reading is with the server, or its verdict is still being
+ *               revealed row by row (인증 반경 판정 · 대기)
  *   verified  — the grant is in hand; the CTA opens the camera
  *   refused   — the verdict was no; the caller is on its way to 인증 실패
  */
 export type VerifyPhase = 'idle' | 'reading' | 'judging' | 'verified' | 'refused';
+
+/**
+ * 1a reveals the verdict one row at a time, 900 ms apart, and leaves for
+ * 인증 실패 800 ms after the last row it could tick. The server has already
+ * decided by then; this is only the pace at which the screen says so.
+ */
+const REVEAL_STEP_MS = 900;
+const REFUSAL_HOLD_MS = 800;
 
 /**
  * The three rows under the radar. `ok` is null while the row is still pending.
@@ -49,7 +58,11 @@ export interface VerificationView {
   distance: number | null;
   checks: VerifyCheck[];
   result: VerificationResult | null;
-  /** Submit one reading. Resolves with the verdict so the screen can route on it. */
+  /**
+   * Submit one reading. Resolves with the verdict once the screen has finished
+   * revealing it — a refusal resolves as the screen should leave for 인증 실패,
+   * a pass as the last row ticks.
+   */
   verify: () => Promise<VerificationResult | null>;
   reload: () => void;
 }
@@ -69,6 +82,10 @@ export function useVerification(placeId: string | undefined): VerificationView {
   const [distance, setDistance] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [result, setResult] = useState<VerificationResult | null>(null);
+  // How many of the server's two rows (반경, 이동속도) the screen has revealed.
+  // Only a row the server passed is ever revealed, so revealed means ticked.
+  const [revealed, setRevealed] = useState(0);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
   const begin = useCaptureStore((s) => s.begin);
@@ -120,8 +137,25 @@ export function useVerification(placeId: string | undefined): VerificationView {
   // Arriving back from 인증 실패 with a grant already in hand — 다시 인증하기 after
   // a pass cannot happen, but a stale screen must not offer 현재 위치로 인증 twice.
   useEffect(() => {
-    if (grant != null) setPhase('verified');
+    if (grant != null) {
+      setPhase('verified');
+      setRevealed(2);
+    }
   }, [grant]);
+
+  // The reveal is a presentation sequence; a screen that leaves mid-way must
+  // not keep ticking rows — or minting phases — into nothing.
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      pending.forEach(clearTimeout);
+      pending.length = 0;
+    };
+  }, []);
+
+  const after = useCallback((ms: number, fn: () => void) => {
+    timers.current.push(setTimeout(fn, ms));
+  }, []);
 
   const verify = useCallback(async (): Promise<VerificationResult | null> => {
     if (state.status !== 'ready') return null;
@@ -129,6 +163,7 @@ export function useVerification(placeId: string | undefined): VerificationView {
 
     setPhase('reading');
     setResult(null);
+    setRevealed(0);
 
     let fix: Location.LocationObject;
     try {
@@ -172,16 +207,38 @@ export function useVerification(placeId: string | undefined): VerificationView {
     setLastDistance(Math.round(data.distanceMeters));
     setAccuracy(Math.round(data.accuracyMeters));
 
-    if (data.verified && data.grant) {
-      setGrant(data.grant);
-      setPhase('verified');
-    } else {
-      setPhase('refused');
-    }
-    return data;
-  }, [state, sessionId, setSessionId, setGrant, setLastDistance]);
+    // The verdict is in. What follows is 1a's pace of saying so — the rows the
+    // server passed tick 900 ms apart, in the order it checks them, and a row
+    // it refused never ticks. The server checks accuracy, then the radius, then
+    // the speed series, so a refusal at one gate leaves the later ones unjudged.
+    const passedRows = data.verified
+      ? 2
+      : data.reason === 'implausible_speed' || data.reason === 'mock_location'
+        ? 1
+        : 0;
 
-  const checks = buildChecks(phase, accuracy, result);
+    return new Promise<VerificationResult>((resolve) => {
+      for (let row = 1; row <= passedRows; row += 1) {
+        after((row - 1) * REVEAL_STEP_MS, () => setRevealed(row));
+      }
+      const lastTickAt = Math.max(0, passedRows - 1) * REVEAL_STEP_MS;
+      if (data.verified && data.grant) {
+        const grant = data.grant;
+        after(lastTickAt, () => {
+          setGrant(grant);
+          setPhase('verified');
+          resolve(data);
+        });
+      } else {
+        after(lastTickAt + REFUSAL_HOLD_MS, () => {
+          setPhase('refused');
+          resolve(data);
+        });
+      }
+    });
+  }, [state, sessionId, setSessionId, setGrant, setLastDistance, after]);
+
+  const checks = buildChecks(phase, accuracy, result, revealed);
 
   return { state, phase, distance, checks, result, verify, reload: load };
 }
@@ -190,17 +247,15 @@ function buildChecks(
   phase: VerifyPhase,
   accuracy: number | null,
   result: VerificationResult | null,
+  revealed: number,
 ): VerifyCheck[] {
   const pending = phase === 'idle' || phase === 'reading';
   const accuracyOk =
     result != null ? result.reason !== 'poor_accuracy' : accuracy != null ? true : null;
-  const radiusOk =
-    result != null ? result.verified || result.reason !== 'out_of_radius' : null;
-  const speedOk =
-    result != null
-      ? result.verified ||
-        (result.reason !== 'implausible_speed' && result.reason !== 'mock_location')
-      : null;
+  // A server row shows its tick only once the reveal has reached it; until
+  // then it reads 대기 whether the server has spoken or not.
+  const radiusOk = revealed >= 1 ? true : null;
+  const speedOk = revealed >= 2 ? true : null;
 
   return [
     {
@@ -215,13 +270,13 @@ function buildChecks(
     },
     {
       label: '인증 반경 판정',
-      value: radiusOk ? `${result?.requiredRadiusMeters ?? 50}m 이내` : '대기',
-      ok: radiusOk === true ? true : result != null && !result.verified ? radiusOk : null,
+      value: radiusOk && result != null ? `${result.requiredRadiusMeters}m 이내` : '대기',
+      ok: radiusOk,
     },
     {
       label: '이동속도 검증 (위조 방지)',
-      value: speedOk && result?.verified ? '정상' : '대기',
-      ok: result?.verified ? true : result != null ? speedOk : null,
+      value: speedOk ? '정상' : '대기',
+      ok: speedOk,
     },
   ];
 }

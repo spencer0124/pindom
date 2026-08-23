@@ -3,7 +3,7 @@ title: Capture Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -58,6 +58,11 @@ settling the artist shape — was met by the Discovery store, and this slice is 
 - [x] Checks resolve from the verdict: accuracy as soon as there is a fix, 반경 and 이동속도 only
       when the server has spoken. A refusal routes to 인증 실패 with the figures.
 - [x] CTA copy by phase: 현재 위치로 인증 · 인증 중… · 카메라 열기.
+- [x] The verdict is revealed at `1a`'s pace — the passed rows tick 900 ms apart, 인증 중…
+      stays legible on the button meanwhile — and 카메라 opens by itself 900 ms after the
+      last tick; 카메라 열기 is the manual path
+      ([fidelity decision 1](2026-08-23-prototype-fidelity-checklist.md#decisions)). The
+      server's verdict is what ticks; a refused row never does.
 
 ### 4 — 인증 실패 (`app/verify/failed.tsx`)
 
@@ -66,6 +71,9 @@ settling the artist shape — was met by the Discovery store, and this slice is 
       "not yet", `implausible_speed` and `mock_location` are "not you". The fact table changes
       with the reason — 남은 거리 for range, 위치 정확도 for accuracy, 탐지 사유 · 조치 for spoof.
 - [x] 다시 인증하기 replaces back to GPS인증 with the same `placeId`; the session is kept.
+- [x] The glyph is tinted by kind — `warning` for "not yet", `danger` for "not you" — as
+      `1a`'s amber/alert pair survives the `2b` swap
+      ([fidelity decision 5](2026-08-23-prototype-fidelity-checklist.md#decisions)).
 
 ### 5 — 카메라 (`app/capture/camera.tsx`)
 
@@ -93,6 +101,8 @@ settling the artist shape — was met by the Discovery store, and this slice is 
       공개로 게시 / 비공개 저장만 toggle with its two descriptions, 티켓 발행하기.
 - [x] 티켓 발행하기 is two calls in the contract's order — upload, then mint with the grant —
       and replaces to 티켓 발행 with the new `ticketId`.
+- [x] The blocks keep `1a`'s order with the caption gone: thumb row → toggle → 발행될 티켓 →
+      CTA ([fidelity decision 3](2026-08-23-prototype-fidelity-checklist.md#decisions)).
 
 ### 8 — 티켓 발행 (`app/capture/issued.tsx`)
 
@@ -138,6 +148,7 @@ in the code, and need the designer's word:
 | 인증 실패, `poor_accuracy` title | 위치가 아직 흐릿해요 |
 | 인증 실패, `poor_accuracy` body | 위치 오차가 ±{n}m라 반경 {r}m 판정을 내릴 수 없어요. 하늘이 트인 곳에서 잠시 기다렸다가 다시 인증해 주세요. |
 | 인증 실패, `mock_location` 탐지 사유 | 위치 조작 앱 감지 |
+| 인증 실패, `implausible_speed` 탐지 사유 | 이동속도 검증 (위조 방지) — `1a` prints the detected speed (순간 이동속도 320km/h); the verdict carries none, so this is the check's label until the designer supplies a figure-less line ([fidelity decision 6](2026-08-23-prototype-fidelity-checklist.md#decisions)) |
 | GPS인증, inside the radius and refused | 반경 안에 있어요 |
 | 카메라, no camera on the device | 이 기기에는 카메라가 없어요 — a stand-in note, like 지도's |
 
@@ -145,15 +156,22 @@ in the code, and need the designer's word:
 
 | # | `1a` prototype | Contract / `2b` | Taken | Why |
 | --- | --- | --- | --- | --- |
-| 1 | The ticket is `1c`-A, 홀로그램 무지개, tilting under the finger | `2b` is one black ground and one acid | `1c`-A's **layout** on `2b`'s **surface** | The hologram is colour, and colour is `2b`'s axis. This answers most of design/README.md open question 1: what was open was the surface, and the direction had decided it. 티켓 절취's 반권 mechanic builds on the same perforation |
+| 1 | The ticket is `1c`-A, 홀로그램 무지개, tilting under the finger | `2b` is one black ground and one acid | `1c`-A's **layout** on `2b`'s **surface**; the **hold-and-tilt stays**, through `HoloTilt` with the prototype's own white `basic` shine | The hologram's rainbow is colour, and colour is `2b`'s axis. The tilt is interaction, which is `1a`'s — and `1a` itself ships the gesture without the rainbow on a third of 컬렉션's tickets ([fidelity decision 2](2026-08-23-prototype-fidelity-checklist.md#decisions)). This answers most of design/README.md open question 1: what was open was the surface, and the direction had decided it. 티켓 절취's 반권 mechanic builds on the same perforation |
 | 2 | 공개설정 has a caption field, 이 컷에 대한 한 줄 | `tickets` has no caption field and `issueTicket` takes none | Not built | A field that is silently dropped is worse than no field. Recorded, not invented |
 | 3 | 발행될 티켓 prints the next serial, No.0417 | The serial is minted inside `issueTicket` | The place line without a number | It does not exist until the button is pressed |
 | 4 | 이동속도 검증 passes as 4.1km/h 정상 | The verdict carries no speed | 정상 | The server does not report the figure, and the client must not compute one |
 | 5 | The cutout is drawn smaller on 편집 than on the camera | — | One size on every stage, half the stage's height | What the user aligned is what the ticket carries; a figure that shrinks between screens is not the same composition |
 | 6 | The sheet, the check rows and the tool buttons are rounded, filled cards | `2b`: rules, not cards; chips only | Hairlines and rules; the acid on the ticked dot, the selected tool's edge and the shutter | The radius rule |
+| 7 | GPS인증's title prints the disc's number verbatim — disc `84m`, title 반경까지 84m — and 거의 다 왔어요 only on the second attempt | — | 반경까지 is **distance − radius**, and 거의 다 왔어요 whenever that is under one radius | "To the radius" is what the words say, and the fixture is inconsistent with itself (84 m at a 50 m radius reads 반경까지 84m). The device-run row above already leaned on this ([fidelity decision 4](2026-08-23-prototype-fidelity-checklist.md#decisions)) |
+| 8 | 티켓 발행's card carries three fixed white sparkle dots at `.8` | `2b` spends nothing on ornament | Not drawn | Pure colour; the shine and glare that move with the finger are the part that is interaction, and they are in `HoloTilt` |
 
 ## Still open
 
+- **The fidelity pass is unverified on a device.** The radar's wedge sweep, `HoloTilt`'s
+  perspective tilt and its SVG shine, the cutout's eased settle and the verdict's staggered
+  reveal were written against the prototype's numbers
+  ([fidelity checklist §2](2026-08-23-prototype-fidelity-checklist.md)) and typecheck, but the
+  simulator run that confirms them is that checklist's close-out, not this one's.
 - **No real camera has run.** Every shot so far is the simulator stand-in. `CameraView`,
   `takePictureAsync` and the permission prompt are written against the SDK's documentation and
   are unverified on a device.

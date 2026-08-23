@@ -1,10 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
 import { Radar, useVerification, VerifyChecks } from '@/features/capture';
 import { Shape } from '@/features/shared';
+
+/** 1a opens 카메라 this long after the last check ticks. */
+const AUTO_OPEN_MS = 900;
 
 /**
  * GPS인증 — submit a reading, render the verdict.
@@ -18,19 +21,49 @@ import { Shape } from '@/features/shared';
  * the implied speed and the mock-provider flag are the server's. The number in
  * the ring is feedback — see CLAUDE.md and docs/reference/backend-contract.md.
  * A refusal is a normal outcome, and it is 인증 실패's to render with the figures.
+ *
+ * The verdict is revealed at 1a's pace — one row every 900 ms, 인증 중… on the
+ * button meanwhile — and 900 ms after the last row ticks the camera opens by
+ * itself (fidelity decision 1). 카메라 열기 stays as the manual path; a tap on
+ * it during those 900 ms just goes now.
  */
 export default function GpsVerifyScreen() {
   const adaptive = useAdaptive();
   const { placeId } = useLocalSearchParams<{ placeId: string }>();
   const { state, phase, distance, checks, verify, reload } = useVerification(placeId);
+  const autoOpen = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openCamera = useCallback(() => {
+    if (autoOpen.current != null) {
+      clearTimeout(autoOpen.current);
+      autoOpen.current = null;
+    }
+    router.push('/capture/camera' as never);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (autoOpen.current != null) clearTimeout(autoOpen.current);
+    },
+    [],
+  );
+
+  const busy = phase === 'reading' || phase === 'judging';
 
   const onPress = useCallback(async () => {
+    if (busy) return;
     if (phase === 'verified') {
-      router.push('/capture/camera' as never);
+      openCamera();
       return;
     }
     const verdict = await verify();
-    if (verdict != null && !verdict.verified) {
+    if (verdict == null) return;
+    if (verdict.verified) {
+      autoOpen.current = setTimeout(() => {
+        autoOpen.current = null;
+        router.push('/capture/camera' as never);
+      }, AUTO_OPEN_MS);
+    } else {
       router.replace({
         pathname: '/verify/failed',
         params: {
@@ -42,7 +75,7 @@ export default function GpsVerifyScreen() {
         },
       } as never);
     }
-  }, [phase, verify, placeId]);
+  }, [busy, phase, verify, placeId, openCamera]);
 
   if (state.status === 'loading') {
     return (
@@ -65,7 +98,6 @@ export default function GpsVerifyScreen() {
   }
 
   const { place } = state;
-  const busy = phase === 'reading' || phase === 'judging';
   const remaining = distance != null ? Math.max(0, distance - place.radiusMeters) : null;
 
   const title =
@@ -94,7 +126,7 @@ export default function GpsVerifyScreen() {
       </Pressable>
 
       <View style={styles.body}>
-        <Radar distance={distance} radiusMeters={place.radiusMeters} active={busy} />
+        <Radar distance={distance} radiusMeters={place.radiusMeters} />
 
         <View style={styles.copy}>
           <Txt typography="t3" fontWeight="bold" color={adaptive.grey900} textAlign="center">
@@ -109,7 +141,10 @@ export default function GpsVerifyScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Button size="large" type="primary" display="block" loading={busy} onPress={onPress}>
+        {/* Not `loading` — that paints loader dots over the label, and 1a
+            keeps the button at full strength reading 인증 중…; `onPress` is
+            what ignores the tap. */}
+        <Button size="large" type="primary" display="block" onPress={onPress}>
           {cta}
         </Button>
         <Txt typography="st13" color={adaptive.grey500} textAlign="center">

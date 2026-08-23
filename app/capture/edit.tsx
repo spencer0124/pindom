@@ -38,7 +38,8 @@ export default function EditScreen() {
 
   const frame = useRef<View>(null);
   const [tool, setTool] = useState<ToolId>('모자이크');
-  const [strength, setStrength] = useState(25);
+  // 1a opens with the slider at 62, so 모자이크 starts at .62.
+  const [strength, setStrength] = useState(62);
   const [composing, setComposing] = useState(false);
   const now = useMemo(() => new Date(), []);
 

@@ -39,7 +39,9 @@ export interface TicketCardProps {
  * `1c`-C adds is 티켓 절취's, built on this same perforation.
  *
  * Shared because 컬렉션 and 티켓 절취 draw the same object — a second ticket
- * component is how two screens end up with two tickets.
+ * component is how two screens end up with two tickets. The card itself is
+ * still; the hold-and-tilt the prototype gives it is `HoloTilt`'s, wrapped
+ * around this where a screen wants it.
  */
 export function TicketCard({
   placeName,

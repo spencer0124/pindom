@@ -1,13 +1,27 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, Keyframe } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
 import { useCaptureStore, useIssuedTicket } from '@/features/capture';
-import { Shape, TicketCard, workKindLabel } from '@/features/shared';
+import { HoloTilt, Shape, TicketCard, tierNote, workKindLabel } from '@/features/shared';
 
-/** The next reward threshold, as 홈 prints it — 20장이면 팬사인회·굿즈가 열려요. */
-const REWARD_AT = 20;
+/** 1a's `dropIn .7s cubic-bezier(.2,.9,.3,1)`: from −90px and −6°, overshooting in. */
+const dropIn = new Keyframe({
+  0: { opacity: 0, transform: [{ translateY: -90 }, { rotate: '-6deg' }] },
+  100: {
+    opacity: 1,
+    transform: [{ translateY: 0 }, { rotate: '0deg' }],
+    easing: Easing.bezier(0.2, 0.9, 0.3, 1),
+  },
+}).duration(700);
+
+/** 1a's `fadeUp .5s` on the title block and the buttons: 14px up, CSS `ease`. */
+const fadeUp = (delay: number) =>
+  FadeInDown.delay(delay)
+    .duration(500)
+    .easing(Easing.bezier(0.25, 0.1, 0.25, 1))
+    .withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] });
 
 /**
  * 티켓 발행 — the ticket, dropped in.
@@ -16,10 +30,12 @@ const REWARD_AT = 20;
  * ticket's layout, and `2b` for colour, type and corners, matching
  * `app/(tabs)/index.tsx`. Figma `33:2072` is the earlier frame.
  *
- * The card is `TicketCard`, shared with 컬렉션 and 티켓 절취. The drop-in is
- * kept — motion is `1a`'s axis — and the hologram and its tilt are not, colour
- * being `2b`'s. Both buttons clear the Capture store: the grant was consumed by
- * the mint, and the photo is now the ticket's.
+ * The card is `TicketCard`, shared with 컬렉션 and 티켓 절취. Motion is `1a`'s:
+ * the card drops in with a twist, then tilts under a held finger through
+ * `HoloTilt` — the hold is interaction, kept; the rainbow it came with is
+ * colour, `2b`'s, and gone (fidelity decision 2). Both buttons clear the
+ * Capture store: the grant was consumed by the mint, and the photo is now the
+ * ticket's.
  */
 export default function IssuedScreen() {
   const adaptive = useAdaptive();
@@ -65,29 +81,29 @@ export default function IssuedScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <View style={styles.body}>
-        <Animated.View entering={FadeInDown.duration(700)} style={styles.card}>
-          <TicketCard
-            placeName={ticket.placeName}
-            subtitle={subtitle}
-            serial={ticket.serial}
-            issuedAt={ticket.issuedAt}
-          />
+        <Animated.View entering={dropIn} style={styles.card}>
+          <HoloTilt>
+            <TicketCard
+              placeName={ticket.placeName}
+              subtitle={subtitle}
+              serial={ticket.serial}
+              issuedAt={ticket.issuedAt}
+            />
+          </HoloTilt>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.delay(350).duration(500)} style={styles.copy}>
+        <Animated.View entering={fadeUp(350)} style={styles.copy}>
           <Txt typography="t2" fontWeight="bold" color={adaptive.grey900} textAlign="center">
             티켓이 발행됐어요
           </Txt>
           <Txt typography="t6" color={adaptive.grey600} textAlign="center">
             보유 {user.ticketBalance}장 · 지도의 핀이 유색으로 바뀝니다{'\n'}
-            {user.ticketBalance < REWARD_AT
-              ? `${REWARD_AT}장이면 팬사인회·굿즈가 열려요`
-              : '팬사인회·굿즈까지 모두 열렸어요'}
+            {tierNote(user.ticketBalance)}
           </Txt>
         </Animated.View>
       </View>
 
-      <Animated.View entering={FadeInUp.delay(450).duration(500)} style={styles.footer}>
+      <Animated.View entering={fadeUp(450)} style={styles.footer}>
         <Button size="large" type="primary" display="block" onPress={() => leave('/tickets')}>
           컬렉션에서 보기
         </Button>
@@ -103,6 +119,8 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     paddingHorizontal: Shape.gutter,
+    // The card drops in from above the fold, as in 1a's clipped root.
+    overflow: 'hidden',
   },
   body: {
     flex: 1,

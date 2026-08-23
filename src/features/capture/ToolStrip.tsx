@@ -67,6 +67,8 @@ export function ToolStrip({ tool, strength, onPickTool, onStrength }: ToolStripP
         <Txt typography="st13" color={adaptive.grey500} style={styles.strengthLabel}>
           {tool} 강도
         </Txt>
+        {/* No readout — 1a's row is the label and the track; the slider
+            carries the value for assistive tech. */}
         <Slider
           value={strength}
           min={0}
@@ -74,9 +76,6 @@ export function ToolStrip({ tool, strength, onPickTool, onStrength }: ToolStripP
           onChange={onStrength}
           accessibilityLabel={`${tool} 강도`}
         />
-        <Txt typography="st13" color={adaptive.grey500} style={styles.strengthValue}>
-          {strength}%
-        </Txt>
       </View>
     </View>
   );
@@ -148,9 +147,5 @@ const styles = StyleSheet.create({
   },
   strengthLabel: {
     width: 64,
-  },
-  strengthValue: {
-    width: 36,
-    textAlign: 'right',
   },
 });
