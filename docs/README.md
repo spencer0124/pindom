@@ -89,6 +89,8 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-22-community-slice-checklist.md](plans/2026-08-22-community-slice-checklist.md) | 커뮤니티 and 글쓰기 — per-최애 boards on the contract's per-board feed, paging, and the pin that carries a ticket |
 | [2026-08-22-profile-slice-checklist.md](plans/2026-08-22-profile-slice-checklist.md) | 마이페이지, 프로필 편집, 언어 and 보관함 — the user document's screens, the sign-out, and what 1a asks for that the contract cannot serve |
 | [2026-08-22-assistant-slice-checklist.md](plans/2026-08-22-assistant-slice-checklist.md) | Pindom AI and 추천 코스 — built against a fixture, with the `askAssistant` request and response the client expects from the backend |
+| [2026-08-23-prototype-fidelity-checklist.md](plans/2026-08-23-prototype-fidelity-checklist.md) | The pass after every screen was built: each place the built screens diverged from the prototype in motion, interaction, layout or copy, the decision taken under the two-axis rule, and what the simulator confirmed. **Start here for motion or polish work** |
+| [2026-08-23-prototype-fidelity-audit.md](plans/2026-08-23-prototype-fidelity-audit.md) | The evidence behind that checklist — seven per-slice audits, one row per finding with the prototype value, the app value and the proposed fix |
 
 ## Outside this folder
 
