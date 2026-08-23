@@ -45,10 +45,11 @@ export default function IssuedScreen() {
   const reset = useCaptureStore((s) => s.reset);
 
   // `navigate` rather than push: the tabs are already in the stack, so this
-  // pops the whole Capture chain and switches the tab in one move. A
-  // `dismissAll()` first swallows the switch and lands on whichever tab
-  // 장소/상세 was opened from.
-  const leave = (to: '/tickets' | '/map') => {
+  // pops the whole Capture chain and switches the tab in one move. The chain's
+  // own screens guard against an empty store with a focus effect, not a plain
+  // one — `reset()` here used to fire their redirect to 지도 from beneath this
+  // screen and win the race against the switch.
+  const leave = (to: '/(tabs)/tickets' | '/(tabs)/map') => {
     reset();
     router.navigate(to as never);
   };
@@ -104,10 +105,10 @@ export default function IssuedScreen() {
       </View>
 
       <Animated.View entering={fadeUp(450)} style={styles.footer}>
-        <Button size="large" type="primary" display="block" onPress={() => leave('/tickets')}>
+        <Button size="large" type="primary" display="block" onPress={() => leave('/(tabs)/tickets')}>
           컬렉션에서 보기
         </Button>
-        <Button size="large" style="weak" display="block" onPress={() => leave('/map')}>
+        <Button size="large" style="weak" display="block" onPress={() => leave('/(tabs)/map')}>
           다음 촬영지 찾기
         </Button>
       </Animated.View>

@@ -112,7 +112,14 @@ export default function VaultScreen() {
                       <Txt typography="t7" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
                         {ticket.placeName}
                       </Txt>
-                      <Txt typography="st13" color={adaptive.grey500} style={styles.serial}>
+                      <Txt
+                        typography="st13"
+                        color={adaptive.grey500}
+                        style={styles.serial}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
+                      >
                         {ticket.serial} · {formatShort(ticket.issuedAt)}
                       </Txt>
                     </View>

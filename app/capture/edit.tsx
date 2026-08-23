@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -43,9 +43,14 @@ export default function EditScreen() {
   const [composing, setComposing] = useState(false);
   const now = useMemo(() => new Date(), []);
 
-  useEffect(() => {
-    if (photoUri == null || place == null) router.replace('/map' as never);
-  }, [photoUri, place]);
+  // Only the focused screen may redirect: 티켓 발행 resets the store while this
+  // screen is still mounted beneath it, and a plain effect would race its tab
+  // switch with a replace to 지도. An unfocused screen is popped, not redirected.
+  useFocusEffect(
+    useCallback(() => {
+      if (photoUri == null || place == null) router.replace('/map' as never);
+    }, [photoUri, place]),
+  );
 
   const next = useCallback(async () => {
     if (composing || frame.current == null) return;

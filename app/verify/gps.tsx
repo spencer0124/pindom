@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
 import { Radar, useVerification, VerifyChecks } from '@/features/capture';
-import { Shape } from '@/features/shared';
+import { Shape, formatDistance } from '@/features/shared';
 
 /** 1a opens 카메라 this long after the last check ticks. */
 const AUTO_OPEN_MS = 900;
@@ -112,8 +112,8 @@ export default function GpsVerifyScreen() {
             // 1a has no line for it; the Capture checklist lists this one.
             ? '반경 안에 있어요'
             : remaining < place.radiusMeters
-              ? `반경까지 ${remaining}m · 거의 다 왔어요`
-              : `반경까지 ${remaining}m`;
+              ? `반경까지 ${formatDistance(remaining)} · 거의 다 왔어요`
+              : `반경까지 ${formatDistance(remaining)}`;
 
   const cta = phase === 'verified' ? '카메라 열기' : busy ? '인증 중…' : '현재 위치로 인증';
 

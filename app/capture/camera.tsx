@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,11 +51,16 @@ export default function CameraScreen() {
   const [shooting, setShooting] = useState(false);
   const now = useMemo(() => new Date(), []);
 
-  useEffect(() => {
-    if (grant == null || place == null) {
-      router.replace(place != null ? (`/verify/gps?placeId=${place.id}` as never) : ('/map' as never));
-    }
-  }, [grant, place]);
+  // Only the focused screen may redirect: 티켓 발행 resets the store while this
+  // screen is still mounted beneath it, and a plain effect would race its tab
+  // switch with a replace to 지도. An unfocused screen is popped, not redirected.
+  useFocusEffect(
+    useCallback(() => {
+      if (grant == null || place == null) {
+        router.replace(place != null ? (`/verify/gps?placeId=${place.id}` as never) : ('/map' as never));
+      }
+    }, [grant, place]),
+  );
 
   const shoot = useCallback(async () => {
     if (shooting) return;

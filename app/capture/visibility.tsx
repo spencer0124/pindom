@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useCallback, useEffect } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Switch, Txt, useAdaptive } from '@/design-system';
@@ -31,9 +31,14 @@ export default function VisibilityScreen() {
   const setVisibility = useCaptureStore((s) => s.setVisibility);
   const { state, issue } = useIssueTicket();
 
-  useEffect(() => {
-    if (composedUri == null || place == null) router.replace('/map' as never);
-  }, [composedUri, place]);
+  // Only the focused screen may redirect: 티켓 발행 resets the store while this
+  // screen is still mounted beneath it, and a plain effect would race its tab
+  // switch with a replace to 지도. An unfocused screen is popped, not redirected.
+  useFocusEffect(
+    useCallback(() => {
+      if (composedUri == null || place == null) router.replace('/map' as never);
+    }, [composedUri, place]),
+  );
 
   const onIssue = useCallback(async () => {
     const ticket = await issue();
