@@ -1,8 +1,14 @@
 import { Image } from 'expo-image';
+import { MapPinIcon } from 'phosphor-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import type { Post } from '@/lib/domain';
 import { formatTimeAgo, Shape, tierLabel } from '@/features/shared';
+
+/** 1a's 15px map-pin outline — the same glyph the 지도 tab draws. */
+const PIN_ICON = 15;
+/** Rows dim while pressed; the prototype's hover has no touch equivalent. */
+const PRESSED_OPACITY = 0.6;
 
 interface PostRowProps {
   post: Post;
@@ -53,11 +59,13 @@ export function PostRow({ post, now, onOpenPlace }: PostRowProps) {
         <Pressable
           onPress={() => onOpenPlace(post.placeId!)}
           accessibilityRole="button"
-          style={[styles.pin, { borderColor: adaptive.grey200 }]}
+          style={({ pressed }) => [
+            styles.pin,
+            { borderColor: adaptive.grey200 },
+            pressed && styles.pressed,
+          ]}
         >
-          <Txt typography="st13" fontWeight="bold" color={token.accent.fillColor}>
-            ⌖
-          </Txt>
+          <MapPinIcon size={PIN_ICON} color={token.accent.fillColor} weight="regular" />
           <Txt typography="st13" fontWeight="bold" color={adaptive.grey900} style={styles.pinName}>
             {post.placeName}
           </Txt>
@@ -91,10 +99,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  // The same author wears the same square on 촬영 팁 (2b: radius is for chips
+  // only).
   avatar: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: Shape.chipRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -114,6 +124,9 @@ const styles = StyleSheet.create({
   },
   pinName: {
     flex: 1,
+  },
+  pressed: {
+    opacity: PRESSED_OPACITY,
   },
   counts: {
     flexDirection: 'row',

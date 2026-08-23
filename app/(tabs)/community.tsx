@@ -17,13 +17,14 @@ import { Shape } from '@/features/shared';
  *
  * The board opens on the 최애 Discovery has selected and the chips switch it.
  * There is no 전체: the contract's feed takes a board id and has no global
- * query. The list pages on `cursor`, and re-reads silently on focus so a post
- * made on 글쓰기 is at the top when the user comes back.
+ * query. The list pages on `cursor`, and the boards and the list both re-read
+ * silently on focus, so a 최애 followed on 최애 찾기 has a chip and a post made
+ * on 글쓰기 is at the top when the user comes back.
  */
 export default function CommunityScreen() {
   const adaptive = useAdaptive();
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
-  const { boards } = useBoards();
+  const { boards, reload: reloadBoards } = useBoards();
   const [boardId, setBoardId] = useState<string | null>(selectedArtistId);
   const { state, reload, refresh, loadMore } = useFeed(boardId);
 
@@ -38,12 +39,18 @@ export default function CommunityScreen() {
     );
   }, [boards, boardId, selectedArtistId]);
 
+  // Re-read silently on every return to the tab, not on the first focus —
+  // 최애 찾기 changes the boards and 글쓰기 changes the feed, and both must be
+  // current when this tab is shown again. Same shape as 홈's focus effect.
   const focused = useRef(false);
   useFocusEffect(
     useCallback(() => {
-      if (focused.current) void refresh();
+      if (focused.current) {
+        void reloadBoards();
+        void refresh();
+      }
       focused.current = true;
-    }, [refresh]),
+    }, [reloadBoards, refresh]),
   );
 
   const board = boards?.find((b) => b.id === boardId) ?? null;
