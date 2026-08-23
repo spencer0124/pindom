@@ -3,7 +3,7 @@ title: Design Source
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -74,7 +74,7 @@ Decide before the affected screen is built.
 | # | Question | Why it matters |
 | --- | --- | --- |
 | 1 | Ticket card: keep `1c`-A 홀로그램 무지개, or switch to `1c`-C 레트로 반권? | A was applied before `2b` was chosen. A rainbow hologram and a black-and-acid print ledger are not obviously one product, and the prototype's own next-steps note proposes the swap. **Narrowed 2026-08-22:** 티켓 발행 is built as `1c`-A's layout on `2b`'s surface — the hologram is colour, which is `2b`'s axis. What remains open is only whether C's stub layout should replace A's; see the [Capture checklist](../docs/plans/2026-08-22-capture-slice-checklist.md) |
-| 2 | Which `1d` raffle motion? | None is marked applied |
+| 2 | ~~Which `1d` raffle motion?~~ **Closed 2026-08-23.** | `1a` uses A's tear, made interactive, on 티켓 절취 and B's `stampIn` stamp on 응모완료; `seamFlash`, `tearApartL/R` and C's `dropIn` appear nowhere in `1a`. The app matches. See the [fidelity checklist](../docs/plans/2026-08-23-prototype-fidelity-checklist.md), decision 15 |
 | 3 | ~~Are all four languages in scope for the 공모전?~~ **Closed 2026-08-21.** | Shipped locales are `ko` (default) and `en`. The prototype still writes copy in all four and that stays as it is — it is simply wider than what ships, not a contradiction. See the [review resolutions](../docs/plans/2026-08-21-backend-contract-review-resolutions.md) |
 | 4 | 편집: was narrowing the cutout scale to 88–112% and dropping 좌우반전 deliberate? | It reads as an anti-fake measure — a cutout you cannot shrink, enlarge or mirror is harder to composite dishonestly. If so it belongs with the other verification constraints rather than buried in a slider range. Blocks 편집 |
 | 5 | Should 추천 코스 be reachable from anywhere but the assistant? | Today the assistant's 지도에서 코스 보기 card is the only entry, and 지도 has none. The drop also ships 추천 코스 지도에 담기 copy in all four locales with no control wired to it, which suggests a second path was intended. **As built 2026-08-22:** 홈's 지역 코스 cards open the same screen; 지도 still has no entry. See the [Assistant checklist](../docs/plans/2026-08-22-assistant-slice-checklist.md) |
@@ -83,6 +83,10 @@ Decide before the affected screen is built.
 
 - **Read layout, copy and flow from `1a`.** It is the only place the interaction states exist.
 - **Read colour, type and corners from `2b`.**
+- **Read motion and interaction from `1a` too** — every `animation:`, `transition:`, pointer
+  handler and timer in a screen is part of its spec, not decoration. The
+  [fidelity checklist](../docs/plans/2026-08-23-prototype-fidelity-checklist.md) is the pass
+  that brought the built screens up to it, and the rule it applied to each disagreement.
 - **Do not copy its markup.** It is a browser prototype using inline styles and template
   bindings; PINDOM builds with flexbox and the design system. The rule that applied to Figma
   output applies here unchanged — this is intent, never final code.
@@ -91,7 +95,8 @@ Decide before the affected screen is built.
 ## Related
 
 - [ADR 0006](../docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why this replaced Figma, and what it changed
-- [screens.md](../docs/reference/screens.md) — the 21 screens mapped to routes
+- [screens.md](../docs/reference/screens.md) — the screens mapped to routes
+- [Prototype fidelity checklist](../docs/plans/2026-08-23-prototype-fidelity-checklist.md) — where the built screens diverged from this document, and what was done about it
 - [design-tokens.md](../docs/reference/design-tokens.md) — the sampled `2b` values
 - [backend-contract.md](../docs/reference/backend-contract.md) — the domain the prototype implies
 - [figma-workflow.md](../docs/reference/figma-workflow.md) — Figma is still where the older frame node ids live

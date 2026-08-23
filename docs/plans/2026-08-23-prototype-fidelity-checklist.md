@@ -91,79 +91,79 @@ Status: `[x]` landed · `[ ]` open · `[-]` decided out (see [§ Decisions](#dec
 
 ### 1 — Discovery (`app/(tabs)/index.tsx`, `map.tsx`, `place/[id].tsx`, `(tabs)/_layout.tsx`, `src/features/{discovery,home,assistant}`)
 
-- [ ] **D-01 high · 지도** — the stand-in canvas draws one pin per place (normalised lat/lng) with `pinDrop` 500 ms on mount and on 최애 switch; tiles reveal markers after the same duration
-- [ ] **D-02 med · 지도** — `MapPin`: visited = accent fill + `✓`, unvisited = surface + rule; caption chip with the region
-- [ ] **D-03 med · 지도** — whole-country frame on entry
-- [ ] **D-04 low · 지도** — chip select cross-fades 300 ms
+- [x] **D-01 high · 지도** — the stand-in canvas draws one pin per place (normalised lat/lng) with `pinDrop` 500 ms on mount and on 최애 switch; tiles reveal markers after the same duration
+- [x] **D-02 med · 지도** — `MapPin`: visited = accent fill + `✓`, unvisited = surface + rule; caption chip with the region
+- [x] **D-03 med · 지도** — whole-country frame on entry
+- [x] **D-04 low · 지도** — chip select cross-fades 300 ms
 - [-] **D-05 low** — short names (decision 11)
-- [ ] **D-06 high · 홈** — three-way tier note: `10장이면 첫 응모가 열려요` / `20장이면 팬사인회·굿즈가 열려요` / `팬사인회·굿즈까지 모두 열렸어요`
-- [ ] **D-07 med · 홈** — 응모하러 가기 → soonest open raffle
-- [ ] **D-08 med · 홈** — 마감 임박 응모 as a horizontal scroller of every open raffle, 186 px cells
-- [ ] **D-09 med · 홈** — 38 px avatar at the right of the greeting
-- [ ] **D-10 low · 홈** — artist chip selection eases 250 ms
-- [ ] **D-11 low · 홈** — selection drawn as a 3 px accent ring outside the chip
-- [ ] **D-12 low · 홈** — courses clear and skeleton while a switched 최애 loads
-- [ ] **D-13 low · 홈** — 인증 count is the visited ∩ this 최애's places
-- [ ] **D-14 low · 홈** — scroll bottom padding clears the FAB
-- [ ] **D-15 med · 장소/상세** — line under the title is `{최애} · {work kind} · {region}`
-- [ ] **D-16 med · 장소/상세** — the tip composer always has one tag selected, starting 포즈; a submit keeps it
-- [ ] **D-17 low · 장소/상세** — label stays 팁 남기기 when open; the chip's selected treatment signals the state
-- [ ] **D-18 low · 장소/상세** — like count leads with ♡
-- [ ] **D-19 low · 장소/상세** — the description block folds into the title block
-- [ ] **D-20 high · FAB** — the ring spins once per 7 s
-- [ ] **D-21 med · FAB** — 56 px surface disc, accent ring, sparkle glyph, no `AI` text
-- [ ] **D-22 low · 탭바** — active tab is the bold weight, not a permanent fill; label size from a token
+- [x] **D-06 high · 홈** — three-way tier note: `10장이면 첫 응모가 열려요` / `20장이면 팬사인회·굿즈가 열려요` / `팬사인회·굿즈까지 모두 열렸어요`
+- [x] **D-07 med · 홈** — 응모하러 가기 → soonest open raffle
+- [x] **D-08 med · 홈** — 마감 임박 응모 as a horizontal scroller of every open raffle, 186 px cells
+- [x] **D-09 med · 홈** — 38 px avatar at the right of the greeting
+- [x] **D-10 low · 홈** — artist chip selection eases 250 ms
+- [x] **D-11 low · 홈** — selection drawn as a 3 px accent ring outside the chip
+- [x] **D-12 low · 홈** — courses clear and skeleton while a switched 최애 loads
+- [x] **D-13 low · 홈** — 인증 count is the visited ∩ this 최애's places
+- [x] **D-14 low · 홈** — scroll bottom padding clears the FAB
+- [x] **D-15 med · 장소/상세** — line under the title is `{최애} · {work kind} · {region}`
+- [x] **D-16 med · 장소/상세** — the tip composer always has one tag selected, starting 포즈; a submit keeps it
+- [x] **D-17 low · 장소/상세** — label stays 팁 남기기 when open; the chip's selected treatment signals the state
+- [x] **D-18 low · 장소/상세** — like count leads with ♡
+- [x] **D-19 low · 장소/상세** — the description block folds into the title block
+- [x] **D-20 high · FAB** — the ring spins once per 7 s
+- [x] **D-21 med · FAB** — 56 px surface disc, accent ring, sparkle glyph, no `AI` text
+- [x] **D-22 low · 탭바** — active tab is the bold weight, not a permanent fill; label size from a token
 - [-] **D-23 low** — states `1a` never reaches; their strings go to the Discovery checklist's copy table
 
 ### 2 — Capture (`app/verify/*`, `app/capture/*`, `src/features/capture`, `src/features/shared/TicketCard.tsx`)
 
-- [ ] **D-01 high · GPS인증** — rings pulse from mount (2.6 s, 0/.9/1.8 s offsets), never gated on a reading
-- [ ] **D-02 med · GPS인증** — the sweep is a filled fading sector turning 3.4 s, from mount
-- [ ] **D-03 high · GPS인증** — the verdict's rows reveal 900 ms apart; title and CTA stay on "checking" until the last; refused rows never tick
-- [ ] **D-04 high · GPS인증** — 카메라 opens 900 ms after the last tick (decision 1)
-- [ ] **D-05 med · GPS인증** — the CTA reads `인증 중…` instead of hiding the label under loader dots
+- [x] **D-01 high · GPS인증** — rings pulse from mount (2.6 s, 0/.9/1.8 s offsets), never gated on a reading
+- [x] **D-02 med · GPS인증** — the sweep is a filled fading sector turning 3.4 s, from mount
+- [x] **D-03 high · GPS인증** — the verdict's rows reveal 900 ms apart; title and CTA stay on "checking" until the last; refused rows never tick
+- [x] **D-04 high · GPS인증** — 카메라 opens 900 ms after the last tick (decision 1)
+- [x] **D-05 med · GPS인증** — the CTA reads `인증 중…` instead of hiding the label under loader dots
 - [-] **D-06 low** — 반경까지 arithmetic (decision 4)
-- [ ] **D-07 low · 인증 실패** — not-yet kinds in `warning`, spoof in `danger`
+- [x] **D-07 low · 인증 실패** — not-yet kinds in `warning`, spoof in `danger`
 - [-] **D-08 low** — `implausible_speed` wording (decision 6); recorded in the Capture checklist's copy table
-- [ ] **D-09 high · 카메라** — the 인증 완료 chip enters with `fadeUp` 400 ms
-- [ ] **D-10 high · 카메라** — the pan covers the whole print, not just the figure
-- [ ] **D-11 med · 카메라** — 초기화, the slider and a release ease 160 ms; no snap-back on release
-- [ ] **D-12 low · 편집** — the tool slider starts at 62
-- [ ] **D-13 low · 편집** — the `%` readout goes
-- [ ] **D-14 med · 공개설정** — `1a`'s block order (decision 3)
-- [ ] **D-15 med · 티켓 발행** — the card drops in from −90 px with a −6° twist, 700 ms overshoot
-- [ ] **D-16 high · 티켓 발행** — `HoloTilt`: hold to tilt ±20° in perspective at 1.04, 60 ms follow, 500 ms overshoot return; white shine and glare follow the finger (decision 2)
-- [ ] **D-17 high · 티켓 발행** — three-way tier note (same strings as Discovery D-06)
-- [ ] **D-18 low · 티켓 발행** — the two `fadeUp` blocks start 14 px below with `ease`
+- [x] **D-09 high · 카메라** — the 인증 완료 chip enters with `fadeUp` 400 ms
+- [x] **D-10 high · 카메라** — the pan covers the whole print, not just the figure
+- [x] **D-11 med · 카메라** — 초기화, the slider and a release ease 160 ms; no snap-back on release
+- [x] **D-12 low · 편집** — the tool slider starts at 62
+- [x] **D-13 low · 편집** — the `%` readout goes
+- [x] **D-14 med · 공개설정** — `1a`'s block order (decision 3)
+- [x] **D-15 med · 티켓 발행** — the card drops in from −90 px with a −6° twist, 700 ms overshoot
+- [x] **D-16 high · 티켓 발행** — `HoloTilt`: hold to tilt ±20° in perspective at 1.04, 60 ms follow, 500 ms overshoot return; white shine and glare follow the finger (decision 2)
+- [x] **D-17 high · 티켓 발행** — three-way tier note (same strings as Discovery D-06)
+- [x] **D-18 low · 티켓 발행** — the two `fadeUp` blocks start 14 px below with `ease`
 
 ### 3 — Tickets & raffle (`app/(tabs)/tickets.tsx`, `app/raffle/*`, `src/features/tickets`)
 
-- [ ] **T-01 high · 컬렉션** — every tile tilts under the finger via `HoloTilt` (decision 2); the scroll survives
-- [ ] **T-04 low · 응모** — short rows are `disabled` with the reason in `accessibilityState`
-- [ ] **T-05 med · 응모** — both 컬렉션 exits navigate to the 컬렉션 tab (decision 16)
-- [ ] **T-06 low** — the two full-width confirms use the big size
-- [ ] **T-07 high · 티켓 절취** — the grip pulses and twinkles idle (1.8 s), shrinks 30 → 26 px on touch, stops while dragging
-- [ ] **T-08 high · 티켓 절취** — two sparks fly off the tear front past 6 % progress
-- [ ] **T-09 med · 티켓 절취** — heal is a 420 ms overshoot snap, not a default spring
-- [ ] **T-10 low · 티켓 절취** — the commit uses the same easing
-- [ ] **T-11 low · 티켓 절취** — reaching 100 % mid-drag commits without waiting for release
-- [ ] **T-12 low · 티켓 절취** — the subtitle is `{region} · {work kind}` from the place
-- [ ] **T-14 high · 응모완료** — the stamp slams from 2.4× and −18° to −9°, overshooting .92
-- [ ] **T-15 med · 응모완료** — both `fadeUp` blocks rise 14 px from below
-- [ ] **T-16 low · 응모완료** — the balance the server returns is carried into the store so the note is whole on the first frame
+- [x] **T-01 high · 컬렉션** — every tile tilts under the finger via `HoloTilt` (decision 2); the scroll survives
+- [x] **T-04 low · 응모** — short rows are `disabled` with the reason in `accessibilityState`
+- [x] **T-05 med · 응모** — both 컬렉션 exits navigate to the 컬렉션 tab (decision 16)
+- [x] **T-06 low** — the two full-width confirms use the big size
+- [x] **T-07 high · 티켓 절취** — the grip pulses and twinkles idle (1.8 s), shrinks 30 → 26 px on touch, stops while dragging
+- [x] **T-08 high · 티켓 절취** — two sparks fly off the tear front past 6 % progress
+- [x] **T-09 med · 티켓 절취** — heal is a 420 ms overshoot snap, not a default spring
+- [x] **T-10 low · 티켓 절취** — the commit uses the same easing
+- [x] **T-11 low · 티켓 절취** — reaching 100 % mid-drag commits without waiting for release
+- [x] **T-12 low · 티켓 절취** — the subtitle is `{region} · {work kind}` from the place
+- [x] **T-14 high · 응모완료** — the stamp slams from 2.4× and −18° to −9°, overshooting .92
+- [x] **T-15 med · 응모완료** — both `fadeUp` blocks rise 14 px from below
+- [x] **T-16 low · 응모완료** — the balance the server returns is carried into the store so the note is whole on the first frame
 
 ### 4 — Auth (`app/onboarding.tsx`, `app/artist/search.tsx`, `src/features/auth`, `src/design-system/components/button`)
 
-- [ ] **A-01 med · 온보딩** — 이메일로 로그인 is the new `outline` button (decision 29)
-- [ ] **A-02 med · 최애 찾기** — a sequence guard on the search; `listMine` once, not per keystroke
-- [ ] **A-03 low · 온보딩** — the pin scatter is the six map pins in a 300 px band at 96 px
+- [x] **A-01 med · 온보딩** — 이메일로 로그인 is the new `outline` button (decision 29)
+- [x] **A-02 med · 최애 찾기** — a sequence guard on the search; `listMine` once, not per keystroke
+- [x] **A-03 low · 온보딩** — the pin scatter is the six map pins in a 300 px band at 96 px
 - [-] **A-04 low** — per-pin glow (decision 31)
-- [ ] **A-05 low · 온보딩** — copy gap 18, actions 14 above, note 6 above
-- [ ] **A-06 low · 온보딩** — wordmark tracking `.28em`, shared with 홈/마이
+- [x] **A-05 low · 온보딩** — copy gap 18, actions 14 above, note 6 above
+- [x] **A-06 low · 온보딩** — wordmark tracking `.28em`, shared with 홈/마이
 - [-] **A-07 low** — radius flattening is a design-system item, tracked in design-tokens.md
 - [-] **A-08 low** — `바뀝니다` stands (decision 30); recorded in the Auth checklist
-- [ ] **A-09 low · 최애 찾기** — note `t7`, meta and chip label `st12`, back and initial `st11`
-- [ ] **A-10 low · 최애 찾기** — no rule above the list
+- [x] **A-09 low · 최애 찾기** — note `t7`, meta and chip label `st12`, back and initial `st11`
+- [x] **A-10 low · 최애 찾기** — no rule above the list
 - [-] **A-11 low** — pinned search stays; recorded
 - [-] **A-12 low** — the field's clear affordance stays; recorded
 - [-] **A-13 low** — two app-only strings go to the Auth checklist's copy table
@@ -171,77 +171,106 @@ Status: `[x]` landed · `[ ]` open · `[-]` decided out (see [§ Decisions](#dec
 
 ### 5 — Community (`app/(tabs)/community.tsx`, `app/post/write.tsx`, `src/features/community`)
 
-- [ ] **C-01 high · 커뮤니티** — board chips cross-fade fill and label 300 ms
-- [ ] **C-02 high · 글쓰기** — opens with the newest ticket pinned (decision 24)
-- [ ] **C-03 med · 커뮤니티** — boards reload on focus, like 홈's chips
-- [ ] **C-04 med · 커뮤니티** — the pin glyph is `MapPinIcon`, not `⌖`
-- [ ] **C-05 med · 글쓰기** — same, 18 px, accent when on / grey400 when off
+- [x] **C-01 high · 커뮤니티** — board chips cross-fade fill and label 300 ms
+- [x] **C-02 high · 글쓰기** — opens with the newest ticket pinned (decision 24)
+- [x] **C-03 med · 커뮤니티** — boards reload on focus, like 홈's chips
+- [x] **C-04 med · 커뮤니티** — the pin glyph is `MapPinIcon`, not `⌖`
+- [x] **C-05 med · 글쓰기** — same, 18 px, accent when on / grey400 when off
 - [-] **C-06 low** — pinned chips stay; recorded
-- [ ] **C-07 low · 커뮤니티** — avatars take the chip radius
-- [ ] **C-08 low · 글쓰기** — composer type from the typography map, no magic numbers
+- [x] **C-07 low · 커뮤니티** — avatars take the chip radius
+- [x] **C-08 low · 글쓰기** — composer type from the typography map, no magic numbers
 - [-] **C-09 low** — three app-only strings go to the Community checklist's copy table
 - [-] **C-10 low** — 등록 gating stays; recorded
 - [-] **C-11 low** — 지도에서 보기 (decision 23)
 
 ### 6 — Profile (`app/(tabs)/my.tsx`, `app/profile.tsx`, `app/language.tsx`, `app/vault.tsx`, `src/features/profile`)
 
-- [ ] **P-01 high · 마이페이지** — the 로그아웃 sheet rises 14 px over 280 ms
-- [ ] **P-02 med · 마이페이지** — 로그아웃 in the alert colour
-- [ ] **P-03 low · 마이페이지** — 로그아웃 row spacing, no rule under it
-- [ ] **P-04 low · 마이페이지** — the tier badge is the design-system `Badge`
-- [ ] **P-05 low · 마이페이지 · 보관함** — stat cells left-aligned
-- [ ] **P-06 low · 마이페이지** — rows dim while pressed (decision 28)
+- [x] **P-01 high · 마이페이지** — the 로그아웃 sheet rises 14 px over 280 ms
+- [x] **P-02 med · 마이페이지** — 로그아웃 in the alert colour
+- [x] **P-03 low · 마이페이지** — 로그아웃 row spacing, no rule under it
+- [x] **P-04 low · 마이페이지** — the tier badge is the design-system `Badge`
+- [x] **P-05 low · 마이페이지 · 보관함** — stat cells left-aligned
+- [x] **P-06 low · 마이페이지** — rows dim while pressed (decision 28)
 - [-] **P-07 low** — platform affordance stays
-- [ ] **P-08 low** — avatar sizes 62 / 96
-- [ ] **P-09 med · 프로필 편집** — over-limit count, rule and hint in the alert colour, not the accent
+- [x] **P-08 low** — avatar sizes 62 / 96
+- [x] **P-09 med · 프로필 편집** — over-limit count, rule and hint in the alert colour, not the accent
 - [-] **P-10 low** — preset avatars (decision 25)
-- [ ] **P-11 low · 프로필 편집** — camera badge on the avatar
-- [ ] **P-12 low · 프로필 편집** — avatar hairline
-- [ ] **P-13 low · 프로필 편집** — 추가 as its own label
-- [ ] **P-14 low · 프로필 편집 · 언어** — the radio is a 20 px disc, filled when on
-- [ ] **P-15 med · 보관함** — two-column 3:4 grid, 비공개 chip on the photo, monospaced serial (decision 26)
-- [ ] **P-16 low · 보관함** — 공개 전환 stat in the accent
+- [x] **P-11 low · 프로필 편집** — camera badge on the avatar
+- [x] **P-12 low · 프로필 편집** — avatar hairline
+- [x] **P-13 low · 프로필 편집** — 추가 as its own label
+- [x] **P-14 low · 프로필 편집 · 언어** — the radio is a 20 px disc, filled when on
+- [x] **P-15 med · 보관함** — two-column 3:4 grid, 비공개 chip on the photo, monospaced serial (decision 26)
+- [x] **P-16 low · 보관함** — 공개 전환 stat in the accent
 - [-] **P-17 low** — four loading/error strings go to the Profile checklist's copy table
 
 ### 7 — Assistant (`app/chat.tsx`, `app/course.tsx`, `src/features/assistant`, `src/features/discovery/MapCanvas.tsx`)
 
-- [ ] **A-01 high · Pindom AI** — loading is a spinning star (1.5 s) beside a breathing `답변을 찾고 있어요` (1.6 s), not a bubble
-- [ ] **A-02 high · Pindom AI** — the ⋯ sheet rises 14 px over 260 ms
-- [ ] **A-03 med · Pindom AI** — the empty hero sits at the bottom above the composer
-- [ ] **A-04 med · Pindom AI** — the four questions are a full-width list, not wrapped chips
-- [ ] **A-05 med · Pindom AI** — 답변 신고하기 in the alert colour
-- [ ] **A-06 low · Pindom AI** — 취소 is a full-width filled row
-- [ ] **A-07 low · Pindom AI** — close glyph, no title (decision 21)
-- [ ] **A-08 low · Pindom AI** — the course card reads `n곳 · {course name}` (decision 22)
+- [x] **A-01 high · Pindom AI** — loading is a spinning star (1.5 s) beside a breathing `답변을 찾고 있어요` (1.6 s), not a bubble
+- [x] **A-02 high · Pindom AI** — the ⋯ sheet rises 14 px over 260 ms
+- [x] **A-03 med · Pindom AI** — the empty hero sits at the bottom above the composer
+- [x] **A-04 med · Pindom AI** — the four questions are a full-width list, not wrapped chips
+- [x] **A-05 med · Pindom AI** — 답변 신고하기 in the alert colour
+- [x] **A-06 low · Pindom AI** — 취소 is a full-width filled row
+- [x] **A-07 low · Pindom AI** — close glyph, no title (decision 21)
+- [x] **A-08 low · Pindom AI** — the course card reads `n곳 · {course name}` (decision 22)
 - [-] **A-09 low** — the route tile is ornament; out under `2b`
-- [ ] **A-10 low · Pindom AI** — the course card stays mounted while a new answer loads
-- [ ] **A-11 low · Pindom AI** — return key sends
+- [x] **A-10 low · Pindom AI** — the course card stays mounted while a new answer loads
+- [x] **A-11 low · Pindom AI** — return key sends
 - [-] **A-12 low** — mic (decision 19)
-- [ ] **A-13 low · Pindom AI** — pressed states on rows and the card (decision 28)
-- [ ] **A-14 high · 추천 코스** — a dashed accent route with a surface halo through the stops, on tiles and on the stand-in
-- [ ] **A-15 med · 추천 코스** — numbered stops, the first in the accent fill, the rest in the soft accent
-- [ ] **A-16 low · 추천 코스** — the map is inset by the gutter, 262 tall
+- [x] **A-13 low · Pindom AI** — pressed states on rows and the card (decision 28)
+- [x] **A-14 high · 추천 코스** — a dashed accent route with a surface halo through the stops, on tiles and on the stand-in
+- [x] **A-15 med · 추천 코스** — numbered stops, the first in the accent fill, the rest in the soft accent
+- [x] **A-16 low · 추천 코스** — the map is inset by the gutter, 262 tall
 - [-] **A-17 low** — the description is the backend's field; recorded in the Assistant checklist's copy table
 
 ### 8 — Close out
 
-- [ ] `yarn typecheck` and `yarn lint` green on every commit
-- [ ] Each slice verified on the simulator — table below
-- [ ] `design/README.md`: open question 2 closed (decision 15); the README points at this pass
-- [ ] The slice checklists' copy tables gain the rows the audit found unrecorded
+- [x] `yarn typecheck` and `yarn lint` green on every commit
+- [x] Each slice verified on the simulator — table below
+- [x] `design/README.md`: open question 2 closed (decision 15); the README points at this pass
+- [x] The slice checklists' copy tables gain the rows the audit found unrecorded
 - [ ] [build status memory](../../CLAUDE.md) — what is still unverified after this pass
 
 ## What the simulator run confirmed
 
-Filled in as each slice lands. One row per screen that moved.
+iPhone 17 Pro simulator, the dev client, the mock fixture, 2026-08-23. Motion was read from
+20 fps recordings tiled into frames, not from single screenshots. One row per screen that moved.
 
 | Screen | Checked | Result |
 | --- | --- | --- |
+| 홈 | Avatar, chip ring, three-way tier note (`10장이면 첫 응모가 열려요` at 4), 마감 임박 scroller, FAB ring + sparkle | Pass |
+| 지도 | Pin field on the stand-in (visited accent + ✓, unvisited outline, region captions), drop on entry and on a 최애 switch, chip cross-fade, one-line notice | Pass. Three Seoul places pile up at country scale — the projection is honest, the fixture is dense; see Still open |
+| 장소/상세 | `{최애} · {work kind} · {region}`, description under the title | Pass |
+| GPS인증 | Rings and fan turning from mount; rows reveal 900 ms apart under `위치를 확인하는 중`; `인증 완료 · 원본 컷이 열립니다`; 카메라 opens by itself; three refusals then the pass | Pass |
+| 인증 실패 | Amber glyph for the not-yet kinds | Pass |
+| 카메라 | Chip enters; a drag on the empty background moves the figure; 초기화 eases it back | Pass |
+| 편집 · 공개설정 | Slider at 62 with no `%`; thumb row → toggle → 발행될 티켓 → CTA | Pass |
+| 티켓 발행 | Card drops from above with a twist, title and buttons rise after; hold → scale and a white band follow the finger, release springs back; tier note | Pass. `컬렉션에서 보기` landed on the origin tab — fixed (the chain's guards now redirect only while focused) and re-checked below |
+| 컬렉션 | Last tile clears the FAB; a held tile lifts with the glare; a quick swipe scrolls | Pass. The tilt angle itself could not be driven — the tool can only press a tile's centre, which is 0° by definition |
+| 응모 | `‹ 컬렉션` lands on 컬렉션 | Pass |
+| 티켓 절취 | Grip halo pulses and twinkles at rest; sparks past ~5 %; early release snaps back with the 420 ms overshoot; a full drag commits on its own | Pass |
+| 응모완료 | Stamp lands large and over-rotated, bounces, rests at −9°; title and buttons rise; `응모번호 … · 남은 티켓 n장` on the first frame | Pass |
+| 커뮤니티 · 글쓰기 | Chip cross-fade; map-pin icon; chip-radius avatars; 글쓰기 opens pinned, toggles off | Pass |
+| 마이 · 프로필 편집 · 언어 · 보관함 | Badge; orange 로그아웃; sheet rises; camera badge; orange over-limit count, rule and hint; disc radios; 3:4 tile grid with chip, serial and 공개 전환 | Pass. The serial wrapped at tile width — fixed (one line, shrinks to fit) and re-checked below |
+| Pindom AI · 추천 코스 | ✕ / ⋯ header, hero at the bottom, full-width questions; spinning star + breathing label (~330 ms on the fixture); `2곳 · 강릉 바다 코스` on the card; ⋯ sheet rises with orange 답변 신고하기 and a filled 취소; numbered discs and the dashed route, inset map | Pass |
+| 온보딩 · 최애 찾기 | Six pins in the band; outlined 이메일로 로그인 with the hold wash; sign-in; no rule under the note; no stale results at 80 ms between keys | Pass |
+
+Found by the run and fixed in the same pass: GPS인증 printed a far place's remaining distance
+in raw metres (`반경까지 221847m`) — it now uses the same formatter as the headline.
+
+Seen, not failures: 컬렉션's gauge reads `ticketsIssued` beside a balance (by design, recorded in
+the Tickets checklist); 응모완료 prints the fixture's raw entry id; the assistant FAB sits above
+the 로그아웃 sheet, as it does in the prototype's own layer order; the course card's sub-line
+arrives a beat after the card.
 
 ## Still open after this pass
 
 - The Naver client id is still unset, so `pinDrop` on tiles, the route overlay and the numbered
-  markers are written against the SDK's documented props but have never drawn.
+  markers are written against the SDK's documented props but have never drawn. The pinned SDK
+  also drops `NaverMapPolylineOverlay`'s `pattern` before the native view, so on tiles the
+  route is solid until a release forwards it.
+- The stand-in map piles up places that share a city at country scale. A collision nudge, or
+  the real tiles, would separate them.
 - `Artist.shortName`, `Place.shortRegion`, a preset avatar field and a figure-less
   `implausible_speed` line are asks for the backend developer and the designer respectively.
 - Whether `workTitle` deserves a line of its own on 장소/상세 (decision 14).
