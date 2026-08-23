@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
-import type { Artist, Place } from '@/lib/domain';
+import type { Artist, Course, Place } from '@/lib/domain';
 import { artistRepository, assistantRepository, placeRepository } from '@/lib/repositories';
 import { readPosition, useDiscoveryStore } from '@/features/discovery';
+import { findCourse } from './findCourse';
 import { useAssistantStore } from './state';
 
 /** How many recent turns ride along with a question. The server decides what it reads. */
@@ -45,11 +46,17 @@ export function chipsFor(artistName: string, placeName: string): AssistantChip[]
  * behind 지도에서 코스 보기 and everything about the model are the backend's.
  * A failed ask is rendered as an answer the assistant could not get, in the
  * transcript, so the conversation stays readable.
+ *
+ * Once an answer carries a `courseId`, the course document is read so the
+ * 지도에서 코스 보기 card can print `n곳 · {course name}` — the same line 추천
+ * 코스's header prints (fidelity decision 22). `course` is null until it
+ * arrives, or when no list carries the id.
  */
 export function useAssistant() {
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
   const [artist, setArtist] = useState<Artist | null>(null);
   const [nearest, setNearest] = useState<Place | null>(null);
+  const [course, setCourseDoc] = useState<Course | null>(null);
   const messages = useAssistantStore((s) => s.messages);
   const courseId = useAssistantStore((s) => s.courseId);
   const loading = useAssistantStore((s) => s.loading);
@@ -81,6 +88,20 @@ export function useAssistant() {
     };
   }, [selectedArtistId]);
 
+  useEffect(() => {
+    if (courseId == null) {
+      setCourseDoc(null);
+      return;
+    }
+    let live = true;
+    void findCourse(courseId, selectedArtistId).then((found) => {
+      if (live) setCourseDoc(found);
+    });
+    return () => {
+      live = false;
+    };
+  }, [courseId, selectedArtistId]);
+
   const ask = useCallback(
     async (question: string) => {
       const message = question.trim();
@@ -106,5 +127,5 @@ export function useAssistant() {
 
   const chips = chipsFor(artist?.name ?? '최애', nearest?.name ?? '촬영지');
 
-  return { artist, messages, courseId, loading, chips, ask, clear };
+  return { artist, messages, courseId, course, loading, chips, ask, clear };
 }

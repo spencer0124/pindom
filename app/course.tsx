@@ -6,6 +6,9 @@ import { useCourse } from '@/features/assistant';
 import { MapCanvas } from '@/features/discovery';
 import { Rule, Shape, workKindLabel } from '@/features/shared';
 
+/** 1a's map block: 262 tall, inset by the page gutter (fidelity A-16). */
+const MAP_HEIGHT = 262;
+
 /**
  * 추천 코스 — the route the assistant drew, on the map and as a list.
  *
@@ -17,7 +20,10 @@ import { Rule, Shape, workKindLabel } from '@/features/shared';
  * 1a annotates — 자동차 n분 이동, 촬영 추천 07:00–08:30, 근처 해장국·카페 3곳 — are
  * the route and local APIs' figures, which the backend calls; they are not on
  * the document and are not made up here. 길안내 needs the same API and is not
- * drawn. The map is 지도's own canvas with the course's stops as its pins.
+ * drawn. The map is 지도's own canvas with the course's stops as its pins —
+ * numbered in walk order, the first in the accent, with 1a's dashed route
+ * through them (fidelity A-14, A-15) — inset by the page gutter as 1a's is.
+ * The description is the document's own field, kept above the legs (A-17).
  */
 export default function CourseScreen() {
   const adaptive = useAdaptive();
@@ -67,6 +73,8 @@ export default function CourseScreen() {
           visitedPlaceIds={visitedPlaceIds}
           origin={origin}
           hasPosition={hasPosition}
+          path={stops}
+          ordered
           onSelect={(placeId) => router.push(`/place/${placeId}` as never)}
         />
       </View>
@@ -136,7 +144,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   map: {
-    height: 240,
+    height: MAP_HEIGHT,
+    marginHorizontal: Shape.gutter,
   },
   legs: {
     paddingBottom: 24,

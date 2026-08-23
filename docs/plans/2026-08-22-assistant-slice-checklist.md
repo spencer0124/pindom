@@ -3,7 +3,7 @@ title: Assistant Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -37,8 +37,10 @@ a Figma frame.
 
 ### 2 — Pindom AI (`app/chat.tsx`)
 
-- [x] ‹ · Pindom AI · ⋯; the empty state — PINDOM AI, 무엇을 도와드릴까요?, the four chips — the
-      transcript, the 지도에서 코스 보기 card, 답변을 찾고 있어요, the composer.
+- [x] ✕ · ⋯, no title (`1a`'s header, [fidelity decision 21](2026-08-23-prototype-fidelity-checklist.md#decisions));
+      the empty state — PINDOM AI, 무엇을 도와드릴까요?, the four questions as a list at the foot of
+      the thread — the transcript, the 지도에서 코스 보기 card, the spinning star beside
+      답변을 찾고 있어요, the composer.
 - [x] The chips ask `1a`'s own questions, phrased for the selected 최애 and their nearest 촬영지.
 - [x] The ⋯ menu: 초기화 · 답변 언어 바꾸기 (→ 언어) · 답변 신고하기. The last closes the menu, as
       `1a`'s does; its flow is the backend's.
@@ -48,8 +50,8 @@ a Figma frame.
 
 ### 3 — 추천 코스 (`app/course.tsx`)
 
-- [x] ‹ · `{최애} 성지순례 코스` · `n곳 · {course name}`; the map with the stops as pins; the
-      description; the stops in walk order with `↓ next`.
+- [x] ‹ · `{최애} 성지순례 코스` · `n곳 · {course name}`; the map with the stops as numbered pins
+      and `1a`'s dashed route through them; the description; the stops in walk order with `↓ next`.
 - [x] The map is 지도's own `MapCanvas` with the course's stops as its places — one map, not two.
 - [x] Reached from the chat's card and from 홈's 지역 코스 cards, which now carry the `courseId`
       they lacked. design/README.md's open question 5 asked whether 코스 should be reachable
@@ -96,7 +98,8 @@ if they are to be shown, they belong on that document, not on the reply.
 
 | Found | Fix |
 | --- | --- |
-| `courses` has no `getById` | 추천 코스 reads the artist's list (the selected 최애 first, then the followed) and finds the id. A `getById` would be cleaner; recorded rather than added to the contract from here |
+| `courses` has no `getById` | 추천 코스 reads the artist's list (the selected 최애 first, then the followed) and finds the id. A `getById` would be cleaner; recorded rather than added to the contract from here. The chat's card now reads the same way, through one `findCourse` |
+| The pinned Naver SDK declares `pattern` on `NaverMapPolylineOverlay` but drops it before the native view | On tiles the route is a solid accent line over its halo until an SDK release forwards the prop; the prop is passed so nothing changes here when it does. The stand-in dashes |
 
 ### Copy the prototype does not have
 
@@ -104,6 +107,7 @@ if they are to be shown, they belong on that document, not on the reply.
 | --- | --- |
 | Pindom AI, the send button | 보내기 — `1a` uses an icon |
 | Pindom AI, the chips' fallbacks when no 최애 is followed | 최애 · 촬영지 in place of names |
+| 추천 코스, the paragraph above the legs | `courses.description` — the backend's field, not invented; `1a`'s only prose is the `courseNote` decided out in row 1 (fidelity A-17) |
 
 ## Where the sources disagree
 
@@ -113,6 +117,12 @@ if they are to be shown, they belong on that document, not on the reply.
 | 2 | The header prints `n곳 · 이동 h시간 m분` | No travel time | `n곳 · {course name}` | Same |
 | 3 | The chips and the menu use icons | — | Text | `2b` spends nothing on ornament |
 | 4 | The empty state has the Pindom AI glyph | — | The wordmark in the accent | |
+| 5 | A blurred pink aurora behind the empty state | `2b` spends nothing on ornament | Out | Pure colour; fidelity decision 18 |
+| 6 | A mic button between the field and send, with no handler | No voice input on the backend | Out | A disabled control for a capability that does not exist; fidelity decision 19 (A-12) |
+| 7 | The course card leads with a gradient tile holding a route glyph | `2b` spends nothing on ornament | Out | Fidelity A-09 |
+| 8 | The route over the map is the stops joined in walk order | No route geometry on `courses` | Straight segments between the stops, dashed in the accent over a surface halo | Client geometry from coordinates the client already holds, not a figure the server owns; fidelity decision 20 |
+| 9 | Header: ✕ close, ⋯, no title | — | `1a`'s | Layout is `1a`'s; fidelity decision 21 |
+| 10 | The card's sub-line is `n곳 · 이동 h시간 m분` | No travel time | `n곳 · {course name}`, read from the course document — the line 추천 코스's header prints | Fidelity decision 22; one extra read through `findCourse` |
 
 ## Still open
 
@@ -120,6 +130,8 @@ if they are to be shown, they belong on that document, not on the reply.
   `askAssistant` is deployed. The shape above is what the client sends.
 - **답변 신고하기 goes nowhere.** The flow is the backend's; the row closes the menu.
 - **The map has still never drawn a tile.** Same as 지도 — `EXPO_PUBLIC_NAVER_MAP_CLIENT_ID`.
+  The route overlays and the numbered marker children are written against the SDK's typings and
+  have not been seen on tiles.
 
 ## Related
 

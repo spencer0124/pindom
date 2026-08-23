@@ -4,6 +4,8 @@ import { Shape } from '@/features/shared';
 
 /** 1a's pin head — a 30px mark. Square here: 2b's radius is chips only. */
 const HEAD = 30;
+/** 추천 코스's numbered stop — 1a's 26px disc, centred in the head's slot. */
+const STOP = 26;
 /** Between the head and its caption chip. */
 const GAP = 3;
 /** The caption chip's inner padding. */
@@ -25,6 +27,12 @@ interface MapPinProps {
   visited: boolean;
   /** The caption under the head — the place's region (fidelity decision 11). */
   label: string;
+  /**
+   * A stop's 1-based place in a course's walk order. Set, the head is a
+   * numbered disc instead of the visited mark: the first stop in the accent
+   * fill, the rest in the soft accent (fidelity A-15).
+   */
+  order?: number;
 }
 
 /**
@@ -36,30 +44,51 @@ interface MapPinProps {
  * with a hairline for an unvisited one — and the caption is a chip, the one
  * shape that keeps a radius.
  *
+ * On 추천 코스 the same pin is a stop: a 26px disc with its number, the start
+ * in the deep accent and the rest in the light one — 1a's own start-vs-rest
+ * pair — and the caption is the place's name. A disc rather than a block
+ * because a numbered dot is how a route reads its stops; it is the one place
+ * a pin is round.
+ *
  * Lives in the Discovery slice rather than the design system until a third
  * screen draws pins (fidelity decision 8). It is used twice: absolutely placed
  * on the stand-in canvas, and as the custom child of a tile marker.
  */
-export function MapPin({ visited, label }: MapPinProps) {
+export function MapPin({ visited, label, order }: MapPinProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
 
   return (
     <View style={styles.pin} pointerEvents="none">
-      <View
-        style={[
-          styles.head,
-          visited
-            ? { backgroundColor: token.accent.fillColor }
-            : { backgroundColor: adaptive.background, borderColor: adaptive.grey300, borderWidth: 1 },
-        ]}
-      >
-        {visited && (
-          <Txt typography="t7" fontWeight="bold" color={token.accent.onFillColor}>
-            ✓
-          </Txt>
-        )}
-      </View>
+      {order != null ? (
+        <View style={styles.head}>
+          <View
+            style={[
+              styles.stop,
+              { backgroundColor: order === 1 ? token.accent.fillColor : token.accent.softColor },
+            ]}
+          >
+            <Txt typography="st12" fontWeight="bold" color={token.accent.onFillColor}>
+              {order}
+            </Txt>
+          </View>
+        </View>
+      ) : (
+        <View
+          style={[
+            styles.head,
+            visited
+              ? { backgroundColor: token.accent.fillColor }
+              : { backgroundColor: adaptive.background, borderColor: adaptive.grey300, borderWidth: 1 },
+          ]}
+        >
+          {visited && (
+            <Txt typography="t7" fontWeight="bold" color={token.accent.onFillColor}>
+              ✓
+            </Txt>
+          )}
+        </View>
+      )}
       <View style={[styles.chip, { backgroundColor: adaptive.background }]}>
         <Txt typography="t7" fontWeight="semibold" color={adaptive.grey900} numberOfLines={1}>
           {label}
@@ -79,6 +108,13 @@ const styles = StyleSheet.create({
   head: {
     width: HEAD,
     height: HEAD,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stop: {
+    width: STOP,
+    height: STOP,
+    borderRadius: STOP / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },

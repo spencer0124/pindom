@@ -1,8 +1,14 @@
-import { NaverMapMarkerOverlay, NaverMapView } from '@mj-studio/react-native-naver-map';
+import {
+  NaverMapMarkerOverlay,
+  NaverMapPathOverlay,
+  NaverMapPolylineOverlay,
+  NaverMapView,
+} from '@mj-studio/react-native-naver-map';
 import { useEffect, useMemo, useState } from 'react';
 import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
-import { Txt, useAdaptive } from '@/design-system';
+import Svg, { Polyline } from 'react-native-svg';
+import { Txt, useAdaptive, useTheme } from '@/design-system';
 import type { PlaceWithDistance } from '@/lib/domain';
 import { AppConfig } from '@/lib/config';
 import { Shape } from '@/features/shared';
@@ -15,6 +21,20 @@ const COUNTRY_ZOOM = 6;
 const DROP_MS = 500;
 /** How far the stand-in keeps its pins from the edge of the field, as a share of it. */
 const FIELD_INSET = 0.12;
+/**
+ * 1a's route through a course's stops (fidelity A-14): one polyline drawn
+ * twice — a 2.6 surface halo under a 1.4 accent line dashed `3 2.2`, round
+ * caps and joins. The tile SDK takes the dash as whole units.
+ */
+const ROUTE_WIDTH = 1.4;
+const ROUTE_HALO_WIDTH = 2.6;
+const ROUTE_DASH = 3;
+const ROUTE_GAP = 2.2;
+/**
+ * The SDK's own layer for a 경로선 — under the markers, over the map — given
+ * to both route overlays so their `zIndex` orders the halo under the line.
+ */
+const ROUTE_LAYER = -100000;
 
 /**
  * `proto.css`'s `pinDrop`: from 16px above at .7, past 2px below at 1.06, to rest.
@@ -59,11 +79,19 @@ interface MapCanvasProps {
   /** Forwarded to the SDK as `mapPadding`; the stand-in keeps the same room clear. */
   inset?: MapInset;
   /**
-   * An ordered route through the stops, for 추천 코스. Accepted and projected;
-   * the dashed line itself is the Assistant pass's (fidelity A-14) — until it
-   * lands, the slot below renders nothing.
+   * An ordered route through the stops, for 추천 코스: a dashed accent line
+   * with a surface halo, drawn under the pins (fidelity A-14). Straight
+   * segments between the coordinates the client already holds — not a
+   * geometry the server owns (fidelity decision 20).
    */
   path?: Position[];
+  /**
+   * `places` are a course's stops in walk order: each pin is numbered, the
+   * first in the accent fill and the rest in the soft accent, and captioned
+   * with the place's name (fidelity A-15). Unset, 지도's visited/unvisited
+   * pins captioned with the region.
+   */
+  ordered?: boolean;
   onSelect: (placeId: string) => void;
 }
 
@@ -88,6 +116,7 @@ export function MapCanvas({
   dropKey,
   inset,
   path,
+  ordered,
   onSelect,
 }: MapCanvasProps) {
   if (!AppConfig.naverMapConfigured) {
@@ -98,6 +127,7 @@ export function MapCanvas({
         dropKey={dropKey}
         inset={inset}
         path={path}
+        ordered={ordered}
         onSelect={onSelect}
       />
     );
@@ -110,14 +140,27 @@ export function MapCanvas({
       hasPosition={hasPosition}
       dropKey={dropKey}
       inset={inset}
+      path={path}
+      ordered={ordered}
       onSelect={onSelect}
     />
   );
 }
 
-type TilesProps = Omit<MapCanvasProps, 'origin' | 'path'>;
+/** What a pin reads for a place: its number and caption under `ordered`, 지도's region otherwise. */
+function pinProps(
+  place: PlaceWithDistance,
+  index: number,
+  ordered: boolean | undefined,
+): { order?: number; label: string } {
+  return ordered ? { order: index + 1, label: place.name } : { label: place.region };
+}
 
-function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, onSelect }: TilesProps) {
+type TilesProps = Omit<MapCanvasProps, 'origin'>;
+
+function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ordered, onSelect }: TilesProps) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
   // Hidden until the drop's duration has passed, then shown together — the
   // cheap reveal decision 7 settles on, re-armed on every 최애 switch.
   const [revealed, setRevealed] = useState(false);
@@ -126,6 +169,11 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, onSelect 
     const timer = setTimeout(() => setRevealed(true), DROP_MS);
     return () => clearTimeout(timer);
   }, [dropKey]);
+
+  const routeCoords = useMemo(
+    () => (path ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
+    [path],
+  );
 
   return (
     <NaverMapView
@@ -139,8 +187,9 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, onSelect 
       isShowLocationButton={hasPosition}
       locale="ko"
     >
-      {places.map((place) => {
+      {places.map((place, index) => {
         const visited = visitedPlaceIds.includes(place.id);
+        const pin = pinProps(place, index, ordered);
         return (
           <NaverMapMarkerOverlay
             key={place.id}
@@ -154,16 +203,41 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, onSelect 
             {/* The SDK redraws a custom child only when the top child's key
                 changes, so everything the pin's look depends on is in it. */}
             <View
-              key={`${place.id}/${visited}/${place.region}`}
+              key={`${place.id}/${visited}/${pin.order ?? ''}/${pin.label}`}
               collapsable={false}
               style={styles.markerChild}
             >
-              <MapPin visited={visited} label={place.region} />
+              <MapPin visited={visited} {...pin} />
             </View>
           </NaverMapMarkerOverlay>
         );
       })}
-      {/* A-14: the route overlay through `path` goes here. */}
+      {/* The route: a path overlay as the halo, a dashed polyline over it.
+          The SDK's `pattern` is declared on the polyline but not forwarded
+          to the native view in the pinned version, so on tiles the line is
+          solid until it is — the halo and the colour still read as the route. */}
+      {routeCoords.length >= 2 && (
+        <>
+          <NaverMapPathOverlay
+            coords={routeCoords}
+            width={ROUTE_HALO_WIDTH}
+            color={adaptive.background}
+            outlineWidth={0}
+            globalZIndex={ROUTE_LAYER}
+            zIndex={0}
+          />
+          <NaverMapPolylineOverlay
+            coords={routeCoords}
+            width={ROUTE_WIDTH}
+            color={token.accent.fillColor}
+            pattern={[ROUTE_DASH, Math.round(ROUTE_GAP)]}
+            capType="Round"
+            joinType="Round"
+            globalZIndex={ROUTE_LAYER}
+            zIndex={1}
+          />
+        </>
+      )}
     </NaverMapView>
   );
 }
@@ -229,7 +303,7 @@ type StandInProps = Omit<MapCanvasProps, 'origin' | 'hasPosition'>;
  * 최애 switch exactly as 1a does. The one line at the foot says why there are
  * no tiles under them.
  */
-function StandIn({ places, visitedPlaceIds, dropKey, inset, path, onSelect }: StandInProps) {
+function StandIn({ places, visitedPlaceIds, dropKey, inset, path, ordered, onSelect }: StandInProps) {
   const adaptive = useAdaptive();
   const [field, setField] = useState<Field | null>(null);
 
@@ -254,9 +328,9 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, onSelect }: St
     >
       {/* Keyed on the 최애 so a switch unmounts the field and the new one drops. */}
       <View key={dropKey ?? 'pins'} style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        <RouteSlot points={route} />
+        {field != null && <RouteSlot points={route} field={field} />}
         {project != null &&
-          places.map((place) => {
+          places.map((place, index) => {
             const { x, y } = project(place);
             return (
               <Animated.View
@@ -274,7 +348,7 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, onSelect }: St
                   accessibilityLabel={place.name}
                   hitSlop={6}
                 >
-                  <MapPin visited={visitedPlaceIds.includes(place.id)} label={place.region} />
+                  <MapPin visited={visitedPlaceIds.includes(place.id)} {...pinProps(place, index, ordered)} />
                 </Pressable>
               </Animated.View>
             );
@@ -291,16 +365,46 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, onSelect }: St
 }
 
 /**
- * Where the stand-in draws the route — the stops already projected into the
- * field, in order. Renders nothing until the Assistant pass draws the dashed
- * accent line (fidelity A-14); the prop surface is here so that pass does not
- * have to reshape the canvas.
+ * The stand-in's route — the stops already projected into the field, in
+ * order, as 1a's polyline drawn twice: the surface halo under, the dashed
+ * accent line over. It sits under the pins and takes no touches. Nothing is
+ * drawn for fewer than two points; a line needs two ends.
  */
-function RouteSlot(_props: { points: Point[] }) {
-  return null;
+function RouteSlot({ points, field }: { points: Point[]; field: Field }) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+  if (points.length < 2) return null;
+
+  const line = points.map((p) => `${p.x},${p.y}`).join(' ');
+  return (
+    <Svg width={field.width} height={field.height} style={styles.route} pointerEvents="none">
+      <Polyline
+        points={line}
+        fill="none"
+        stroke={adaptive.background}
+        strokeWidth={ROUTE_HALO_WIDTH}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Polyline
+        points={line}
+        fill="none"
+        stroke={token.accent.fillColor}
+        strokeWidth={ROUTE_WIDTH}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray={[ROUTE_DASH, ROUTE_GAP]}
+      />
+    </Svg>
+  );
 }
 
 const styles = StyleSheet.create({
+  route: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
   markerChild: {
     width: MAP_PIN_WIDTH,
     height: MAP_PIN_HEIGHT,
