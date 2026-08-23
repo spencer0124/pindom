@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
-import type { Raffle, Ticket, User } from '@/lib/domain';
-import { raffleRepository, ticketRepository, userRepository } from '@/lib/repositories';
+import type { Place, Raffle, Ticket, User } from '@/lib/domain';
+import { placeRepository, raffleRepository, ticketRepository, userRepository } from '@/lib/repositories';
 
 export interface RafflesData {
   user: User;
@@ -9,6 +9,8 @@ export interface RafflesData {
   raffles: Raffle[];
   /** The oldest unspent ticket — what the server spends first, and what 티켓 절취 tears. */
   oldestTicket: Ticket | null;
+  /** Its place, for the `{region} · {work kind}` line under the name on 티켓 절취. Null when the read fails. */
+  oldestPlace: Place | null;
 }
 
 type State =
@@ -42,8 +44,19 @@ export function useRaffles() {
           .filter((t) => !t.spent)
           .sort((a, b) => a.issuedAt.getTime() - b.issuedAt.getTime())[0] ?? null
       : null;
+    // The region and the kind of work are the place's, not the ticket's. A
+    // caption is not worth failing the screen for, so a miss is just no line.
+    const place = oldest != null ? await placeRepository.getById(oldest.placeId) : null;
 
-    setState({ status: 'ready', data: { user: user.data, raffles: open, oldestTicket: oldest } });
+    setState({
+      status: 'ready',
+      data: {
+        user: user.data,
+        raffles: open,
+        oldestTicket: oldest,
+        oldestPlace: place?.ok ? place.data : null,
+      },
+    });
   }, []);
 
   useEffect(() => {

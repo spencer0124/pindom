@@ -423,7 +423,8 @@ export const mockRepositories: Repositories = {
       user = { ...user, ticketBalance: user.ticketBalance - raffle.ticketCost };
       entries.unshift(entry);
 
-      return mockDelay(ResultHelper.ok(entry));
+      // The balance after the debit rides along, as the contract's response does.
+      return mockDelay(ResultHelper.ok({ ...entry, ticketBalance: user.ticketBalance }));
     },
   },
 

@@ -16,9 +16,10 @@ interface RewardListProps {
  *
  * 1a gates rows on a tier minimum and a cost; the contract has only the cost,
  * and the balance check is the server's. So a row the balance cannot cover is
- * shown dimmed with `{n}장 필요`, the way 1a dims a locked one, and is still
- * selectable — the CTA below says what it would take, and a press there does
- * not call the server. 1a's glyph tile has no field behind it and is not drawn.
+ * shown dimmed with `{n}장 필요` and disabled, the way 1a locks one: it cannot
+ * be picked. The one that arrives selected — from the link, or first in the
+ * list — can still be short, and then the CTA below says what it would take.
+ * 1a's glyph tile has no field behind it and is not drawn.
  */
 export function RewardList({ raffles, balance, selectedId, onSelect }: RewardListProps) {
   const adaptive = useAdaptive();
@@ -29,13 +30,15 @@ export function RewardList({ raffles, balance, selectedId, onSelect }: RewardLis
       {raffles.map((raffle) => {
         const short = balance < raffle.ticketCost;
         const on = raffle.id === selectedId;
+        const cost = short ? `${raffle.ticketCost}장 필요` : `티켓 ${raffle.ticketCost}장`;
         return (
           <Pressable
             key={raffle.id}
             onPress={() => onSelect(raffle.id)}
+            disabled={short}
             accessibilityRole="radio"
-            accessibilityLabel={raffle.title}
-            accessibilityState={{ selected: on }}
+            accessibilityLabel={`${raffle.title} · ${cost}`}
+            accessibilityState={{ selected: on, disabled: short }}
             style={[
               styles.row,
               { borderBottomColor: adaptive.grey200 },
@@ -58,7 +61,7 @@ export function RewardList({ raffles, balance, selectedId, onSelect }: RewardLis
               fontWeight="bold"
               color={short ? adaptive.grey500 : token.accent.fillColor}
             >
-              {short ? `${raffle.ticketCost}장 필요` : `티켓 ${raffle.ticketCost}장`}
+              {cost}
             </Txt>
           </Pressable>
         );

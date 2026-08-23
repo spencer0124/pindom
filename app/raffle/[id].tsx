@@ -19,6 +19,10 @@ import { Shape } from '@/features/shared';
  * reused on every retry and is what stops a dropped response from debiting
  * twice. The balance check is the server's; the CTA only says what it will
  * say, and 잔여 티켓 충족's No edge is the server's `insufficient_tickets`.
+ *
+ * Both exits read 컬렉션, and both go there (fidelity decision 16): `navigate`
+ * rather than `back`, because 홈's 마감 임박 cards open this screen too, and a
+ * control that says 컬렉션 is a promise.
  */
 export default function RaffleScreen() {
   const adaptive = useAdaptive();
@@ -55,13 +59,14 @@ export default function RaffleScreen() {
     );
   }
 
-  const { user, oldestTicket } = state.data;
+  const { user, oldestTicket, oldestPlace } = state.data;
   const canEnter = selected != null && user.ticketBalance >= selected.ticketCost;
+  const toCollection = () => router.navigate('/(tabs)/tickets' as never);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button" style={styles.headerSide}>
+        <Pressable onPress={toCollection} accessibilityRole="button" style={styles.headerSide}>
           <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
             ‹ 컬렉션
           </Txt>
@@ -107,12 +112,12 @@ export default function RaffleScreen() {
             </Txt>
           </View>
           <Button
-            size="large"
+            size="big"
             type="primary"
             display="block"
             disabled={!canEnter}
             onPress={() => {
-              begin(selected, oldestTicket);
+              begin(selected, oldestTicket, oldestPlace);
               router.push('/raffle/tear' as never);
             }}
           >
@@ -120,7 +125,7 @@ export default function RaffleScreen() {
               ? `티켓 뜯어서 응모하기 · ${selected.ticketCost}장`
               : `${selected.ticketCost}장을 모아야 응모할 수 있어요`}
           </Button>
-          <Pressable onPress={() => router.back()} accessibilityRole="button" style={styles.cancel}>
+          <Pressable onPress={toCollection} accessibilityRole="button" style={styles.cancel}>
             <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
               취소하고 컬렉션으로
             </Txt>

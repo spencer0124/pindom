@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
+import { Button, ErrorPage, Loader, SdsSpacing, Txt, useAdaptive } from '@/design-system';
+import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
 import { TicketGrid, TierGauge, useCollection } from '@/features/tickets';
 import { Rule, Shape } from '@/features/shared';
 
@@ -15,7 +16,8 @@ import { Rule, Shape } from '@/features/shared';
  * 응모하러 가기 needs a raffle to open, because 응모 is keyed to one; it goes
  * to the soonest-closing open raffle, and is not offered when there is none.
  * Private tickets are 보관함's, reached from 마이페이지 — the same tickets, the
- * other visibility.
+ * other visibility. Every tile tilts under a held finger, as 티켓 발행's card
+ * does; a touch that moves first is a scroll.
  */
 export default function TicketsScreen() {
   const adaptive = useAdaptive();
@@ -83,7 +85,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 32,
+    // The last tile clears the assistant's button, as 홈's last course does.
+    paddingBottom: ASSISTANT_FAB_CLEARANCE + SdsSpacing.base,
   },
   header: {
     flexDirection: 'row',

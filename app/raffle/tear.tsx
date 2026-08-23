@@ -3,20 +3,26 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
 import { TEAR_SWING, TearStage, useEnterRaffle, useTicketsStore } from '@/features/tickets';
-import { Shape } from '@/features/shared';
+import { Shape, workKindLabel } from '@/features/shared';
 
 /** Past this, lifting the finger finishes the tear instead of letting it heal. */
 const COMMIT_AT = 0.82;
+
+/**
+ * 1a's `tearEase`: `transform .42s cubic-bezier(.2,1.1,.3,1)` — the same
+ * overshoot settle for a heal back to 0 and a commit on to 1.
+ */
+const TEAR_EASE = { duration: 420, easing: Easing.bezier(0.2, 1.1, 0.3, 1) };
 
 type Phase = 'start' | 'mid' | 'near';
 
@@ -29,8 +35,10 @@ type Phase = 'start' | 'mid' | 'near';
  *
  * The drag is the whole screen, as in 1a. Progress is the drag's distance over
  * the card's height; releasing before 82% heals the ticket, releasing after
- * finishes it, and 한 번에 뜯기 skips the drag. The server is asked once, at
- * the end, with the key 응모 minted — the tear is client-side only.
+ * finishes it, reaching the bottom finishes it without a release, and
+ * 한 번에 뜯기 skips the drag. Heal and commit settle on 1a's 420 ms
+ * overshoot. The server is asked once, at the end, with the key 응모 minted —
+ * the tear is client-side only.
  */
 export default function TearScreen() {
   const adaptive = useAdaptive();
@@ -39,9 +47,14 @@ export default function TearScreen() {
 
   const raffle = useTicketsStore((s) => s.raffle);
   const ticket = useTicketsStore((s) => s.tearing);
+  const place = useTicketsStore((s) => s.tearingPlace);
   const { busy, enter } = useEnterRaffle();
 
   const progress = useSharedValue(0);
+  /** The tear is in hand, or committing — what stops the grip's idle loop. */
+  const dragging = useSharedValue(false);
+  /** Set once the tear is past the point of return, so a drag cannot commit twice. */
+  const committed = useSharedValue(false);
   const [phase, setPhase] = useState<Phase>('start');
   const [message, setMessage] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -63,50 +76,74 @@ export default function TearScreen() {
     }
     // 잔여 티켓 충족's No edge goes back to 컬렉션, per the flowchart. The
     // ticket heals so the screen is honest about what happened.
-    progress.value = withSpring(0);
+    progress.value = withTiming(0, TEAR_EASE);
+    committed.value = false;
+    dragging.value = false;
     setFinishing(false);
     if (outcome.kind === 'insufficient') {
       router.navigate('/tickets' as never);
     } else {
       setMessage(outcome.message);
     }
-  }, [finishing, enter, progress]);
+  }, [finishing, enter, progress, committed, dragging]);
 
   const commit = useCallback(() => {
-    progress.value = withTiming(1, { duration: 420 }, (done) => {
+    committed.value = true;
+    dragging.value = true;
+    progress.value = withTiming(1, TEAR_EASE, (done) => {
       if (done) runOnJS(finish)();
     });
-  }, [progress, finish]);
+  }, [progress, committed, dragging, finish]);
 
   const pan = Gesture.Pan()
     .enabled(!finishing)
-    .onUpdate((e) => {
-      progress.value = Math.max(0, Math.min(1, e.translationY / travel));
+    .onBegin(() => {
+      dragging.value = true;
     })
-    .onEnd(() => {
+    .onUpdate((e) => {
+      if (committed.value) return;
+      const next = Math.max(0, Math.min(1, e.translationY / travel));
+      progress.value = next;
+      // All the way down commits on the spot, as 1a does — no release needed.
+      if (next >= 1) {
+        committed.value = true;
+        runOnJS(commit)();
+      }
+    })
+    .onFinalize(() => {
+      if (committed.value) return;
       if (progress.value >= COMMIT_AT) {
+        committed.value = true;
         runOnJS(commit)();
       } else {
-        progress.value = withSpring(0);
+        progress.value = withTiming(0, TEAR_EASE);
+        dragging.value = false;
       }
     });
 
   // The title and hint change at 1a's thresholds; mirror only the phase into
   // React state, not every frame of the drag.
   useAnimatedReaction(
-    () => (progress.value === 0 ? 'start' : progress.value >= COMMIT_AT ? 'near' : 'mid'),
+    () => (progress.value <= 0 ? 'start' : progress.value >= COMMIT_AT ? 'near' : 'mid'),
     (next, prev) => {
       if (next !== prev) runOnJS(setPhase)(next);
     },
   );
 
-  const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
+  // The easing overshoots either end; the bar is clamped so it never runs backwards.
+  const barStyle = useAnimatedStyle(() => ({
+    width: `${Math.max(0, Math.min(1, progress.value)) * 100}%`,
+  }));
 
   if (raffle == null || ticket == null) {
     // No unspent ticket to tear means the balance was zero — 응모 would have
     // said so. A cold arrival here has nothing to show.
     return null;
   }
+
+  // The region and the kind of work are the place's, not the ticket's; the
+  // line is left off when the place did not load rather than fetched here.
+  const subtitle = place != null ? `${place.region} · ${workKindLabel[place.workKind]}` : undefined;
 
   const title =
     phase === 'start' ? '절취선을 따라 뜯어주세요' : phase === 'near' ? '거의 다 뜯겼어요' : '그대로 계속 내려주세요';
@@ -132,7 +169,13 @@ export default function TearScreen() {
         </View>
 
         <View style={styles.stage}>
-          <TearStage ticket={ticket} progress={progress} width={cardWidth} />
+          <TearStage
+            ticket={ticket}
+            progress={progress}
+            dragging={dragging}
+            width={cardWidth}
+            subtitle={subtitle}
+          />
         </View>
 
         <View style={styles.footer}>

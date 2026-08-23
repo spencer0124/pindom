@@ -123,6 +123,14 @@ export interface TicketRepository {
   }): Promise<Result<Ticket>>;
 }
 
+/**
+ * What `enterRaffle` answers: the entry, and the balance the server holds after
+ * the debit. The balance rides along so 응모완료 can print it on its first
+ * frame without a second read — it is still the server's figure, never a
+ * subtraction done on the client. Absent only if the response left it out.
+ */
+export type EnteredRaffle = RaffleEntry & { ticketBalance?: number };
+
 export interface RaffleRepository {
   list(): Promise<Result<Raffle[]>>;
   getById(raffleId: string): Promise<Result<Raffle>>;
@@ -140,7 +148,7 @@ export interface RaffleRepository {
    * Format is fixed by the server: letters, digits, `-` and `_` only, 1–64 characters.
    * A UUID satisfies it.
    */
-  enter(raffleId: string, idempotencyKey: string): Promise<Result<RaffleEntry>>;
+  enter(raffleId: string, idempotencyKey: string): Promise<Result<EnteredRaffle>>;
 }
 
 export interface PostRepository {

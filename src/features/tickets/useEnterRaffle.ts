@@ -37,7 +37,9 @@ export function useEnterRaffle() {
         if (errorCode === 'insufficient_tickets') return { kind: 'insufficient' };
         return { kind: 'failed', message: failureMessage(failure) };
       }
-      setEntry(result.data);
+      // The balance rides along with the entry — the server's figure after
+      // the debit, never a subtraction done here.
+      setEntry(result.data, result.data.ticketBalance);
       return { kind: 'entered' };
     } finally {
       setBusy(false);

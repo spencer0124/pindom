@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Raffle, RaffleEntry, Ticket } from '@/lib/domain';
+import type { Place, Raffle, RaffleEntry, Ticket } from '@/lib/domain';
 
 interface TicketsState {
   /** The reward picked on 응모 — what 티켓 절취 tears for and 응모완료 names. */
@@ -15,11 +15,19 @@ interface TicketsState {
   idempotencyKey: string | null;
   /** The ticket under the finger on 티켓 절취 — the oldest unspent one, which is what the server spends first. */
   tearing: Ticket | null;
+  /** That ticket's place, for the `{region} · {work kind}` line 티켓 절취 prints under its name. */
+  tearingPlace: Place | null;
   /** What `enterRaffle` returned. 응모완료 reads it rather than a route param. */
   entry: RaffleEntry | null;
+  /**
+   * The balance after the debit, as the server answered it alongside the
+   * entry — so 응모완료's note is whole on its first frame. Null when the
+   * answer did not carry one; the screen then reads the user back.
+   */
+  entryBalance: number | null;
 
-  begin: (raffle: Raffle, tearing: Ticket | null) => void;
-  setEntry: (entry: RaffleEntry) => void;
+  begin: (raffle: Raffle, tearing: Ticket | null, tearingPlace?: Place | null) => void;
+  setEntry: (entry: RaffleEntry, ticketBalance?: number) => void;
   reset: () => void;
 }
 
@@ -27,7 +35,9 @@ const EMPTY = {
   raffle: null,
   idempotencyKey: null,
   tearing: null,
+  tearingPlace: null,
   entry: null,
+  entryBalance: null,
 };
 
 /**
@@ -46,14 +56,14 @@ function makeIdempotencyKey(): string {
 export const useTicketsStore = create<TicketsState>((set, get) => ({
   ...EMPTY,
 
-  begin: (raffle, tearing) => {
+  begin: (raffle, tearing, tearingPlace = null) => {
     // Re-opening 응모 on the same raffle keeps the key: that is the retry case
     // the key exists for. A different raffle is a different entry.
     if (get().raffle?.id === raffle.id && get().idempotencyKey != null) {
-      return set({ raffle, tearing, entry: null });
+      return set({ raffle, tearing, tearingPlace, entry: null, entryBalance: null });
     }
-    set({ ...EMPTY, raffle, tearing, idempotencyKey: makeIdempotencyKey() });
+    set({ ...EMPTY, raffle, tearing, tearingPlace, idempotencyKey: makeIdempotencyKey() });
   },
-  setEntry: (entry) => set({ entry }),
+  setEntry: (entry, ticketBalance) => set({ entry, entryBalance: ticketBalance ?? null }),
   reset: () => set({ ...EMPTY }),
 }));

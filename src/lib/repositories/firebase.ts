@@ -43,7 +43,6 @@ import type {
   PlaceWithDistance,
   Post,
   Raffle,
-  RaffleEntry,
   Session,
   Ticket,
   User,
@@ -65,7 +64,7 @@ import {
   strList,
   type DocData,
 } from './firebase-mapping';
-import type { Repositories } from './types';
+import type { EnteredRaffle, Repositories } from './types';
 
 /**
  * The Firebase implementation of `Repositories`.
@@ -639,13 +638,16 @@ export const firebaseRepositories: Repositories = {
         // timestamp, previously) makes every retry a fresh entry and debits twice.
         const res = await call({ raffleId, idempotencyKey });
         const d = res.data as DocData;
-        const entry: RaffleEntry = {
+        const entry: EnteredRaffle = {
           id: String(d.entryId ?? ''),
           userId: requireUid(),
           raffleId,
           ticketIds: strList(d, 'ticketIds'),
           ticketsSpent: Number(d.ticketsSpent ?? 0),
           createdAt: new Date(),
+          // The contract returns the balance after the debit; 응모완료 prints
+          // it. Left off rather than guessed if the response has none.
+          ...(typeof d.ticketBalance === 'number' && { ticketBalance: d.ticketBalance }),
         };
         return entry;
       }),
