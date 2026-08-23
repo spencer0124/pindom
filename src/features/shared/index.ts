@@ -5,7 +5,7 @@ export { HoloTilt } from './HoloTilt';
 export { PlaceList } from './PlaceList';
 export { Rule } from './Rule';
 export { SectionHeader } from './SectionHeader';
-export { Shape, sectionLabel } from './shape';
+export { Shape, sectionLabel, wordmark } from './shape';
 export { TICKET_STUB_WIDTH, TicketCard, type TicketCardProps } from './TicketCard';
 export { tierLabel } from './tierLabel';
 export { TIER_NOTE_FIRST, TIER_NOTE_TOP, tierNote } from './tierNote';

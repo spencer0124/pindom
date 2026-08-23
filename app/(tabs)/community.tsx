@@ -2,7 +2,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
+import { Button, ErrorPage, Loader, SdsSpacing, Txt, useAdaptive } from '@/design-system';
+import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
 import { BoardChips, BoardHeader, PostRow, useBoards, useFeed } from '@/features/community';
 import { useDiscoveryStore } from '@/features/discovery';
 import { Shape } from '@/features/shared';
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   list: {
-    paddingBottom: 24,
+    paddingBottom: ASSISTANT_FAB_CLEARANCE + SdsSpacing.base,
   },
   empty: {
     paddingVertical: 40,

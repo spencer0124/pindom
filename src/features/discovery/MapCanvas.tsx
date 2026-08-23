@@ -357,7 +357,7 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, ordered, onSel
 
       <View style={styles.notice} pointerEvents="none">
         <Txt typography="t7" color={adaptive.grey400} numberOfLines={1}>
-          네이버 지도 클라이언트 ID 없이 빌드됐습니다 · EXPO_PUBLIC_NAVER_MAP_CLIENT_ID
+          네이버 지도 클라이언트 ID 없이 빌드됐습니다
         </Txt>
       </View>
     </View>

@@ -13,7 +13,7 @@ import {
   TicketBalanceCard,
   useHomeData,
 } from '@/features/home';
-import { PlaceList, Rule, SectionHeader, Shape } from '@/features/shared';
+import { PlaceList, Rule, SectionHeader, Shape, wordmark } from '@/features/shared';
 
 /** 1a's `38px` avatar at the right of the greeting. No tap — 1a wires none. */
 const AVATAR = 38;
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   wordmark: {
-    letterSpacing: 3,
+    ...wordmark,
     marginBottom: 6,
   },
   section: {

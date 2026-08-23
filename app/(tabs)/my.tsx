@@ -5,7 +5,8 @@ import { useCallback, useRef, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
+import { Badge, Button, ErrorPage, Loader, SdsColors, SdsSpacing, Txt, useAdaptive, useTheme } from '@/design-system';
+import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
 import { localeLabel, useMyPage } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
 import { tierView } from '@/features/tickets';
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 32,
+    paddingBottom: ASSISTANT_FAB_CLEARANCE + SdsSpacing.base,
   },
   header: {
     flexDirection: 'row',
