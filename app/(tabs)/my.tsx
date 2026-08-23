@@ -3,8 +3,9 @@ import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
+import { Badge, Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import { localeLabel, useMyPage } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
 import { tierView } from '@/features/tickets';
@@ -23,7 +24,19 @@ import { tierView } from '@/features/tickets';
  * screen rather than the design-system Dialog, which still paints a white
  * card. Signing out sends the app to 온보딩, which is where the tab gate would
  * send it anyway.
+ *
+ * Motion is 1a's: the confirm rises 14px over 280ms on its own curve while the
+ * dim behind it is instant, and nothing animates on close. Rows dim to .6
+ * while pressed — the touch mapping of 1a's hover (fidelity decision 28).
  */
+
+/** 1a's `fadeUp .28s cubic-bezier(.2,.9,.3,1)` on the 로그아웃 confirm. */
+const sheetRise = FadeInDown.duration(280)
+  .easing(Easing.bezier(0.2, 0.9, 0.3, 1))
+  .withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] });
+
+const PRESSED_OPACITY = 0.6;
+
 export default function MyScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -98,9 +111,15 @@ export default function MyScreen() {
             <Txt typography="t3" fontWeight="bold" color={adaptive.grey900}>
               {user.nickname}
             </Txt>
-            <Txt typography="st13" color={token.accent.fillColor}>
+            <Badge
+              size="small"
+              fontWeight="semiBold"
+              color={token.accent.fillColor}
+              backgroundColor={token.accent.dimColor}
+              style={styles.tier}
+            >
               {tier.label}
-            </Txt>
+            </Badge>
           </View>
           <Button size="tiny" style="weak" onPress={() => router.push('/profile' as never)}>
             프로필 편집
@@ -137,7 +156,10 @@ export default function MyScreen() {
               key={item.label}
               onPress={item.go}
               accessibilityRole="button"
-              style={[styles.row, { borderBottomColor: adaptive.grey200 }]}
+              style={({ pressed }) => [
+                styles.row,
+                { borderBottomColor: adaptive.grey200, opacity: pressed ? PRESSED_OPACITY : 1 },
+              ]}
             >
               <Txt typography="t6" fontWeight="medium" color={adaptive.grey900} style={styles.rowLabel}>
                 {item.label}
@@ -155,9 +177,9 @@ export default function MyScreen() {
           <Pressable
             onPress={() => setConfirming(true)}
             accessibilityRole="button"
-            style={[styles.row, { borderBottomColor: adaptive.grey200 }]}
+            style={({ pressed }) => [styles.logout, { opacity: pressed ? PRESSED_OPACITY : 1 }]}
           >
-            <Txt typography="t6" fontWeight="medium" color={adaptive.grey600} style={styles.rowLabel}>
+            <Txt typography="t6" fontWeight="medium" color={SdsColors.alert500}>
               로그아웃
             </Txt>
           </Pressable>
@@ -171,7 +193,10 @@ export default function MyScreen() {
       {confirming && (
         <View style={[styles.overlay, { backgroundColor: SdsColors.greyOpacity800 }]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => !leaving && setConfirming(false)} />
-          <View style={[styles.sheet, { backgroundColor: adaptive.background, borderTopColor: adaptive.grey200 }]}>
+          <Animated.View
+            entering={sheetRise}
+            style={[styles.sheet, { backgroundColor: adaptive.background, borderTopColor: adaptive.grey200 }]}
+          >
             <Txt typography="t4" fontWeight="bold" color={adaptive.grey900}>
               로그아웃할까요?
             </Txt>
@@ -186,7 +211,7 @@ export default function MyScreen() {
                 로그아웃
               </Button>
             </View>
-          </View>
+          </Animated.View>
         </View>
       )}
     </SafeAreaView>
@@ -209,9 +234,9 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     borderWidth: 1,
     overflow: 'hidden',
     alignItems: 'center',
@@ -219,7 +244,11 @@ const styles = StyleSheet.create({
   },
   who: {
     flex: 1,
+    alignItems: 'flex-start',
     gap: 4,
+  },
+  tier: {
+    borderRadius: Shape.chipRadius,
   },
   stats: {
     flexDirection: 'row',
@@ -227,7 +256,8 @@ const styles = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 12,
     gap: 4,
   },
   row: {
@@ -241,9 +271,13 @@ const styles = StyleSheet.create({
   rowLabel: {
     flex: 1,
   },
+  logout: {
+    paddingHorizontal: Shape.gutter,
+    paddingTop: 18,
+    paddingBottom: 8,
+  },
   footer: {
     paddingHorizontal: Shape.gutter,
-    paddingTop: 16,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

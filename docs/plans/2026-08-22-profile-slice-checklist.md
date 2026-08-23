@@ -3,7 +3,7 @@ title: Profile Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -53,9 +53,11 @@ colour, type and corners from `2b`.
 ### 4 — 보관함 (`app/vault.tsx`)
 
 - [x] ‹ 마이 · 비공개 보관함 · `n장`; 여기 있는 사진은 나만 봅니다 and its note; the three
-      figures; the rows with the 비공개 badge, the place, `{serial} · {MM.DD}`.
-- [x] **공개 전환 is an action**, per row. `setVisibility('public')` moves the ticket to 컬렉션
-      and the row leaves the list.
+      figures; the two-column grid of 3:4 tiles with the 비공개 chip on the photo, the place,
+      `{serial} · {MM.DD}` — `1a`'s grid, restored by the
+      [fidelity pass](2026-08-23-prototype-fidelity-checklist.md) (decision 26).
+- [x] **공개 전환 is an action**, per tile, as a text button in the caption row.
+      `setVisibility('public')` moves the ticket to 컬렉션 and the tile leaves the grid.
 
 ### 5 — Close out
 
@@ -75,7 +77,11 @@ colour, type and corners from `2b`.
 | Where | Line |
 | --- | --- |
 | 보관함, empty | 비공개로 저장한 컷이 아직 없어요 |
-| 마이페이지, loading | 불러오는 중 |
+| 마이페이지 · 프로필 편집 · 보관함, loading | 불러오는 중 |
+| 마이페이지, load failed | 마이페이지를 불러오지 못했어요 |
+| 프로필 편집, load failed | 프로필을 불러오지 못했어요 |
+| 보관함, load failed | 보관함을 불러오지 못했어요 |
+| 언어, loading | No label — the loader alone, until the locale is read |
 
 ## Where the sources disagree
 
@@ -89,6 +95,9 @@ colour, type and corners from `2b`.
 | 6 | Interest tags (드라마 OST · 예능) among 내 아티스트 | No field | The followed 최애 and 추가 | |
 | 7 | Four locales | ko and en ship | Two rows | The 2026-08-21 review resolutions |
 | 8 | The design-system Dialog for 로그아웃할까요? | `Dialog` paints `SdsColors.background` — a white card | A block on the screen | One of the twenty unconverted components |
+| 9 | Five preset gradient avatars on 프로필 편집 | The contract's `users` write set is `avatarUrl` only | Not drawn; 내 인증컷에서 고르기 is the one avatar control | Fidelity decision 25 — a backend ask, either five hosted presets or an `avatarPreset` field |
+| 10 | The dim behind 로그아웃할까요? has no handler | Platform convention: a tap outside a sheet dismisses it | The dim dismisses | A harmless affordance the prototype's web hover world never needed (audit P-07) |
+| 11 | 위치·카메라 권한 prints 허용 only — the fixture is never denied | Copy is final; there is no string for a denied permission | The row prints nothing when a permission is missing and still opens Settings | Fidelity decision 27 — a denied-state line is the designer's to write |
 
 ## Still open
 
@@ -98,9 +107,14 @@ colour, type and corners from `2b`.
 - **The permission row reads but cannot grant.** It opens Settings, which is the only place a
   revoked permission can be restored; it does not re-prompt.
 - **The tier line uses 1a's thresholds** — same gap the Tickets checklist records.
+- **The serial line is tabular, not monospaced.** `1a` sets it in `ui-monospace`; the typography
+  map has no mono face, so 보관함 uses `fontVariant: ['tabular-nums']` as the ticket does. A mono
+  face is a design-system ask.
 
 ## Related
 
+- [Prototype fidelity checklist](2026-08-23-prototype-fidelity-checklist.md) — the motion and polish
+  pass that followed this build; its § Profile rows are P-01 … P-17
 - [screens.md](../reference/screens.md) — the slice table these four come from
 - [2026-08-22-auth-slice-checklist.md](2026-08-22-auth-slice-checklist.md) — the gate 로그아웃 lands on
 - [backend-contract.md](../reference/backend-contract.md) — `users`, the fields the client may write

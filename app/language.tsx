@@ -16,6 +16,8 @@ import { Rule, Shape } from '@/features/shared';
  * review resolutions), and the prototype's ja and zh are read as absent at the
  * repository boundary. The pick is stored on the user document; this build's
  * own strings are Korean, which the Profile checklist records.
+ *
+ * The radio is 1a's: a 20px disc, filled solid when on, a ring when off.
  */
 export default function LanguageScreen() {
   const adaptive = useAdaptive();
@@ -68,9 +70,15 @@ export default function LanguageScreen() {
                     {option.native}
                   </Txt>
                 </View>
-                <View style={[styles.radio, { borderColor: on ? token.accent.fillColor : adaptive.grey300 }]}>
-                  {on && <View style={[styles.radioDot, { backgroundColor: token.accent.fillColor }]} />}
-                </View>
+                <View
+                  style={[
+                    styles.radio,
+                    {
+                      borderColor: on ? token.accent.fillColor : adaptive.grey300,
+                      backgroundColor: on ? token.accent.fillColor : 'transparent',
+                    },
+                  ]}
+                />
               </Pressable>
             );
           })}
@@ -127,17 +135,10 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   footnote: {
     paddingHorizontal: Shape.gutter,

@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ErrorPage, Loader, Txt, useAdaptive, useTheme } from '@/design-system';
+import { ErrorPage, Loader, TextButton, Txt, useAdaptive, useTheme } from '@/design-system';
 import { useVault } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
 
@@ -15,9 +15,20 @@ import { Rule, Shape } from '@/features/shared';
  *
  * The same tickets as 컬렉션, the other visibility — `tickets.listVault` is the
  * same query with `visibility == 'private'`. 1a's 공개 전환 · 가능 line is the
- * one action here: each row can be made public, which moves it to 컬렉션 and,
+ * one action here: each tile can be made public, which moves it to 컬렉션 and,
  * server-side, into the place's gallery.
+ *
+ * The tickets are 1a's two-column grid of 3:4 photos — a vault reads as photos,
+ * not as settings rows — laid out the way `TicketGrid` lays out 컬렉션. The
+ * 비공개 chip sits on the photo, the caption carries the place and the serial
+ * line, and 공개 전환 is a text button in that caption (fidelity decision 26).
+ * The typography map has no monospaced face, so the serial line is set in
+ * tabular figures, as the ticket itself is.
  */
+
+/** 1a's tile photo is 3:4. */
+const PHOTO_ASPECT = 3 / 4;
+
 export default function VaultScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -42,7 +53,7 @@ export default function VaultScreen() {
       </View>
 
       {state.status === 'loading' ? (
-        <Loader.Centered label="보관함을 불러오는 중" />
+        <Loader.Centered label="불러오는 중" />
       ) : state.status === 'error' ? (
         <ErrorPage title="보관함을 불러오지 못했어요" subtitle={state.message} onPressRightButton={reload} />
       ) : (
@@ -60,7 +71,7 @@ export default function VaultScreen() {
             {[
               { k: '보관 중', v: `${state.tickets.length}장` },
               { k: '연결된 티켓', v: `${state.tickets.length}장` },
-              { k: '공개 전환', v: '가능' },
+              { k: '공개 전환', v: '가능', accent: true },
             ].map((stat, index) => (
               <View
                 key={stat.k}
@@ -69,7 +80,7 @@ export default function VaultScreen() {
                 <Txt typography="st13" color={adaptive.grey500}>
                   {stat.k}
                 </Txt>
-                <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>
+                <Txt typography="t6" fontWeight="bold" color={stat.accent ? token.accent.fillColor : adaptive.grey900}>
                   {stat.v}
                 </Txt>
               </View>
@@ -85,35 +96,38 @@ export default function VaultScreen() {
               </Txt>
             </View>
           ) : (
-            state.tickets.map((ticket) => (
-              <View key={ticket.id} style={[styles.row, { borderBottomColor: adaptive.grey200 }]}>
-                <View style={[styles.thumb, { backgroundColor: adaptive.background }]}>
-                  <Image source={{ uri: ticket.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-                  <View style={[styles.badge, { backgroundColor: adaptive.background }]}>
-                    <Txt typography="st13" fontWeight="bold" color={adaptive.grey700}>
-                      비공개
-                    </Txt>
+            <View style={styles.grid}>
+              {state.tickets.map((ticket) => (
+                <View key={ticket.id} style={[styles.tile, { borderColor: adaptive.grey200 }]}>
+                  <View style={[styles.photo, { backgroundColor: adaptive.background }]}>
+                    <Image source={{ uri: ticket.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                    <View style={[styles.badge, { backgroundColor: adaptive.background }]}>
+                      <Txt typography="st13" fontWeight="semiBold" color={adaptive.grey900}>
+                        비공개
+                      </Txt>
+                    </View>
+                  </View>
+                  <View style={styles.caption}>
+                    <View style={styles.copy}>
+                      <Txt typography="t7" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
+                        {ticket.placeName}
+                      </Txt>
+                      <Txt typography="st13" color={adaptive.grey500} style={styles.serial}>
+                        {ticket.serial} · {formatShort(ticket.issuedAt)}
+                      </Txt>
+                    </View>
+                    <TextButton
+                      typography="st13"
+                      fontWeight="bold"
+                      color={token.accent.fillColor}
+                      onPress={() => void makePublic(ticket.id)}
+                    >
+                      공개 전환
+                    </TextButton>
                   </View>
                 </View>
-                <View style={styles.copy}>
-                  <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
-                    {ticket.placeName}
-                  </Txt>
-                  <Txt typography="st13" color={adaptive.grey500}>
-                    {ticket.serial} · {formatShort(ticket.issuedAt)}
-                  </Txt>
-                </View>
-                <Pressable
-                  onPress={() => void makePublic(ticket.id)}
-                  accessibilityRole="button"
-                  style={[styles.action, { borderColor: adaptive.grey200 }]}
-                >
-                  <Txt typography="st13" fontWeight="bold" color={token.accent.fillColor}>
-                    공개 전환
-                  </Txt>
-                </Pressable>
-              </View>
-            ))
+              ))}
+            </View>
           )}
         </ScrollView>
       )}
@@ -161,44 +175,51 @@ const styles = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 12,
     gap: 4,
   },
   empty: {
     paddingVertical: 40,
     paddingHorizontal: Shape.gutter,
   },
-  row: {
+  grid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 10,
     paddingHorizontal: Shape.gutter,
-    paddingVertical: 12,
-    borderBottomWidth: Shape.rowRule,
+    paddingTop: 14,
   },
-  thumb: {
-    width: 56,
-    height: 56,
+  tile: {
+    // Two across with the 10px gap between; an odd last tile keeps its width.
+    width: '48.5%',
+    borderWidth: Shape.rowRule,
     overflow: 'hidden',
+  },
+  photo: {
+    width: '100%',
+    aspectRatio: PHOTO_ASPECT,
   },
   badge: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    paddingVertical: 2,
-    opacity: 0.92,
+    left: 8,
+    top: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: Shape.chipRadius,
+    opacity: 0.94,
+  },
+  caption: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    padding: 10,
   },
   copy: {
     flex: 1,
     gap: 3,
   },
-  action: {
-    height: 32,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  serial: {
+    fontVariant: ['tabular-nums'],
   },
 });

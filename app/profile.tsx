@@ -3,7 +3,8 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, Txt, useAdaptive, useTheme } from '@/design-system';
+import Svg, { Circle, G, Path } from 'react-native-svg';
+import { Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import type { ProfileVisibility } from '@/lib/domain';
 import { NICKNAME_MAX, useProfileEdit, type ProfileDraft } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
@@ -24,8 +25,19 @@ const VISIBILITY: { id: ProfileVisibility; label: string; desc: string }[] = [
  * this build does not have; the second is the user's own ticket photos, which
  * are already uploaded and already theirs, so that is the avatar strip. 1a's
  * interest tags (드라마 OST · 예능) have no field; 내 아티스트 shows the followed
- * 최애 and 추가 goes to 최애 찾기.
+ * 최애 and 추가 goes to 최애 찾기. 1a's five preset avatars are not drawn: the
+ * contract writes `avatarUrl` only (fidelity decision 25).
+ *
+ * An invalid nickname is the one error state here, and it wears the alert
+ * colour on the count, the rule and the hint — never the accent, which is what
+ * 저장 turns when the name is good.
  */
+
+/** 1a's camera badge on the avatar — a cue that this is editable, no handler. */
+const CAMERA_BADGE = 32;
+const CAMERA_GLYPH = 15;
+const CAMERA_STROKE = 1.9;
+
 export default function ProfileEditScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -104,14 +116,24 @@ export default function ProfileEditScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.body}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <View style={styles.avatarBlock}>
-            <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: token.accent.fillColor }]}>
-              {draft.avatarUrl != null ? (
-                <Image source={{ uri: draft.avatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-              ) : (
-                <Txt typography="t3" fontWeight="bold" color={adaptive.grey600}>
-                  {name.trim().slice(0, 1)}
-                </Txt>
-              )}
+            <View style={styles.avatarWrap}>
+              <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
+                {draft.avatarUrl != null ? (
+                  <Image source={{ uri: draft.avatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                ) : (
+                  <Txt typography="t3" fontWeight="bold" color={adaptive.grey600}>
+                    {name.trim().slice(0, 1)}
+                  </Txt>
+                )}
+              </View>
+              <View style={[styles.cameraBadge, { backgroundColor: adaptive.grey900, borderColor: adaptive.background }]}>
+                <Svg width={CAMERA_GLYPH} height={CAMERA_GLYPH} viewBox="0 0 24 24" fill="none">
+                  <G stroke={adaptive.background} strokeWidth={CAMERA_STROKE} strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M4 8h3l1.6-2h6.8L17 8h3v11H4V8Z" />
+                    <Circle cx={12} cy={13} r={3.3} />
+                  </G>
+                </Svg>
+              </View>
             </View>
             {shots.length > 0 && (
               <>
@@ -145,7 +167,7 @@ export default function ProfileEditScreen() {
               <Txt typography="st13" fontWeight="bold" color={adaptive.grey700}>
                 닉네임
               </Txt>
-              <Txt typography="st13" color={name.length > NICKNAME_MAX ? token.accent.fillColor : adaptive.grey500}>
+              <Txt typography="st13" color={name.length > NICKNAME_MAX ? SdsColors.alert500 : adaptive.grey500}>
                 {name.length}/{NICKNAME_MAX}
               </Txt>
             </View>
@@ -156,9 +178,12 @@ export default function ProfileEditScreen() {
               placeholderTextColor={adaptive.grey400}
               autoCorrect={false}
               autoCapitalize="none"
-              style={[styles.input, { color: adaptive.grey900, borderBottomColor: adaptive.grey200 }]}
+              style={[
+                styles.input,
+                { color: adaptive.grey900, borderBottomColor: nameBad ? SdsColors.alert500 : adaptive.grey200 },
+              ]}
             />
-            <Txt typography="st13" color={nameBad ? token.accent.fillColor : adaptive.grey500}>
+            <Txt typography="st13" color={nameBad ? SdsColors.alert500 : adaptive.grey500}>
               {nameHint}
             </Txt>
           </View>
@@ -192,10 +217,14 @@ export default function ProfileEditScreen() {
               <Pressable
                 onPress={() => router.push('/artist/search' as never)}
                 accessibilityRole="button"
-                style={[styles.chip, { borderColor: adaptive.grey200 }]}
+                accessibilityLabel="최애 추가"
+                style={[styles.chip, styles.addChip, { borderColor: adaptive.grey200 }]}
               >
+                <Txt typography="t7" color={adaptive.grey400}>
+                  +
+                </Txt>
                 <Txt typography="st13" fontWeight="bold" color={adaptive.grey600}>
-                  + 추가
+                  추가
                 </Txt>
               </Pressable>
             </View>
@@ -228,9 +257,15 @@ export default function ProfileEditScreen() {
                       {option.desc}
                     </Txt>
                   </View>
-                  <View style={[styles.radio, { borderColor: on ? token.accent.fillColor : adaptive.grey300 }]}>
-                    {on && <View style={[styles.radioDot, { backgroundColor: token.accent.fillColor }]} />}
-                  </View>
+                  <View
+                    style={[
+                      styles.radio,
+                      {
+                        borderColor: on ? token.accent.fillColor : adaptive.grey300,
+                        backgroundColor: on ? token.accent.fillColor : 'transparent',
+                      },
+                    ]}
+                  />
                 </Pressable>
               );
             })}
@@ -281,12 +316,27 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 18,
   },
+  avatarWrap: {
+    width: 96,
+    height: 96,
+  },
   avatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 1.5,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 1,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: CAMERA_BADGE,
+    height: CAMERA_BADGE,
+    borderRadius: CAMERA_BADGE / 2,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -332,6 +382,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  addChip: {
+    flexDirection: 'row',
+    gap: 4,
+  },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -344,17 +398,10 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   error: {
     paddingHorizontal: Shape.gutter,
