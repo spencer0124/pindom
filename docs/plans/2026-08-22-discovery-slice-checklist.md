@@ -3,7 +3,7 @@ title: Discovery Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -135,15 +135,38 @@ Recorded rather than invented, per `CLAUDE.md`: field names come from
 | 도움됐어요 N, tappable | `reviews.likeCount` is **function-only** and no repository method writes it | The count, rendered as a static figure. It becomes a control when a function backs it |
 | Gallery gated on `placeVisited` | The flag is hardcoded `true` in the prototype, so the gate is never exercised, and the contract describes the gallery as public photos at the place with no viewer condition | Shown whenever there are photos |
 | Distance always present | There may be no fix — refused permission, or none yet | Hidden, as on 홈. An unknown distance is not a distance of zero |
+| Short names — chips read `a.short` (`BTS`, `리센느`), pin captions `p.short` (`강릉`) | Neither `Artist.shortName` nor `Place.shortRegion` is in the contract | Chips print `artist.name`; pin captions print `place.region` (fidelity decision 11). Both fields are an ask for the backend developer; when they land, `shortName ?? name` in `ArtistChips` and `MapFilters`, `shortRegion ?? region` in `MapPin` |
+
+### Copy the prototype does not have
+
+`1a` reaches no loading, error or empty state on these three screens — its fixtures are never
+empty, and `촬영 팁 0` is the only "empty" it draws. These lines are the build's, and need the
+designer's word (fidelity audit D-23):
+
+| Where | Line |
+| --- | --- |
+| 홈 · 지도 · 장소/상세, loading | 촬영지를 불러오는 중 |
+| 홈, failed | 홈을 불러오지 못했어요 |
+| 지도, failed | 지도를 불러오지 못했어요 |
+| 장소/상세, failed | 촬영지를 불러오지 못했어요 |
+| 홈, no 최애 selected | 최애의 자리로 |
+| 홈, 마감 임박 응모 empty | 지금 진행 중인 응모가 없어요 |
+| 홈, 지역 코스 empty | 아직 준비된 코스가 없어요 |
+| 지도, search finds nothing | 검색과 맞는 촬영지가 없어요 |
+| 지도, 최애 has no 촬영지 | 아직 등록된 촬영지가 없어요 |
+| 장소/상세, 촬영 팁 empty | 아직 팁이 없어요. 첫 번째로 남겨보세요. |
+| 지도, built without a client id — one line at the foot of the stand-in | 네이버 지도 클라이언트 ID 없이 빌드됐습니다 · EXPO_PUBLIC_NAVER_MAP_CLIENT_ID |
 
 ## Still open
 
 - **지도 has never rendered a real tile.** `EXPO_PUBLIC_NAVER_MAP_CLIENT_ID` is unset, so every
-  run so far has drawn the stand-in. Marker colour, the caption halo and the opening camera are
-  written against the SDK's documented props and remain unverified. Set the key and look.
-- **The pins are Naver's built-in symbols.** `NaverMapMarkerOverlay` takes a child view, which
-  would let a pin follow `2b`'s square-cornered treatment. Not worth writing before the map can
-  be seen.
+  run so far has drawn the stand-in. The `MapPin` marker child, its `isHidden` reveal after the
+  drop, the `mapPadding` inset and the country-frame camera are written against the SDK's
+  documented props and remain unverified. Set the key and look.
+- **The stand-in is now a map, not a notice.** Since the fidelity pass it draws every pin at its
+  normalised coordinate and plays `1a`'s `pinDrop` on entry and on a 최애 switch; pins are
+  `src/features/discovery/MapPin.tsx`, promoted to the design system when a third screen draws
+  one (fidelity decision 8).
 - **Buttons are still pills.** `Button` hardcodes its radius, which is change 4 in
   [design-tokens.md](../reference/design-tokens.md) — not started, and per-component. 지도 and
   장소/상세 inherit the same gap 홈 has.

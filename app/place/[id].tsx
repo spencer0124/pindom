@@ -11,7 +11,7 @@ import {
   ReviewList,
   usePlaceDetail,
 } from '@/features/discovery';
-import { Rule, SectionHeader, Shape } from '@/features/shared';
+import { Rule, SectionHeader, Shape, workKindLabel } from '@/features/shared';
 
 /**
  * 장소/상세 — one 촬영지, and the way into GPS 인증.
@@ -24,6 +24,13 @@ import { Rule, SectionHeader, Shape } from '@/features/shared';
  * The 인증하기 button carries `placeId` forward. GPS인증 belongs to the Capture
  * slice, which is keyed to that parameter — passing it here is what stops the
  * two slices from agreeing on a different route signature later.
+ *
+ * The line under the title is 1a's `{최애} · {work kind} · {region}` — the
+ * same shape the 촬영지 rows build. `workTitle` is not on it; whether the
+ * drama or MV's name deserves a line of its own is open (fidelity decision 14).
+ * The description is a third line of the title block rather than a section:
+ * 1a's block order is title → stats → 갤러리 → 촬영 팁 → 인증 조건, with no
+ * rule-bounded paragraph between the stats and the gallery.
  */
 export default function PlaceDetailScreen() {
   const adaptive = useAdaptive();
@@ -76,7 +83,12 @@ export default function PlaceDetailScreen() {
             {place.roman.toUpperCase()}
           </Txt>
           <Txt typography="t6" color={adaptive.grey600} style={styles.work}>
-            {[place.workTitle, place.region].filter(Boolean).join(' · ')}
+            {[artist?.name, workKindLabel[place.workKind], place.region]
+              .filter(Boolean)
+              .join(' · ')}
+          </Txt>
+          <Txt typography="t6" color={adaptive.grey700} style={styles.description}>
+            {place.description}
           </Txt>
         </View>
 
@@ -87,14 +99,6 @@ export default function PlaceDetailScreen() {
           photoCount={place.photoCount}
           distance={distance}
         />
-
-        <Rule />
-
-        <View style={styles.section}>
-          <Txt typography="t6" color={adaptive.grey700} style={styles.description}>
-            {place.description}
-          </Txt>
-        </View>
 
         {gallery.length > 0 && (
           <>
@@ -147,7 +151,7 @@ const styles = StyleSheet.create({
   },
   title: {
     paddingHorizontal: Shape.gutter,
-    paddingTop: 18,
+    paddingVertical: 18,
   },
   roman: {
     letterSpacing: 1.4,
@@ -157,7 +161,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   description: {
-    paddingHorizontal: Shape.gutter,
+    marginTop: 10,
   },
   section: {
     gap: 2,

@@ -1,0 +1,91 @@
+import { StyleSheet, View } from 'react-native';
+import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { Shape } from '@/features/shared';
+
+/** 1a's pin head — a 30px mark. Square here: 2b's radius is chips only. */
+const HEAD = 30;
+/** Between the head and its caption chip. */
+const GAP = 3;
+/** The caption chip's inner padding. */
+const CHIP_PAD_X = 5;
+const CHIP_PAD_Y = 3;
+/** `t7`'s line height plus the chip's vertical padding. */
+const CHIP_HEIGHT = 19.5 + CHIP_PAD_Y * 2;
+
+/**
+ * The box a pin occupies, so the stand-in can place it and a tile marker can
+ * size itself before the SDK rasterises the child. Wide enough for a two-word
+ * region (`강원 강릉`) at `t7`; the chip centres inside it.
+ */
+export const MAP_PIN_WIDTH = 96;
+export const MAP_PIN_HEIGHT = HEAD + GAP + CHIP_HEIGHT;
+
+interface MapPinProps {
+  /** A verified place takes the accent and a `✓`; an unverified one is surface and rule. */
+  visited: boolean;
+  /** The caption under the head — the place's region (fidelity decision 11). */
+  label: string;
+}
+
+/**
+ * One 촬영지 on 지도.
+ *
+ * 1a draws a teardrop with a white border and a shadow, filled pink when
+ * visited and grey when not, and a caption chip beneath. Under 2b the head is
+ * a square block — the accent fill with a `✓` for a visited place, the surface
+ * with a hairline for an unvisited one — and the caption is a chip, the one
+ * shape that keeps a radius.
+ *
+ * Lives in the Discovery slice rather than the design system until a third
+ * screen draws pins (fidelity decision 8). It is used twice: absolutely placed
+ * on the stand-in canvas, and as the custom child of a tile marker.
+ */
+export function MapPin({ visited, label }: MapPinProps) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+
+  return (
+    <View style={styles.pin} pointerEvents="none">
+      <View
+        style={[
+          styles.head,
+          visited
+            ? { backgroundColor: token.accent.fillColor }
+            : { backgroundColor: adaptive.background, borderColor: adaptive.grey300, borderWidth: 1 },
+        ]}
+      >
+        {visited && (
+          <Txt typography="t7" fontWeight="bold" color={token.accent.onFillColor}>
+            ✓
+          </Txt>
+        )}
+      </View>
+      <View style={[styles.chip, { backgroundColor: adaptive.background }]}>
+        <Txt typography="t7" fontWeight="semibold" color={adaptive.grey900} numberOfLines={1}>
+          {label}
+        </Txt>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  pin: {
+    width: MAP_PIN_WIDTH,
+    height: MAP_PIN_HEIGHT,
+    alignItems: 'center',
+    gap: GAP,
+  },
+  head: {
+    width: HEAD,
+    height: HEAD,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chip: {
+    maxWidth: MAP_PIN_WIDTH,
+    paddingHorizontal: CHIP_PAD_X,
+    paddingVertical: CHIP_PAD_Y,
+    borderRadius: Shape.chipRadius,
+  },
+});

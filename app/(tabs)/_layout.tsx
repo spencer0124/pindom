@@ -7,7 +7,7 @@ import {
   UserIcon,
 } from 'phosphor-react-native';
 import { View } from 'react-native';
-import { Loader, useAdaptive, useTheme } from '@/design-system';
+import { Loader, useAdaptive, useTheme, useTypographyTheme } from '@/design-system';
 import { AssistantFab } from '@/features/assistant';
 import { useSession } from '@/features/auth';
 
@@ -19,9 +19,15 @@ import { useSession } from '@/features/auth';
  * declared first here — expo-router orders tabs by declaration, so `order` is
  * controlled by file/screen order and the middle position comes from putting
  * index third in the list below.
+ *
+ * Every icon is an outline; the active one is the accent *and* a heavier
+ * stroke, which is how 1a marks it (`strokeWidth` 2.2 against 1.8). No tab is
+ * filled permanently — the first build filled 홈, which made it look active
+ * on every other tab.
  */
 export default function TabsLayout() {
   const { token } = useTheme();
+  const { typography } = useTypographyTheme();
   // Same keys as before, resolved against the root layout's `colorPreference`
   // instead of pinned to the light values — a white bar under the dark screens
   // is what reading `SdsColors` directly produced.
@@ -48,42 +54,53 @@ export default function TabsLayout() {
           backgroundColor: adaptive.background,
           borderTopColor: adaptive.grey200,
         },
-        tabBarLabelStyle: { fontSize: 11 },
+        // 1a's label is 10px; the nearest step on the typography map.
+        tabBarLabelStyle: { fontSize: typography.st13.fontSize },
       }}
     >
       <Tabs.Screen
         name="map"
         options={{
           title: '지도',
-          tabBarIcon: ({ color, size }) => <MapPinIcon color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <MapPinIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="community"
         options={{
           title: '커뮤니티',
-          tabBarIcon: ({ color, size }) => <ChatCircleIcon color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <ChatCircleIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
           title: '홈',
-          tabBarIcon: ({ color, size }) => <HouseIcon color={color} size={size} weight="fill" />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <HouseIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="tickets"
         options={{
           title: '티켓',
-          tabBarIcon: ({ color, size }) => <TicketIcon color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <TicketIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="my"
         options={{
           title: '마이',
-          tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <UserIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+          ),
         }}
       />
     </Tabs>

@@ -1,11 +1,18 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { Course } from '@/lib/domain';
-import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { Skeleton, Txt, useAdaptive, useTheme } from '@/design-system';
 import { Shape } from '@/features/shared';
+
+/** 1a's card width. */
+const CARD = 190;
+/** How many placeholder cards stand in while a switched 최애's 코스 load. */
+const SKELETON_CARDS = 2;
 
 interface CourseCardsProps {
   courses: Course[];
   artistName?: string;
+  /** True while a switched 최애's 코스 are being read; skeleton cards stand in. */
+  loading?: boolean;
   onSelect: (courseId: string) => void;
 }
 
@@ -15,10 +22,30 @@ interface CourseCardsProps {
  * The only horizontally scrolling content on 홈 besides the 최애 chips, and the
  * last block on the screen. Each card is a bounded rectangle rather than a
  * rounded tile, for the same reason as every other block here.
+ *
+ * While a switched 최애's 코스 load the row shows skeleton cards, never the
+ * previous 최애's — 1a re-keys every block in one render, and a stale card
+ * under the new title would say the wrong thing for as long as the read takes.
  */
-export function CourseCards({ courses, artistName, onSelect }: CourseCardsProps) {
+export function CourseCards({ courses, artistName, loading = false, onSelect }: CourseCardsProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
+
+  if (loading) {
+    return (
+      <Skeleton.Animate>
+        <View style={[styles.track, styles.row]}>
+          {Array.from({ length: SKELETON_CARDS }, (_, index) => (
+            <View key={index} style={[styles.card, { borderColor: adaptive.grey200 }]}>
+              <Skeleton width="70%" borderRadius={Shape.chipRadius} />
+              <Skeleton width="100%" borderRadius={Shape.chipRadius} />
+              <Skeleton width="40%" borderRadius={Shape.chipRadius} />
+            </View>
+          ))}
+        </View>
+      </Skeleton.Animate>
+    );
+  }
 
   if (courses.length === 0) {
     return (
@@ -60,8 +87,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Shape.gutter,
     gap: 10,
   },
+  row: {
+    flexDirection: 'row',
+  },
   card: {
-    width: 190,
+    width: CARD,
     borderWidth: 1,
     padding: 14,
     gap: 6,

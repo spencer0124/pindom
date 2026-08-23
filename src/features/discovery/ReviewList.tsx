@@ -12,6 +12,7 @@ import { formatTimeAgo, Rule, Shape, tierLabel } from '@/features/shared';
  * the section asks, and three chips ask it without a taxonomy.
  */
 const TIP_TAGS = ['포즈', '각도', '시간대'] as const;
+type TipTag = (typeof TIP_TAGS)[number];
 
 /**
  * Collection tier, in the prototype's own words.
@@ -37,6 +38,11 @@ interface ReviewListProps {
  * `SdsColors.grey900` for its ink, which renders near-black on this ground. It
  * is one of the twenty components docs/reference/design-tokens.md lists as not
  * yet converted.
+ *
+ * The composer always has exactly one tag selected — 1a starts on 포즈, a tap
+ * moves the selection, nothing deselects, and a submit keeps it. A tip is
+ * never posted untagged. The toggle reads 팁 남기기 open or closed, as 1a's
+ * does; the open state is signalled by the chip's selected treatment.
  */
 export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
   const adaptive = useAdaptive();
@@ -44,18 +50,17 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
-  const [tag, setTag] = useState<string | null>(null);
+  const [tag, setTag] = useState<TipTag>('포즈');
   const [posting, setPosting] = useState(false);
 
   const submit = async () => {
     const text = draft.trim();
     if (text.length === 0 || posting) return;
     setPosting(true);
-    const ok = await onSubmit(text, tag != null ? [tag] : []);
+    const ok = await onSubmit(text, [tag]);
     setPosting(false);
     if (ok) {
       setDraft('');
-      setTag(null);
       setOpen(false);
     }
   };
@@ -69,11 +74,19 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
         <Pressable
           onPress={() => setOpen((was) => !was)}
           accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
           hitSlop={6}
-          style={[styles.writeButton, { borderColor: adaptive.grey200 }]}
+          style={[
+            styles.writeButton,
+            { borderColor: open ? token.accent.fillColor : adaptive.grey200 },
+          ]}
         >
-          <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
-            {open ? '닫기' : '팁 남기기'}
+          <Txt
+            typography="t7"
+            fontWeight="bold"
+            color={open ? token.accent.fillColor : adaptive.grey900}
+          >
+            팁 남기기
           </Txt>
         </Pressable>
       </View>
@@ -94,7 +107,7 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
               return (
                 <Pressable
                   key={option}
-                  onPress={() => setTag(picked ? null : option)}
+                  onPress={() => setTag(option)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: picked }}
                   style={[
@@ -174,7 +187,7 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
                     so a tappable heart here would be a button that does
                     nothing. See the backend contract's write-ownership table. */}
                 <Txt typography="t7" color={adaptive.grey500} style={styles.likes}>
-                  도움됐어요 {review.likeCount}
+                  ♡ 도움됐어요 {review.likeCount}
                 </Txt>
               </View>
             </View>

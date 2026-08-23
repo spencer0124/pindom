@@ -1,16 +1,15 @@
 import { StyleSheet, View } from 'react-native';
 import type { User } from '@/lib/domain';
 import { Button, ProgressBar, Txt, useAdaptive, useTheme } from '@/design-system';
-import { Shape, sectionLabel } from '@/features/shared';
-
-/** The next reward threshold. 1a writes it as 20장이면 팬사인회·굿즈가 열려요. */
-const REWARD_AT = 20;
+import { Shape, sectionLabel, TIER_NOTE_TOP, tierNote } from '@/features/shared';
 
 interface TicketBalanceCardProps {
   user: User;
   /** Selected 최애 — 1a captions the balance with their name and place counts. */
   artistName?: string;
   placeCount?: number;
+  /** How many of *this* 최애's places the user has verified — 1a's `artist.done`. */
+  verifiedCount: number;
   onFindPlaces: () => void;
   onEnterRaffle: () => void;
 }
@@ -23,22 +22,25 @@ interface TicketBalanceCardProps {
  * renders it as a dark card because 1a predates the direction; 2b's rule is
  * "rules, not cards" and radius is chips only, and corner and divider treatment
  * is 2b's axis to win. The content and both button labels are 1a's.
+ *
+ * The line beside the figure is `tierNote` — three-way on the balance, in
+ * 1a's own words — and the gauge fills toward the top mark it names.
  */
 export function TicketBalanceCard({
   user,
   artistName,
   placeCount,
+  verifiedCount,
   onFindPlaces,
   onEnterRaffle,
 }: TicketBalanceCardProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
 
-  const remaining = Math.max(0, REWARD_AT - user.ticketBalance);
   const caption = [
     '보유 티켓',
     artistName != null && placeCount != null ? `${artistName} ${placeCount}곳` : null,
-    `${user.placesVisited}곳 인증`,
+    `${verifiedCount}곳 인증`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -54,14 +56,12 @@ export function TicketBalanceCard({
           {user.ticketBalance}장
         </Txt>
         <Txt typography="t7" color={adaptive.grey600} textAlign="right" style={styles.reward}>
-          {remaining > 0
-            ? `${REWARD_AT}장이면 팬사인회·굿즈가 열려요`
-            : '팬사인회·굿즈에 응모할 수 있어요'}
+          {tierNote(user.ticketBalance)}
         </Txt>
       </View>
 
       <ProgressBar
-        progress={Math.min(100, (user.ticketBalance / REWARD_AT) * 100)}
+        progress={Math.min(100, (user.ticketBalance / TIER_NOTE_TOP) * 100)}
         color={token.accent.fillColor}
         style={styles.gauge}
       />

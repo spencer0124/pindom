@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorPage, Loader, SearchField, useAdaptive } from '@/design-system';
 import {
@@ -27,12 +27,19 @@ import { Shape } from '@/features/shared';
  * a search field whose tap handler goes nowhere, so there is no designed search
  * screen to route to; filtering the list in place is the smallest thing that
  * makes the control honest instead of decorative.
+ *
+ * The chrome floats over the canvas, so its height is measured and handed to
+ * the map as an inset — the camera and the stand-in's pin field keep that much
+ * clear, and 1a's whole-country frame is not half-hidden under the search box.
  */
 export default function MapScreen() {
   const adaptive = useAdaptive();
   const [query, setQuery] = useState('');
+  const [chromeHeight, setChromeHeight] = useState(0);
   const { state, reload } = useMapData(query);
   const selectArtist = useDiscoveryStore((s) => s.select);
+
+  const onChromeLayout = (e: LayoutChangeEvent) => setChromeHeight(e.nativeEvent.layout.height);
 
   if (state.status === 'loading') {
     return (
@@ -60,7 +67,7 @@ export default function MapScreen() {
     );
   }
 
-  const { artists, selectedArtist, places, visitedPlaceIds, origin, hasPosition } = state.data;
+  const { artists, selectedArtist, places, visitedPlaceIds, hasPosition } = state.data;
   const openPlace = (placeId: string) => router.push(`/place/${placeId}` as never);
 
   return (
@@ -69,14 +76,21 @@ export default function MapScreen() {
         <MapCanvas
           places={places}
           visitedPlaceIds={visitedPlaceIds}
-          origin={origin}
           hasPosition={hasPosition}
+          // A 최애 switch re-drops the pins, as 1a's re-render does.
+          dropKey={selectedArtist?.id}
+          inset={{ top: chromeHeight }}
           onSelect={openPlace}
         />
 
         {/* `box-none` so the map keeps every touch that is not on the chrome —
             without it this container swallows panning across the whole width. */}
-        <SafeAreaView style={styles.chrome} edges={['top']} pointerEvents="box-none">
+        <SafeAreaView
+          style={styles.chrome}
+          edges={['top']}
+          pointerEvents="box-none"
+          onLayout={onChromeLayout}
+        >
           <SearchField
             value={query}
             onChangeText={setQuery}

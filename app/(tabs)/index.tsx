@@ -1,8 +1,10 @@
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ErrorPage, Loader, Txt, useAdaptive, useTheme } from '@/design-system';
+import { ErrorPage, Loader, SdsSpacing, Txt, useAdaptive, useTheme } from '@/design-system';
+import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
 import { useDiscoveryStore } from '@/features/discovery';
 import {
   ArtistChips,
@@ -12,6 +14,9 @@ import {
   useHomeData,
 } from '@/features/home';
 import { PlaceList, Rule, SectionHeader, Shape } from '@/features/shared';
+
+/** 1a's `38px` avatar at the right of the greeting. No tap — 1a wires none. */
+const AVATAR = 38;
 
 /**
  * 홈 — the reference screen.
@@ -30,6 +35,8 @@ import { PlaceList, Rule, SectionHeader, Shape } from '@/features/shared';
  *     `useTheme().token.accent` for the brand. A raw hex here is a bug.
  *   - Structure comes from rules and spacing. 2b's radius rule is chips only.
  *   - Sections are a `SectionHeader` plus a block, separated by a 2px rule.
+ *   - The scroll ends with room for the assistant FAB, so the last row is never
+ *     under it.
  */
 export default function HomeScreen() {
   const adaptive = useAdaptive();
@@ -85,10 +92,16 @@ export default function HomeScreen() {
     closingRaffles,
     places,
     courses,
+    coursesLoading,
     visitedPlaceIds,
+    verifiedCount,
     hasPosition,
   } = state.data;
   const artistName = selectedArtist?.name;
+  // 1a's 응모하러 가기 opens 응모 directly. The app's 응모 is keyed to one raffle,
+  // so it is the soonest open one — the rule 컬렉션 already follows — and the
+  // 컬렉션 tab only when there is nothing open (fidelity decision 10).
+  const nextRaffle = closingRaffles[0];
 
   return (
     <SafeAreaView
@@ -102,20 +115,38 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.header}>
-          <Txt
-            typography="t7"
-            fontWeight="bold"
-            color={token.accent.fillColor}
-            style={styles.wordmark}
+          <View style={styles.greeting}>
+            <Txt
+              typography="t7"
+              fontWeight="bold"
+              color={token.accent.fillColor}
+              style={styles.wordmark}
+            >
+              PINDOM
+            </Txt>
+            <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>
+              {artistName != null ? `${artistName}의 자리로` : '최애의 자리로'}
+            </Txt>
+            <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>
+              떠나볼까요
+            </Txt>
+          </View>
+          {/* 마이's avatar, smaller: the photograph, else the nickname's initial. */}
+          <View
+            style={[
+              styles.avatar,
+              { backgroundColor: adaptive.background, borderColor: adaptive.grey200 },
+            ]}
+            accessibilityLabel={user.nickname}
           >
-            PINDOM
-          </Txt>
-          <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>
-            {artistName != null ? `${artistName}의 자리로` : '최애의 자리로'}
-          </Txt>
-          <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>
-            떠나볼까요
-          </Txt>
+            {user.avatarUrl != null ? (
+              <Image source={{ uri: user.avatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+            ) : (
+              <Txt typography="t6" fontWeight="bold" color={adaptive.grey600}>
+                {user.nickname.slice(0, 1)}
+              </Txt>
+            )}
+          </View>
         </View>
 
         <ArtistChips
@@ -133,8 +164,11 @@ export default function HomeScreen() {
           user={user}
           artistName={artistName}
           placeCount={selectedArtist?.placeCount}
+          verifiedCount={verifiedCount}
           onFindPlaces={() => router.push('/map')}
-          onEnterRaffle={() => router.push('/tickets')}
+          onEnterRaffle={() =>
+            router.push(nextRaffle != null ? (`/raffle/${nextRaffle.id}` as never) : '/tickets')
+          }
         />
 
         <Rule />
@@ -175,6 +209,7 @@ export default function HomeScreen() {
           <CourseCards
             courses={courses}
             artistName={artistName}
+            loading={coursesLoading}
             onSelect={(courseId) => router.push({ pathname: '/course', params: { courseId } } as never)}
           />
         </View>
@@ -188,13 +223,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 32,
+    // 1a's `padding-bottom: 100px`: the last card clears the FAB.
+    paddingBottom: ASSISTANT_FAB_CLEARANCE + SdsSpacing.base,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
     paddingHorizontal: Shape.gutter,
     paddingTop: 8,
     paddingBottom: 18,
+  },
+  greeting: {
+    flex: 1,
     gap: 2,
+  },
+  avatar: {
+    width: AVATAR,
+    height: AVATAR,
+    borderRadius: Shape.chipRadius,
+    borderWidth: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   wordmark: {
     letterSpacing: 3,

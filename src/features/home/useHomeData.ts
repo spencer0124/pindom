@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { readPosition, readVisitedPlaceIds, useDiscoveryStore } from '@/features/discovery';
+import {
+  KOREA_CENTRE,
+  readPosition,
+  readVisitedPlaceIds,
+  useDiscoveryStore,
+} from '@/features/discovery';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, Course, PlaceWithDistance, Raffle, User } from '@/lib/domain';
 import {
@@ -20,8 +25,15 @@ export interface HomeData {
   /** 추천 촬영지 for the selected 최애, re-sorted by distance for the 거리순 label. */
   places: PlaceWithDistance[];
   courses: Course[];
+  /** True while a switched 최애's 코스 are still loading — the section skeletons. */
+  coursesLoading: boolean;
   /** Places this user has already verified, for the 인증 완료 stamp on each row. */
   visitedPlaceIds: string[];
+  /**
+   * How many of the selected 최애's places the user has verified — 1a's
+   * `{최애} n곳 · m곳 인증`, where `m` is that 최애's count, not the global one.
+   */
+  verifiedCount: number;
   /**
    * False when location permission was refused or no fix is available yet.
    *
@@ -38,6 +50,8 @@ interface Base {
   artists: Artist[];
   closingRaffles: Raffle[];
   places: PlaceWithDistance[];
+  /** Every place in the country, read once so the per-최애 verified count is whole. */
+  allPlaces: PlaceWithDistance[];
   visitedPlaceIds: string[];
   hasPosition: boolean;
 }
@@ -64,6 +78,7 @@ export function useHomeData() {
     status: 'loading',
   });
   const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
 
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
   const seed = useDiscoveryStore((s) => s.seed);
@@ -77,13 +92,17 @@ export function useHomeData() {
     if (!silent) setBase({ status: 'loading' });
 
     const position = await readPosition();
+    const origin = position ?? KOREA_CENTRE;
 
-    const [userResult, artistsResult, rafflesResult, placesResult, visitedPlaceIds] =
+    const [userResult, artistsResult, rafflesResult, placesResult, allPlacesResult, visitedPlaceIds] =
       await Promise.all([
         userRepository.me(),
         artistRepository.listMine(),
         raffleRepository.list(),
         placeRepository.listRecommended(position?.lat, position?.lng),
+        // `listRecommended` is a ranked subset; the 인증 count needs every place
+        // of the 최애, or a verified place outside the ranking goes uncounted.
+        placeRepository.listAll(origin.lat, origin.lng),
         readVisitedPlaceIds(),
       ]);
 
@@ -95,6 +114,8 @@ export function useHomeData() {
       return setBase({ status: 'error', message: failureMessage(rafflesResult.failure) });
     if (!placesResult.ok)
       return setBase({ status: 'error', message: failureMessage(placesResult.failure) });
+    if (!allPlacesResult.ok)
+      return setBase({ status: 'error', message: failureMessage(allPlacesResult.failure) });
 
     const artists = artistsResult.data;
     // A default, not a decision — `seed` is a no-op once the user has picked.
@@ -118,6 +139,7 @@ export function useHomeData() {
         // the order shown is by distance. See docs/plans for the note on that
         // mismatch between the contract and the design.
         places: [...placesResult.data].sort((a, b) => a.distanceMeters - b.distanceMeters),
+        allPlaces: allPlacesResult.data,
         visitedPlaceIds,
         hasPosition: position != null,
       },
@@ -131,14 +153,22 @@ export function useHomeData() {
   // 코스 are per-artist, so this cannot join the batch above and has to re-run
   // when the selection changes. A failure here empties the section rather than
   // failing the screen: 홈 is still useful without it.
+  //
+  // The previous 최애's cards are cleared before the read, not after: 1a
+  // re-keys every block in one render, and a moment of 루미나's cards under an
+  // 에코라인 지역 코스 title would be a lie the skeleton is not.
   useEffect(() => {
+    setCourses([]);
     if (selectedArtistId == null) {
-      setCourses([]);
+      setCoursesLoading(false);
       return;
     }
     let live = true;
+    setCoursesLoading(true);
     void courseRepository.listForArtist(selectedArtistId).then((result) => {
-      if (live) setCourses(result.ok ? result.data : []);
+      if (!live) return;
+      setCourses(result.ok ? result.data : []);
+      setCoursesLoading(false);
     });
     return () => {
       live = false;
@@ -149,23 +179,27 @@ export function useHomeData() {
     if (base.status !== 'ready') return base;
 
     const selectedArtist = base.data.artists.find((a) => a.id === selectedArtistId) ?? null;
+    const { allPlaces, ...rest } = base.data;
+    const ofArtist = (p: PlaceWithDistance) =>
+      selectedArtist == null || p.artistIds.includes(selectedArtist.id);
 
     return {
       status: 'ready',
       data: {
-        ...base.data,
+        ...rest,
         selectedArtist,
+        verifiedCount: allPlaces.filter(
+          (p) => ofArtist(p) && base.data.visitedPlaceIds.includes(p.id),
+        ).length,
         // The section is titled {최애}의 촬영지, so it has to be that 최애's.
         // `listRecommended` ranks across every artist — the filter is the
         // screen's, because the title is the screen's.
-        places:
-          selectedArtist != null
-            ? base.data.places.filter((p) => p.artistIds.includes(selectedArtist.id))
-            : base.data.places,
+        places: base.data.places.filter(ofArtist),
         courses,
+        coursesLoading,
       },
     };
-  }, [base, courses, selectedArtistId]);
+  }, [base, courses, coursesLoading, selectedArtistId]);
 
   // Stable identities: 홈 hangs a focus effect off `refresh`, and a fresh
   // closure per render would re-fire it on every render.

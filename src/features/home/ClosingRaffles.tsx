@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { Raffle } from '@/lib/domain';
 import { SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import { Shape } from '@/features/shared';
@@ -24,20 +24,29 @@ interface ClosingRafflesProps {
   onSelect: (raffleId: string) => void;
 }
 
+/** 1a's `width:186px` cell. */
+const CELL = 186;
+/** Between a cell's rule and its text — 1a's `gap:10px` between cards. */
+const CELL_GAP = 10;
+
 /**
- * 마감 임박 응모 — the two soonest deadlines, side by side.
+ * 마감 임박 응모 — every open raffle, soonest first, scrolled horizontally.
  *
- * A two-cell grid split by a vertical rule, which is how 2b draws paired values;
- * 1a uses two rounded cards, and corner and divider treatment is 2b's axis. The
- * closing one is flagged in the alert colour, the only place besides the accent
- * where this screen uses a hue at all.
+ * The scroller and the cell width are 1a's: it lays fixed-width cards in a row
+ * that scrolls, and how many and whether they scroll is layout, which is 1a's
+ * axis. The cell itself is 2b's — square, split from its neighbour by a
+ * vertical rule rather than boxed in a rounded card. The closing one is flagged
+ * in the alert colour, the only place besides the accent where this screen
+ * uses a hue at all.
+ *
+ * The list is global, not per-최애: the contract's `list()` carries no artist
+ * key (fidelity decision 9).
  */
 export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
-  const pair = raffles.slice(0, 2);
 
-  if (pair.length === 0) {
+  if (raffles.length === 0) {
     return (
       <View style={styles.empty}>
         <Txt typography="t6" color={adaptive.grey500}>
@@ -48,8 +57,8 @@ export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) 
   }
 
   return (
-    <View style={styles.grid}>
-      {pair.map((raffle, index) => {
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.track}>
+      {raffles.map((raffle, index) => {
         const label = deadlineLabel(raffle.closesAt, now);
         const closingToday = label === '오늘 마감';
         return (
@@ -59,7 +68,11 @@ export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) 
             accessibilityRole="button"
             style={[
               styles.cell,
-              index > 0 && { borderLeftWidth: Shape.rowRule, borderLeftColor: adaptive.grey200 },
+              index > 0 && {
+                borderLeftWidth: Shape.rowRule,
+                borderLeftColor: adaptive.grey200,
+                paddingLeft: CELL_GAP,
+              },
             ]}
           >
             <Txt
@@ -80,19 +93,18 @@ export function ClosingRaffles({ raffles, now, onSelect }: ClosingRafflesProps) 
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
+  track: {
     paddingHorizontal: Shape.gutter,
   },
   cell: {
-    flex: 1,
+    width: CELL,
     gap: 6,
-    paddingRight: 14,
+    paddingRight: CELL_GAP,
     paddingVertical: 2,
   },
   empty: {
