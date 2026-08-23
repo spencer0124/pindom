@@ -30,7 +30,7 @@ export default function ArtistSearchScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <View style={styles.header}>
         <Pressable onPress={back} accessibilityRole="button" style={styles.headerSide}>
-          <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
+          <Txt typography="st11" fontWeight="medium" color={adaptive.grey600}>
             ‹ 홈
           </Txt>
         </Pressable>
@@ -48,7 +48,7 @@ export default function ArtistSearchScreen() {
         style={[styles.search, { borderColor: adaptive.grey200 }]}
       />
 
-      <Txt typography="st13" fontWeight="medium" color={adaptive.grey600} style={styles.note}>
+      <Txt typography="t7" fontWeight="medium" color={adaptive.grey600} style={styles.note}>
         팔로우하면 홈·지도·응모가 그 아티스트 기준으로 바뀝니다
       </Txt>
 
@@ -58,7 +58,7 @@ export default function ArtistSearchScreen() {
         <ErrorPage title="아티스트를 불러오지 못했어요" subtitle={state.message} onPressRightButton={reload} />
       ) : (
         <ScrollView keyboardShouldPersistTaps="handled">
-          <View style={[styles.list, { borderTopColor: adaptive.grey200 }]}>
+          <View>
             {state.results.map((artist) => {
               const followed = state.followedIds.includes(artist.id);
               return (
@@ -73,7 +73,7 @@ export default function ArtistSearchScreen() {
                     ]}
                   >
                     <Txt
-                      typography="t7"
+                      typography="st11"
                       fontWeight="bold"
                       color={followed ? token.accent.fillColor : adaptive.grey600}
                     >
@@ -84,7 +84,7 @@ export default function ArtistSearchScreen() {
                     <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>
                       {artist.name}
                     </Txt>
-                    <Txt typography="st13" color={adaptive.grey600}>
+                    <Txt typography="st12" color={adaptive.grey600}>
                       {artist.placeCount}곳
                     </Txt>
                   </View>
@@ -100,7 +100,7 @@ export default function ArtistSearchScreen() {
                     ]}
                   >
                     <Txt
-                      typography="st13"
+                      typography="st12"
                       fontWeight="bold"
                       color={followed ? adaptive.grey600 : token.accent.onFillColor}
                     >
@@ -147,9 +147,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Shape.gutter,
     paddingTop: 14,
     paddingBottom: 10,
-  },
-  list: {
-    borderTopWidth: Shape.rowRule,
   },
   row: {
     flexDirection: 'row',

@@ -89,7 +89,7 @@ Each also exports a long alias (`ListFooter.FooterTitle` alongside `ListFooter.T
 
 | Component | Key props | Use for |
 | --- | --- | --- |
-| `Button` | `type`, `size`, `display`, `loading`, `disabled`, `onPress` | The primary action of a screen or block |
+| `Button` | `type`, `style` (`fill` · `weak` · `outline`), `size`, `display`, `loading`, `disabled`, `onPress` | The primary action of a screen or block; `outline` is the transparent, hairline-ruled secondary under a primary (온보딩's 이메일로 로그인) |
 | `TextButton` | `typography`, `variant`, `fontWeight`, `color` | A text-only action inline in content |
 | `IconButton` | `icon`, `iconSize`, `variant`, `color`, `bgColor`, `label` | An icon-only tap target |
 | `BottomCTA` | `children` | A CTA pinned to the bottom of scrollable content |

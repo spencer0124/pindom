@@ -5,16 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
 import { useSignIn, type AuthMode } from '@/features/auth';
 import { Shape } from '@/features/shared';
+import { wordmark } from '@/features/shared/shape';
 
-/** 1a scatters a handful of glowing pins over the top of the landing. Fractions of the screen. */
+/**
+ * 1a scatters the first 최애's six map pins over the top of the landing — the
+ * same points 지도 draws for 강릉 · 서울 · 전주 · 여수 · 부산 · 제주, so the scatter
+ * is a Korea silhouette. Fractions of the pin band, not of the screen.
+ */
 const PINS = [
-  { x: 0.18, y: 0.14 },
-  { x: 0.62, y: 0.09 },
-  { x: 0.8, y: 0.22 },
-  { x: 0.36, y: 0.27 },
-  { x: 0.55, y: 0.34 },
-  { x: 0.12, y: 0.38 },
-  { x: 0.72, y: 0.42 },
+  { x: 0.604, y: 0.142 },
+  { x: 0.385, y: 0.191 },
+  { x: 0.405, y: 0.451 },
+  { x: 0.474, y: 0.607 },
+  { x: 0.625, y: 0.553 },
+  { x: 0.38, y: 0.784 },
 ];
 
 /**
@@ -53,7 +57,8 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.background }]}>
+    <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: adaptive.background }]}>
+      {/* The band is measured from the top of the screen, status bar included, as 1a's is. */}
       <View style={styles.pins} pointerEvents="none">
         {PINS.map((pin, index) => (
           <View
@@ -71,7 +76,7 @@ export default function OnboardingScreen() {
         style={styles.body}
       >
         <View style={styles.copy}>
-          <Txt typography="t7" fontWeight="bold" color={token.accent.fillColor} style={styles.wordmark}>
+          <Txt typography="t7" fontWeight="bold" color={token.accent.fillColor} style={wordmark}>
             PINDOM
           </Txt>
           <Txt typography="t1" fontWeight="bold" color={adaptive.grey900}>
@@ -134,7 +139,7 @@ export default function OnboardingScreen() {
           </Button>
           <Button
             size="large"
-            style="weak"
+            style="outline"
             display="block"
             loading={busy && mode === 'signIn'}
             disabled={mode === 'signIn' ? !canSubmit : busy}
@@ -142,7 +147,7 @@ export default function OnboardingScreen() {
           >
             이메일로 로그인
           </Button>
-          <Txt typography="st13" color={adaptive.grey500} textAlign="center">
+          <Txt typography="st13" color={adaptive.grey500} textAlign="center" style={styles.note}>
             위치 권한과 카메라 권한이 필요합니다
           </Txt>
         </View>
@@ -156,7 +161,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pins: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 96,
+    left: 0,
+    right: 0,
+    height: 300,
+    opacity: 0.9,
   },
   pin: {
     position: 'absolute',
@@ -172,10 +182,7 @@ const styles = StyleSheet.create({
     gap: 18,
   },
   copy: {
-    gap: 14,
-  },
-  wordmark: {
-    letterSpacing: 5,
+    gap: 18,
   },
   form: {
     borderTopWidth: Shape.rowRule,
@@ -189,6 +196,9 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 10,
+    marginTop: 14,
+  },
+  note: {
     marginTop: 6,
   },
 });

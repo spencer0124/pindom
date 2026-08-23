@@ -1,4 +1,4 @@
-import { SdsRadius, SdsSpacing } from '@/design-system';
+import { SdsRadius, SdsSpacing, typographyMap } from '@/design-system';
 
 /**
  * The shape rules `2b` imposes, in one place so every block on every screen
@@ -27,4 +27,13 @@ export const Shape = {
 /** Letter-spaced small caps for a section label — the typographic signature of 2b. */
 export const sectionLabel = {
   letterSpacing: 1.4,
+} as const;
+
+/**
+ * The wordmark's tracking — `.28em` at `t7`, the size every screen sets
+ * `PINDOM` in. design-tokens.md samples it from 2b's `PINDOM / 002`; 1a tracks
+ * the landing's wordmark wider (`.42em`) but type is 2b's axis.
+ */
+export const wordmark = {
+  letterSpacing: Math.round(typographyMap.t7.fontSize * 0.28 * 100) / 100,
 } as const;

@@ -3,7 +3,7 @@ title: Auth & Entry Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-23
 audience: internal
 ---
 
@@ -67,6 +67,23 @@ has no frame.
 - [x] [screens.md](../reference/screens.md) — both screens to `built`; `/login` gone.
 - [x] [docs/README.md](../README.md) — index this document.
 
+### 6 — The fidelity pass
+
+What the [fidelity checklist](2026-08-23-prototype-fidelity-checklist.md) §4 changed here; the
+evidence is the [audit](2026-08-23-prototype-fidelity-audit.md)'s Auth rows.
+
+- [x] 이메일로 로그인 is the design-system `Button`'s new `style="outline"` — transparent, a
+      hairline rule, the secondary ink — rather than a tinted block (decision 29).
+- [x] The pin scatter is the first 최애's six map pins in a 300 px band 96 px from the top of
+      the screen at `.9` opacity — a Korea silhouette, as `1a` draws it.
+- [x] Copy gap 18, the buttons 14 below the line, the note 6 below the buttons; the wordmark
+      tracks at `.28em` through `wordmark` in `src/features/shared/shape.ts`.
+- [x] 최애 찾기 searches behind a sequence counter, so a slow earlier keystroke can never paint
+      over a later one, and reads the followed set once on mount and after a follow — not per
+      keystroke. Keystrokes wait 150 ms; an emptied field searches at once.
+- [x] 최애 찾기 type: note `t7`, `{n}곳` and the chip label `st12`, ‹ 홈 and the initial `st11`.
+      No rule above the roster; rows carry only their bottom rule.
+
 ## What the device run found
 
 | Found | Fix |
@@ -83,6 +100,8 @@ has no frame.
 | --- | --- |
 | 온보딩 form placeholders | 이메일 · 비밀번호 · 닉네임 |
 | 최애 찾기, no match | 검색 결과가 없어요 |
+| 최애 찾기, loading | 아티스트를 불러오는 중 |
+| 최애 찾기, the roster failed to load | 아티스트를 불러오지 못했어요 |
 
 ## Where the sources disagree
 
@@ -90,8 +109,11 @@ has no frame.
 | --- | --- | --- | --- | --- |
 | 1 | Both buttons go home | `auth.signIn` / `signUp` exist, and the flowchart's first edge is 이메일로 로그인 → 최애 찾기 | The form, folded in; the flowchart's destination | screens.md says email sign-in is folded into this screen |
 | 2 | The permission note names location **and** camera | — | Location is requested here; the camera asks on 카메라 | A camera prompt on the landing page, before the user has seen a 촬영지, is a prompt most people refuse |
-| 3 | A pink-and-cyan radial glow behind the pins | `2b` | The pins in the accent, no glow | Colour |
+| 3 | A pink-and-cyan radial glow behind the pins, and an 18 px halo on each pin | `2b` | The pins in the accent, no glow of either kind | Colour — fidelity decision 31 confirms the per-pin halo is covered |
 | 4 | The artist's avatar is a coloured disc with the initial | `Artist` has `initial`, `accentColor?`, `imageUrl?` | The initial in a hairline disc, acid when followed | Matches 홈's chips |
+| 5 | `팔로우하면 홈·지도·응모가 그 아티스트 기준으로 바뜁니다` | — | `바뀝니다` | `바뜁니다` is not a word — a prototype typo, the same class as the `FINDOM` wordmark (fidelity decision 30) |
+| 6 | 최애 찾기 scrolls as one page — header, field and note scroll away with the roster | — | Header, `SearchField` and note stay pinned; only the roster scrolls | The field stays reachable with the keyboard up, and the roster is long enough to scroll on its own |
+| 7 | A plain input with no clear affordance | `SearchField` ships `hasClearButton` | The × clear button stays | The component's standard affordance; the prototype has nothing against it |
 
 ## Still open
 

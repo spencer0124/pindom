@@ -34,7 +34,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SdsColors } from '@/design-system/tokens';
-import { ThemeProvider, useTheme } from '../../core';
+import { ThemeProvider, useAdaptive, useTheme } from '../../core';
 import { springConfig } from '../../foundation/easings';
 import { Txt } from '../txt';
 
@@ -45,8 +45,13 @@ export interface ButtonProps extends Omit<PressableProps, 'style'> {
   onPress?: PressableProps['onPress'];
   /** @default 'primary' */
   type?: 'primary' | 'danger' | 'light' | 'dark';
-  /** @default 'fill' */
-  style?: 'fill' | 'weak';
+  /**
+   * `fill` is the accent block, `weak` the tinted block, `outline` a transparent
+   * block with a hairline rule — the ghost button 1a draws under a primary, and
+   * 2b's own answer (rules, not cards).
+   * @default 'fill'
+   */
+  style?: 'fill' | 'weak' | 'outline';
   /** @default 'inline' */
   display?: 'block' | 'full' | 'inline';
   /** @default 'big' */
@@ -63,6 +68,15 @@ export interface ButtonProps extends Omit<PressableProps, 'style'> {
 }
 
 type PointerEvents = Pick<ViewProps, 'pointerEvents'>;
+
+/** The colours one style resolves to. `border` is null for the two filled styles. */
+interface ButtonColors {
+  bg: string;
+  text: string;
+  dim: string;
+  loader: string;
+  border: string | null;
+}
 
 // ── Size → Typography mapping (from TDS) ──
 
@@ -132,6 +146,10 @@ const containerDisplayStyles = StyleSheet.create({
   full: { borderRadius: 0 },
 });
 
+const outlineStyles = StyleSheet.create({
+  container: { borderWidth: 1 },
+});
+
 // ── Inner Button (uses theme context) ──
 
 const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function ButtonInner(
@@ -156,16 +174,32 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
   ref,
 ) {
   const { token } = useTheme();
+  const adaptive = useAdaptive();
   const isInteractive = !(disabled || loading);
+  const isOutline = buttonStyle === 'outline';
 
   // Resolve colors from theme
-  const colors = useMemo(() => {
+  const colors = useMemo<ButtonColors>(() => {
     if (buttonStyle === 'weak') {
       return {
         bg: token.button.backgroundWeakColor,
         text: token.button.textWeakColor,
         dim: token.button.dimWeakColor,
         loader: token.button.loaderWeakColor,
+        border: null,
+      };
+    }
+    if (buttonStyle === 'outline') {
+      // The rule and the secondary ink come from the adaptive ladder, so the
+      // outline follows the colour preference the way a weak button's surface
+      // does. The press wash is the fill's accent dim: the weak dim is a 2%
+      // near-black that vanishes on a transparent block.
+      return {
+        bg: 'transparent',
+        text: adaptive.grey800,
+        dim: token.button.dimFillColor,
+        loader: token.button.loaderWeakColor,
+        border: adaptive.grey200,
       };
     }
     return {
@@ -173,8 +207,9 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
       text: token.button.textFillColor,
       dim: token.button.dimFillColor,
       loader: token.button.loaderFillColor,
+      border: null,
     };
-  }, [buttonStyle, token.button]);
+  }, [buttonStyle, token.button, adaptive.grey800, adaptive.grey200]);
 
   // ── Reanimated shared values ──
   const pressed = useSharedValue(0); // 0 = not pressed, 1 = pressed
@@ -186,7 +221,7 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
       if (isInteractive) {
         pressed.value = withSpring(1, springConfig('rapid'));
         dimOpacity.value = withSpring(
-          buttonStyle === 'fill' ? 0.26 : 0.13,
+          buttonStyle === 'weak' ? 0.13 : 0.26,
           springConfig('quick'),
         );
       }
@@ -210,8 +245,12 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
     const scale = display === 'inline'
       ? 1 - pressed.value * 0.04
       : 1;
+    // A disabled fill fades as a block; a disabled weak keeps its surface and
+    // fades its label; a disabled outline fades rule and label together, since
+    // a full-strength rule around a faded label reads as an empty box.
+    const disabledOpacity = buttonStyle === 'fill' ? 0.26 : buttonStyle === 'outline' ? 0.38 : 1;
     return {
-      opacity: disabled ? (buttonStyle === 'fill' ? 0.26 : 1) : 1,
+      opacity: disabled ? disabledOpacity : 1,
       transform: [{ scale }],
     };
   });
@@ -220,9 +259,12 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
     opacity: dimOpacity.value,
   }));
 
-  const animatedText = useAnimatedStyle(() => ({
-    opacity: disabled && buttonStyle !== 'fill' ? 0.38 : 1,
-  }));
+  const animatedText = useAnimatedStyle(() => {
+    // The loader overlay paints `colors.bg` over the label, which on a
+    // transparent outline is nothing — so the label steps aside itself.
+    if (loading && isOutline) return { opacity: 0 };
+    return { opacity: disabled && buttonStyle === 'weak' ? 0.38 : 1 };
+  });
 
   // ── Loader dots (staggered pulse: 0.3 → 1.0 → 0.3, 150ms stagger) ──
   const dot1 = useSharedValue(0.3);
@@ -257,7 +299,7 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
         typography={sizeToTypography[size]}
         color={colorOverride ?? colors.text}
         style={textStyle}
-        fontWeight="semiBold"
+        fontWeight={isOutline ? 'medium' : 'semiBold'}
       >
         {child}
       </Txt>
@@ -283,6 +325,7 @@ const ButtonInner = forwardRef<View, ButtonProps & PointerEvents>(function Butto
           containerStylesBySize.base,
           containerStylesBySize[size],
           containerDisplayStyles[display],
+          isOutline && [outlineStyles.container, { borderColor: colors.border }],
           animatedContainer,
           containerStyle,
         ]}
