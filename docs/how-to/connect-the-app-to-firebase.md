@@ -177,6 +177,30 @@ Dropping the config files in does **not** silently switch you to live data — a
 `EXPO_PUBLIC_USE_MOCKS` always wins, so you choose when to cross over. With the variable unset,
 fixtures turn off automatically once Firebase becomes reachable.
 
+#### Checking the contract before you cross over
+
+The switch is cheap to flip and expensive to debug, because the failure mode is silence: a
+renamed field renders `undefined`, and a query the rules refuse looks exactly like a query
+that found nothing. Both are cheaper to find against the emulator, where the same rules,
+indexes, functions and seed run locally.
+
+What is worth running is not the backend's own test suite — that asks the backend about
+itself — but **the app's mappers against the emulator**, so a field name that moved shows up
+as a mapping warning rather than as a blank screen weeks later. `firebase-mapping.ts` already
+warns on every field it cannot find in development; treat those warnings as failures and the
+check writes itself.
+
+```bash
+# in the backend checkout — the project id must match the one the client connects with,
+# or every callable answers `not-found` for the same reason a wrong region does
+firebase emulators:exec --project <id> --only auth,firestore,storage,functions "<your script>"
+```
+
+Two traps sit in that command. The emulator needs a JDK at or above the version
+`firebase-tools` currently demands, and the storage bucket the client names must be the one in
+`google-services.json` — `pindom-1234.firebasestorage.app`, not the older `.appspot.com` form,
+or `issueTicket` reports `not-found 사진이 없다` for a photo that uploaded successfully.
+
 #### What is actually in there
 
 The seed came from `src/mocks/`, so the ids are the ones you already know. Hard-code them freely
@@ -321,6 +345,7 @@ afternoon if you do not recognise them.
 | `auth/operation-not-allowed` on sign-in | Email/Password is disabled in the console. Enabled for `pindom-1234`, so this only bites on a new project | Authentication → Sign-in method → Email/Password |
 | The first callable of a session takes seconds | Cold start. The functions run at `minInstances: 0`, so the first invocation pays 2–4 s of container startup | Not a fault — design the loading state to survive it. `verifyLocation` gets a warm instance before launch |
 | A verification throws `invalid-argument` | `capturedAt` is outside server time ±5 minutes — usually a simulator with a drifting clock | Fix the device clock. Do not build a flow that holds a reading and re-sends it later |
+| A callable does nothing at all — no request, no verdict, the screen returns to idle | The payload held a value JSON cannot encode. `Infinity` and `NaN` make the SDK throw **before the request leaves the device**, so there is no network call to find in a log and no server error to read. The trap is a nullable device value defaulted to `Infinity` — a callable is JSON, not JavaScript | Send a finite sentinel and let the server judge it. `useVerification` sends `ACCURACY_UNKNOWN_M` when the device declines to estimate an error radius, and gets `poor_accuracy` back, which 인증 실패 already renders |
 | A date renders as `[object Object]` | Firestore returns a `Timestamp`, not a `Date` or an ISO string | Convert once, in the repository, never in a screen |
 | An optional field typed `\| null` never matches | Firestore omits absent fields entirely — they read `undefined`, never `null` | Type them `field?: T` |
 | Everything fails silently after a clean install | Bundle identifier mismatch, or the config files are missing after `prebuild --clean` | Confirm both files are at the repo root and the identifiers match step 1 |

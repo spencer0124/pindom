@@ -75,7 +75,7 @@ coordinate must come from here, never from the client.
 | `workTitle` | `LocalizedString` | The drama or music video it appeared in |
 | `workKind` | `'mv' \| 'drama' \| 'self'` | Drives the `MV / GANGNEUNG` caption and the map filter |
 | `artistIds` | `string[]` | Which 최애 this place belongs to. The map and 홈 filter on it |
-| `verifyCount` | `number` | 인증 stat on 장소/상세 |
+| `verifyCount` | `number` | **Dead field — nothing writes it.** `verifyLocation` never touches `places`, and `issueTicket` increments `ticketCount` and `photoCount` but not this. 장소/상세 renders it as `0` forever. Either `verifyLocation` increments it on an accepted reading, or the stat comes off the screen — the current state shows a number that is not one |
 | `photoCount` | `number` | 사진 stat on 장소/상세 |
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |
@@ -121,8 +121,8 @@ boards are all keyed to this. Seeded by the backend.
 | `name` | `LocalizedString` | |
 | `initial` | `string` | One or two characters, used as the avatar fallback throughout |
 | `imageUrl` | `string?` | |
-| `placeCount` | `number` | **Function-only.** 촬영지 count, shown on 최애 찾기 |
-| `memberCount` | `number` | **Function-only.** Board members, shown in the 커뮤니티 header |
+| `placeCount` | `number` | Written by the **seed**, not by a function — it counts seeded 촬영지, which only the seed creates. Shown on 최애 찾기 |
+| `memberCount` | `number` | **Dead field — nothing writes it.** Following an artist is a write to the *user's* `followedArtistIds`, and no function watches that, so the 커뮤니티 header reads `0` forever. Reviving it needs a Firestore trigger on `users`, which is a fourth deployment unit — decide before the header ships a number |
 | `accentColor` | `string?` | Per-artist tint for the board header |
 
 ### `courses/{courseId}` — 코스
