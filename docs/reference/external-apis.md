@@ -49,6 +49,18 @@ audience: internal
 > TourAPI's), so a live query would return places we never picked. TourAPI is called by the
 > backend only, into `places`. Unlike the §7 rows above, these two were deleted rather than
 > left verbatim, because a row telling the app to call TourAPI is a row someone implements.
+>
+> **§0's and §1's TourAPI detail is stale, and is now documentation of a service this repo does
+> not call.** The row counts six operations; the backend uses three. `areaBasedList2`'s
+> `areaCode` / `sigunguCode` were replaced by `lDongRegnCd` / `lDongSignguCd` in TourAPI 4.0, and
+> `detailCommon2`'s `overviewYN` / `mapinfoYN` / `addrinfoYN` flags no longer exist — those fields
+> are always returned. The live spec is the backend's
+> [`tourapi-usage.md`](https://github.com/spencer0124/pindom-server/blob/main/docs/tourapi-usage.md);
+> the field names that reach the app are in [`backend-contract.md`](backend-contract.md).
+>
+> **§3's map choice is settled.** The app ships `@mj-studio/react-native-naver-map` and the 지도
+> screen is built, so the MapLibre option is closed. It still needs a NAVER Cloud Platform client
+> id — unrelated to the TourAPI key, which the app never holds.
 
 작성 기준: 2026-08 · 프로토타입은 목업 데이터로 동작하며 실제 호출은 붙어 있지 않습니다.
 
