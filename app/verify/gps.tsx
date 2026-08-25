@@ -2,7 +2,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, Txt, colorSeeds, useAdaptive } from '@/design-system';
+import {
+  Button,
+  ErrorPage,
+  Loader,
+  Txt,
+  colorSeeds,
+  typographyMap,
+  useAdaptive,
+} from '@/design-system';
 import { Radar, useVerification, VerifyChecks } from '@/features/capture';
 import { Shape, formatDistance } from '@/features/shared';
 
@@ -159,6 +167,7 @@ export default function GpsVerifyScreen() {
           typography="st13"
           color={error != null ? colorSeeds.danger : adaptive.grey500}
           textAlign="center"
+          style={styles.caption}
         >
           {error ?? '반경·이동속도 판정은 인증을 누르면 자동으로 이뤄집니다'}
         </Txt>
@@ -188,5 +197,11 @@ const styles = StyleSheet.create({
   footer: {
     gap: 10,
     paddingBottom: 8,
+  },
+  // Two lines held open. The default caption is one line and every failure
+  // message is two, so without the reservation the footer grows the moment one
+  // appears and shoves the radar upward — the element the user is watching.
+  caption: {
+    minHeight: typographyMap.st13.lineHeight * 2,
   },
 });

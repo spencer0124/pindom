@@ -8,6 +8,24 @@ import type { Locale } from './locale';
  */
 export type Tier = 'club10' | 'club20' | 'clubGo';
 
+/**
+ * The tier a given issued-ticket count earns.
+ *
+ * Mirrors `tierFor` in the Cloud Functions, which is the authority — the server
+ * recomputes `tier` inside `issueTicket` and the client never writes it. This copy
+ * exists so the fixture repository moves the badge the same way the real one does;
+ * without it the 20-ticket boundary could only be reached against the live backend.
+ *
+ * Bands are 10 wide, read off the prototype's `TIER 10—19`. The `clubGo` boundary is
+ * extrapolated rather than observed and is still an open product question — this is
+ * the one place the app states it.
+ */
+export function tierFor(ticketsIssued: number): Tier {
+  if (ticketsIssued >= 30) return 'clubGo';
+  if (ticketsIssued >= 20) return 'club20';
+  return 'club10';
+}
+
 /** Whether a profile and its public tickets are visible to others. */
 export type ProfileVisibility = 'public' | 'private';
 

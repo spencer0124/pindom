@@ -31,6 +31,17 @@ import type {
  * neither leaks a Firestore type. See ADR 0005.
  */
 
+/**
+ * How many posts one 커뮤니티 page holds.
+ *
+ * Shared rather than declared twice, because a page size that differs between the
+ * two implementations is a screen that paginates on fixtures and not against
+ * Firebase, or the reverse — and the difference only shows up on a board long
+ * enough to cross it. With the current fixtures no board is that long, so
+ * exercising 커뮤니티's infinite scroll on fixtures now needs a fuller board.
+ */
+export const FEED_PAGE_SIZE = 10;
+
 export interface AuthRepository {
   signIn(email: string, password: string): Promise<Result<Session>>;
   signUp(

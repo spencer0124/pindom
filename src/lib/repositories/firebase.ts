@@ -64,7 +64,7 @@ import {
   strList,
   type DocData,
 } from './firebase-mapping';
-import type { EnteredRaffle, Repositories } from './types';
+import { FEED_PAGE_SIZE, type EnteredRaffle, type Repositories } from './types';
 
 /**
  * The Firebase implementation of `Repositories`.
@@ -91,8 +91,6 @@ const auth = () => getAuth(getApp());
  */
 const fns = () => getFunctions(getApp(), AppConfig.functionsRegion);
 const storage = () => getStorage(getApp());
-
-const FEED_PAGE_SIZE = 10;
 
 // ── Error handling ──
 
@@ -661,22 +659,27 @@ export const firebaseRepositories: Repositories = {
   posts: {
     feed: (boardId, cursor) =>
       attempt(async () => {
+        // One past the page, so a full page can be told from a last page. Asking
+        // for exactly the page size cannot: `cursor` then had to be non-null
+        // whenever the page came back full, and a board holding an exact multiple
+        // of the page size spent one more query — and one more spinner — proving
+        // there was nothing after it.
         const base = [
           collection(db(), 'posts'),
           where('boardId', '==', boardId),
           orderBy('createdAt', 'desc'),
-          limit(FEED_PAGE_SIZE),
+          limit(FEED_PAGE_SIZE + 1),
         ] as const;
         const snap = await getDocs(
           cursor
             ? query(base[0], base[1], base[2], startAfter(await cursorSnapshot(cursor)), base[3])
             : query(base[0], base[1], base[2], base[3]),
         );
-        const posts = snap.docs.map((doc_) => toPost(doc_.id, doc_.data() as DocData));
-        const last = snap.docs[snap.docs.length - 1];
+        const docs = snap.docs.slice(0, FEED_PAGE_SIZE);
+        const last = docs[docs.length - 1];
         const page: FeedPage = {
-          posts,
-          cursor: snap.docs.length === FEED_PAGE_SIZE && last ? last.id : null,
+          posts: docs.map((doc_) => toPost(doc_.id, doc_.data() as DocData)),
+          cursor: snap.docs.length > FEED_PAGE_SIZE && last ? last.id : null,
         };
         return page;
       }),

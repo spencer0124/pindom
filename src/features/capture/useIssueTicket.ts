@@ -25,15 +25,23 @@ export function useIssueTicket() {
   const [state, setState] = useState<IssueState>({ status: 'idle' });
   const grant = useCaptureStore((s) => s.grant);
   const composedUri = useCaptureStore((s) => s.composedUri);
-  const photoUri = useCaptureStore((s) => s.photoUri);
   const visibility = useCaptureStore((s) => s.visibility);
 
   const issue = useCallback(async (): Promise<Ticket | null> => {
-    const localUri = composedUri ?? photoUri;
-    if (grant == null || localUri == null) {
+    if (grant == null) {
       setState({ status: 'error', message: '인증이 만료됐어요. 다시 인증해 주세요.' });
       return null;
     }
+    // The composed frame, and only it. `photoUri` is the raw camera file with its
+    // EXIF intact — GPS included on iOS — and the contract makes stripping that the
+    // app's job, done by the re-encode in 편집. Falling back to the raw file would
+    // upload the user's coordinates the first time 편집 was ever skipped, which is
+    // one navigation change away rather than impossible.
+    if (composedUri == null) {
+      setState({ status: 'error', message: '사진을 다시 준비해 주세요.' });
+      return null;
+    }
+    const localUri = composedUri;
 
     setState({ status: 'uploading' });
     const upload = await ticketRepository.uploadPhoto(localUri);
@@ -55,7 +63,7 @@ export function useIssueTicket() {
 
     setState({ status: 'idle' });
     return minted.data;
-  }, [grant, composedUri, photoUri, visibility]);
+  }, [grant, composedUri, visibility]);
 
   return { state, issue };
 }

@@ -18,6 +18,7 @@ import type {
   User,
   VerificationResult,
 } from '../domain';
+import { tierFor } from '../domain';
 import { distanceMeters } from '../geo';
 import {
   mockArtists,
@@ -33,7 +34,7 @@ import {
   mockUser,
   mockVerificationSequence,
 } from '../../mocks';
-import type { Repositories } from './types';
+import { FEED_PAGE_SIZE, type Repositories } from './types';
 
 /**
  * The fixture implementation of `Repositories`.
@@ -64,7 +65,6 @@ const grantPlaces = new Map<string, string>();
 let sequence = 0;
 const nextId = (prefix: string) => `${prefix}-${(sequence += 1)}`;
 
-const FEED_PAGE_SIZE = 4;
 
 /**
  * Crockford Base32 — uppercase and digits without `I`, `L`, `O` or `U`.
@@ -365,11 +365,22 @@ export const mockRepositories: Repositories = {
         issuedAt: new Date(),
         spent: false,
       };
+      // Read before the push: an empty result is a first visit, which is the same
+      // question `issueTicket` answers from its cooldown query.
+      const firstVisit = !tickets.some((t) => t.placeId === place.id);
       tickets = [ticket, ...tickets];
+      const ticketsIssued = user.ticketsIssued + 1;
       user = {
         ...user,
         ticketBalance: user.ticketBalance + 1,
-        ticketsIssued: user.ticketsIssued + 1,
+        ticketsIssued,
+        placesVisited: user.placesVisited + (firstVisit ? 1 : 0),
+        // Recomputed from the issued count, never from the balance — a
+        // balance-derived tier demotes the user on every 응모. The server does
+        // this inside the mint transaction; without it here the badge and the
+        // 지역 n곳 stat never moved on fixtures, so neither could be seen working
+        // without the live backend.
+        tier: tierFor(ticketsIssued),
       };
       return mockDelay(ResultHelper.ok(ticket));
     },
