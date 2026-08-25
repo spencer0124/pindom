@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
+import { Button, ErrorPage, Loader, Txt, colorSeeds, useAdaptive } from '@/design-system';
 import { Radar, useVerification, VerifyChecks } from '@/features/capture';
 import { Shape, formatDistance } from '@/features/shared';
 
@@ -30,7 +30,8 @@ const AUTO_OPEN_MS = 900;
 export default function GpsVerifyScreen() {
   const adaptive = useAdaptive();
   const { placeId } = useLocalSearchParams<{ placeId: string }>();
-  const { state, phase, distance, checks, verify, reload } = useVerification(placeId);
+  const { state, phase, distance, accuracy, checks, error, verify, reload } =
+    useVerification(placeId);
   const autoOpen = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openCamera = useCallback(() => {
@@ -71,11 +72,14 @@ export default function GpsVerifyScreen() {
           reason: verdict.reason ?? 'out_of_radius',
           distance: String(Math.round(verdict.distanceMeters)),
           radius: String(verdict.requiredRadiusMeters),
-          accuracy: String(Math.round(verdict.accuracyMeters)),
+          // The device's own number, not `verdict.accuracyMeters` — the server
+          // echoes back whatever it was sent, and an unmeasured reading is sent
+          // as a sentinel. An empty string is 인증 실패's cue that there is none.
+          accuracy: accuracy != null ? String(accuracy) : '',
         },
       } as never);
     }
-  }, [busy, phase, verify, placeId, openCamera]);
+  }, [busy, phase, verify, placeId, accuracy, openCamera]);
 
   if (state.status === 'loading') {
     return (
@@ -147,8 +151,16 @@ export default function GpsVerifyScreen() {
         <Button size="large" type="primary" display="block" onPress={onPress}>
           {cta}
         </Button>
-        <Txt typography="st13" color={adaptive.grey500} textAlign="center">
-          반경·이동속도 판정은 인증을 누르면 자동으로 이뤄집니다
+        {/* The caption carries the failure when there is one. A refusal never
+            lands here — it is a verdict and 인증 실패 renders it with the figures.
+            This is the attempt that produced no verdict at all, which without a
+            line of its own reads as a button that does nothing. */}
+        <Txt
+          typography="st13"
+          color={error != null ? colorSeeds.danger : adaptive.grey500}
+          textAlign="center"
+        >
+          {error ?? '반경·이동속도 판정은 인증을 누르면 자동으로 이뤄집니다'}
         </Txt>
       </View>
     </SafeAreaView>

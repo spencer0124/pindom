@@ -36,6 +36,11 @@ export default function VerifyFailedScreen() {
   const distance = Number(params.distance);
   const radius = Number(params.radius);
   const accuracy = Number(params.accuracy);
+  // The device does not always estimate an error radius, and an unusable reading
+  // is sent to the server as a sentinel rather than as `Infinity`, which a
+  // callable cannot encode. Neither number is a measurement, so neither is
+  // printed — see `ACCURACY_UNKNOWN_M` in `useVerification`.
+  const measured = Number.isFinite(accuracy) && accuracy > 0;
   // 1a tints the glyph by kind — amber for "not yet", alert for "not you".
   // Semantic colour survives the 2b swap as a seed (fidelity decision 5).
   const glyphColor = spoof ? colorSeeds.danger : colorSeeds.warning;
@@ -46,14 +51,14 @@ export default function VerifyFailedScreen() {
           k: '탐지 사유',
           v: reason === 'implausible_speed' ? '이동속도 검증 (위조 방지)' : '위치 조작 앱 감지',
         },
-        { k: '위치 정확도', v: `±${accuracy}m` },
+        { k: '위치 정확도', v: measured ? `±${accuracy}m` : '기기가 알려주지 않음' },
         { k: '조치', v: '검토 대기 (24h)' },
       ]
     : blurry
       ? [
           { k: '현재 거리', v: `${distance}m` },
           { k: '인증 반경', v: `${radius}m` },
-          { k: '위치 정확도', v: `±${accuracy}m` },
+          { k: '위치 정확도', v: measured ? `±${accuracy}m` : '기기가 알려주지 않음' },
         ]
       : [
           { k: '현재 거리', v: `${distance}m` },
@@ -80,7 +85,9 @@ export default function VerifyFailedScreen() {
           {spoof
             ? '위치 조작이 의심되어 이번 인증은 무효 처리되고, 계정에 검토 플래그가 등록됐습니다. 관리자 검토는 보통 24시간 안에 끝납니다.'
             : blurry
-              ? `위치 오차가 ±${accuracy}m라 반경 ${radius}m 판정을 내릴 수 없어요. 하늘이 트인 곳에서 잠시 기다렸다가 다시 인증해 주세요.`
+              ? measured
+                ? `위치 오차가 ±${accuracy}m라 반경 ${radius}m 판정을 내릴 수 없어요. 하늘이 트인 곳에서 잠시 기다렸다가 다시 인증해 주세요.`
+                : `기기가 위치 정확도를 알려주지 않아 반경 ${radius}m 판정을 내릴 수 없어요. 하늘이 트인 곳에서 잠시 기다렸다가 다시 인증해 주세요.`
               : `인증 반경 ${radius}m 안으로 들어가면 카메라가 열립니다. 조금만 더 이동해 주세요.`}
         </Txt>
 

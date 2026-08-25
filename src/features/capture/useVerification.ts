@@ -38,6 +38,23 @@ const REVEAL_STEP_MS = 900;
 const REFUSAL_HOLD_MS = 800;
 
 /**
+ * What to send when the device declines to estimate an error radius.
+ *
+ * `accuracy` is nullable on both platforms, and the server is the one that has to
+ * judge an unusable reading — it answers `poor_accuracy` above its 65 m gate, which
+ * 인증 실패 already renders. Getting there requires a *finite* number: a callable
+ * request is JSON, and the SDK throws `Data cannot be encoded in JSON: Infinity`
+ * before the request leaves the device, so `Infinity` produced a verdict of nothing
+ * at all — the button read 인증 중… and then silently went back to idle.
+ *
+ * It is far above the gate so that it reads as a sentinel in a server log rather
+ * than as a plausible measurement, which it can only do because it never reaches
+ * the screen: the rows and 인증 실패 print what the *device* reported, and there is
+ * nothing to print when it reported nothing.
+ */
+const ACCURACY_UNKNOWN_M = 9999;
+
+/**
  * The three rows under the radar. `ok` is null while the row is still pending.
  *
  * The rows are honest about what the client knows: accuracy is the device's
@@ -56,8 +73,26 @@ export interface VerificationView {
   phase: VerifyPhase;
   /** What the ring prints. Null when there is no fix yet — not a distance of zero. */
   distance: number | null;
+  /**
+   * The error radius the **device** reported, or null when it reported none.
+   *
+   * Not the server's echo of it: an unusable reading is sent as a sentinel large
+   * enough to trip the accuracy gate, and quoting that back as `±9999m` would be
+   * the app inventing a measurement. Null is the honest answer, and 인증 실패 has
+   * a line for it.
+   */
+  accuracy: number | null;
   checks: VerifyCheck[];
   result: VerificationResult | null;
+  /**
+   * Why the last attempt produced no verdict at all, or null.
+   *
+   * Distinct from a refusal: a refusal *is* a verdict and belongs to 인증 실패,
+   * with the figures. This is the case where nothing came back — no permission,
+   * no fix, a malformed reading, a dropped call — and the screen would otherwise
+   * return to idle saying nothing, which reads as a dead button.
+   */
+  error: string | null;
   /**
    * Submit one reading. Resolves with the verdict once the screen has finished
    * revealing it — a refusal resolves as the screen should leave for 인증 실패,
@@ -82,6 +117,7 @@ export function useVerification(placeId: string | undefined): VerificationView {
   const [distance, setDistance] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [result, setResult] = useState<VerificationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   // How many of the server's two rows (반경, 이동속도) the screen has revealed.
   // Only a row the server passed is ever revealed, so revealed means ticked.
   const [revealed, setRevealed] = useState(0);
@@ -164,58 +200,82 @@ export function useVerification(placeId: string | undefined): VerificationView {
     setPhase('reading');
     setResult(null);
     setRevealed(0);
+    setError(null);
 
     let fix: Location.LocationObject;
     try {
       const { granted } = await Location.requestForegroundPermissionsAsync();
       if (!granted) {
         setPhase('idle');
+        setAccuracy(null);
+        setError('위치 권한이 있어야 인증할 수 있어요. 설정에서 허용해 주세요.');
         return null;
       }
       fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
     } catch {
       setPhase('idle');
+      setAccuracy(null);
+      setError('현재 위치를 가져오지 못했어요. 하늘이 트인 곳에서 다시 시도해 주세요.');
       return null;
     }
+
+    // Held separately from what is sent: the row under the radar prints the
+    // device's own number, and there is none to print when it declined to estimate.
+    // iOS reports a negative `horizontalAccuracy` for a fix it considers invalid,
+    // which is not a small error radius — treating it as one would let a garbage
+    // coordinate through the server's gate looking like a perfect measurement.
+    const raw = fix.coords.accuracy;
+    const measured = raw != null && raw > 0 ? raw : null;
 
     const reading = {
       placeId: place.id,
       lat: fix.coords.latitude,
       lng: fix.coords.longitude,
-      // iOS reports accuracy as a radius in metres; a null here means the OS
-      // declined to estimate, which the server's gate treats as unusable.
-      accuracy: fix.coords.accuracy ?? Number.POSITIVE_INFINITY,
+      // A radius in metres, nullable on both platforms. The server's gate is what
+      // judges it — see `ACCURACY_UNKNOWN_M` for why the absent case is a number.
+      accuracy: measured ?? ACCURACY_UNKNOWN_M,
+      // Sent as measured, and straight away: the server refuses a `capturedAt`
+      // more than five minutes from its own clock, because that value is the
+      // denominator of every speed check. Do not build a flow that holds a
+      // reading and re-sends it later.
       capturedAt: new Date(fix.timestamp),
       // Android exposes the mock-provider flag; iOS has no equivalent and sends
       // false. Self-reported, and the contract says so.
       isMock: Platform.OS === 'android' ? (fix.mocked ?? false) : false,
       ...(sessionId != null && { sessionId }),
     };
-    setAccuracy(Number.isFinite(reading.accuracy) ? Math.round(reading.accuracy) : null);
+    setAccuracy(measured != null ? Math.round(measured) : null);
     setPhase('judging');
 
     const verdict = await verificationRepository.submitReading(reading);
     if (!verdict.ok) {
       setPhase('idle');
+      setError(failureMessage(verdict.failure));
       return null;
     }
 
     const data = verdict.data;
     setSessionId(data.sessionId);
     setResult(data);
-    setDistance(Math.round(data.distanceMeters));
-    setLastDistance(Math.round(data.distanceMeters));
-    setAccuracy(Math.round(data.accuracyMeters));
+    // `poor_accuracy` is the one verdict whose distance means nothing. The gate
+    // fires before the radius is ever considered, and the server reports the
+    // distance with the error radius already subtracted — so a reading too blurry
+    // to judge comes back as 0 m, which the radar would then show as 반경 안에
+    // 있어요 and `lastDistance` would keep showing on every later visit.
+    if (data.reason !== 'poor_accuracy') {
+      setDistance(Math.round(data.distanceMeters));
+      setLastDistance(Math.round(data.distanceMeters));
+    }
 
     // The verdict is in. What follows is 1a's pace of saying so — the rows the
     // server passed tick 900 ms apart, in the order it checks them, and a row
     // it refused never ticks. The server checks accuracy, then the radius, then
     // the speed series, so a refusal at one gate leaves the later ones unjudged.
-    const passedRows = data.verified
-      ? 2
-      : data.reason === 'implausible_speed' || data.reason === 'mock_location'
-        ? 1
-        : 0;
+    // The deployed order is mock → accuracy → radius → speed, so a refusal reveals
+    // only the rows the server actually got past. `mock_location` is refused first
+    // of all and passes none of them — it used to tick 인증 반경 판정 ✓ for a radius
+    // the server never measured.
+    const passedRows = data.verified ? 2 : data.reason === 'implausible_speed' ? 1 : 0;
 
     return new Promise<VerificationResult>((resolve) => {
       for (let row = 1; row <= passedRows; row += 1) {
@@ -240,7 +300,7 @@ export function useVerification(placeId: string | undefined): VerificationView {
 
   const checks = buildChecks(phase, accuracy, result, revealed);
 
-  return { state, phase, distance, checks, result, verify, reload: load };
+  return { state, phase, distance, accuracy, checks, result, error, verify, reload: load };
 }
 
 function buildChecks(
