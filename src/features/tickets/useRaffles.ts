@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
+import { isEnterable } from '@/lib/domain';
 import type { Place, Raffle, Ticket, User } from '@/lib/domain';
 import { placeRepository, raffleRepository, ticketRepository, userRepository } from '@/lib/repositories';
 
@@ -7,7 +8,14 @@ export interface RafflesData {
   user: User;
   /** Open raffles, soonest-closing first. */
   raffles: Raffle[];
-  /** The oldest unspent ticket — what the server spends first, and what 티켓 절취 tears. */
+  /**
+   * The oldest unspent ticket — what the server spends first, and what 티켓 절취 tears.
+   *
+   * Drawn from 컬렉션 **and** 보관함. `enterRaffle` spends oldest-first across every
+   * unspent ticket the caller owns and never looks at `visibility`, so a preview
+   * built from the public list alone tears the wrong serial and leaves a 보관함
+   * ticket to be spent without ever being shown.
+   */
   oldestTicket: Ticket | null;
   /** Its place, for the `{region} · {work kind}` line under the name on 티켓 절취. Null when the read fails. */
   oldestPlace: Place | null;
@@ -28,22 +36,26 @@ export function useRaffles() {
 
   const load = useCallback(async () => {
     setState({ status: 'loading' });
-    const [user, raffles, tickets] = await Promise.all([
+    const [user, raffles, mine, vault] = await Promise.all([
       userRepository.me(),
       raffleRepository.list(),
       ticketRepository.listMine(),
+      ticketRepository.listVault(),
     ]);
     if (!user.ok) return setState({ status: 'error', message: failureMessage(user.failure) });
     if (!raffles.ok) return setState({ status: 'error', message: failureMessage(raffles.failure) });
 
     const open = raffles.data
-      .filter((r) => r.status === 'open')
+      .filter((r) => isEnterable(r))
       .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime());
-    const oldest = tickets.ok
-      ? [...tickets.data]
-          .filter((t) => !t.spent)
-          .sort((a, b) => a.issuedAt.getTime() - b.issuedAt.getTime())[0] ?? null
-      : null;
+    // Both visibilities, because the server spends from both. A list that failed
+    // to load contributes nothing rather than failing the screen — the balance
+    // above is the server's figure either way, and `enterRaffle` is the decision.
+    const owned = [...(mine.ok ? mine.data : []), ...(vault.ok ? vault.data : [])];
+    const oldest =
+      owned
+        .filter((t) => !t.spent)
+        .sort((a, b) => a.issuedAt.getTime() - b.issuedAt.getTime())[0] ?? null;
     // The region and the kind of work are the place's, not the ticket's. A
     // caption is not worth failing the screen for, so a miss is just no line.
     const place = oldest != null ? await placeRepository.getById(oldest.placeId) : null;

@@ -6,6 +6,7 @@ import {
   useDiscoveryStore,
 } from '@/features/discovery';
 import { failureMessage } from '@/lib/api/failure-message';
+import { isEnterable } from '@/lib/domain';
 import type { Artist, Course, PlaceWithDistance, Raffle, User } from '@/lib/domain';
 import {
   artistRepository,
@@ -133,7 +134,7 @@ export function useHomeData() {
         user: userResult.data,
         artists,
         closingRaffles: rafflesResult.data
-          .filter((r) => r.status === 'open')
+          .filter((r) => isEnterable(r))
           .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime()),
         // listRecommended ranks by popularity; the section is labelled 거리순, so
         // the order shown is by distance. See docs/plans for the note on that

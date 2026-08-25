@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
+import { isEnterable } from '@/lib/domain';
 import type { Raffle, Ticket, User } from '@/lib/domain';
 import { raffleRepository, ticketRepository, userRepository } from '@/lib/repositories';
 
@@ -35,7 +36,7 @@ export function useCollection() {
 
     const open = raffles.ok
       ? raffles.data
-          .filter((r) => r.status === 'open')
+          .filter((r) => isEnterable(r))
           .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime())
       : [];
 

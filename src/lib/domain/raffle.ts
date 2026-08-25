@@ -21,6 +21,21 @@ export interface Raffle {
 }
 
 /**
+ * Whether a raffle can still be entered.
+ *
+ * `status` alone is not enough, and every screen that offered a raffle on it was
+ * wrong: nothing moves a raffle to `closed` when its deadline passes — the seed
+ * writes `status` and no scheduled function watches `closesAt` — so a raffle
+ * stays `open` in the document long after `enterRaffle` starts refusing it with
+ * `deadline-exceeded`. The server checks both, so the screens have to as well,
+ * or the user picks a raffle, watches 티켓 절취 through to the end, and only then
+ * learns it closed.
+ */
+export function isEnterable(raffle: Raffle, now: Date = new Date()): boolean {
+  return raffle.status === 'open' && raffle.closesAt.getTime() > now.getTime();
+}
+
+/**
  * One entry into a raffle.
  *
  * Written only by the `enterRaffle` Cloud Function, which must debit the
