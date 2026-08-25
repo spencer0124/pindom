@@ -41,6 +41,14 @@ audience: internal
 > [backend-contract.md](backend-contract.md) and the
 > [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md), which are
 > authoritative.
+>
+> **§8's first two rows are gone, on 2026-08-25.** They read as if the app calls TourAPI itself
+> — a debounce policy and a client-side cache. It does not. `serviceKey` has no origin
+> restriction and the daily quota is per key, so a key shipped in the app is both extractable
+> and burnable by anyone; and our 촬영지 set is curated (`places.artistIds` is ours, not
+> TourAPI's), so a live query would return places we never picked. TourAPI is called by the
+> backend only, into `places`. Unlike the §7 rows above, these two were deleted rather than
+> left verbatim, because a row telling the app to call TourAPI is a row someone implements.
 
 작성 기준: 2026-08 · 프로토타입은 목업 데이터로 동작하며 실제 호출은 붙어 있지 않습니다.
 
@@ -167,8 +175,7 @@ AI가 짠 동선을 지도에 선으로 그리려면 **도로 좌표열(polyline
 
 | 대상 | 정책 |
 | --- | --- |
-| `locationBasedList2` | 지도 중심 300m 이상 이동 + 500ms 디바운스에서만 재호출 |
-| `detailCommon2` / `detailImage2` / `detailIntro2` | `contentId` 단위 1일 캐시 (촬영지 정보는 자주 안 바뀜) |
-| GPS 인증 기준 좌표 | 최초 1회 받아 자체 DB 저장 — 현장 네트워크가 약해도 판정 가능하게 |
+| TourAPI 전체 | **앱은 호출하지 않는다.** 백엔드가 배치로 호출해 `places` 에 적재하고, 앱은 Firestore 만 읽는다 — 키가 앱에 박히지 않고, 일일 쿼터가 사용자 수와 무관해진다 |
+| GPS 인증 기준 좌표 | 그 적재로 `places.location` 에 들어온다 — 현장 네트워크가 약해도 판정 가능하게 |
 | 길찾기 | 코스 확정 시 1회만 호출, 경로 좌표열을 코스 레코드에 저장해 재사용 |
 | 맛집 검색 | 코스 지점당 1회, 결과 6시간 캐시 |

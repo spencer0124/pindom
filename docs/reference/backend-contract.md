@@ -62,11 +62,13 @@ about what a field is called.
 
 ### `places/{placeId}` — 촬영지
 
-Seeded by the backend. Read by 지도, 홈, 장소/상세, and by `verifyLocation` — the authoritative
-coordinate must come from here, never from the client.
+Seeded by the backend, from TourAPI — the app never calls TourAPI itself, so this collection is
+the only 촬영지 source the client has. Read by 지도, 홈, 장소/상세, and by `verifyLocation` — the
+authoritative coordinate must come from here, never from the client.
 
 | Field | Type | Notes |
 | --- | --- | --- |
+| `contentId` | `string` | TourAPI `contentid`. The dedupe key when the backend re-imports — same `contentId`, same document. Omitted for places registered by hand that TourAPI does not carry |
 | `name` | `LocalizedString` | 주문진 방파제 / Jumunjin Breakwater / 注文津防波堤 |
 | `roman` | `string` | Latin caption shown under the Korean name — `Jumunjin Breakwater` |
 | `description` | `LocalizedString` | Shown on 장소/상세 |
