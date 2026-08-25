@@ -46,7 +46,8 @@ withdrawn** — do not delete a row to make the list shorter.
 
 | # | What the app has to do | Where | Status |
 | --- | --- | --- | --- |
-| 1 | Type the five new `places` fields — `contentId`, `contentIdEn`, `openHours`, `closedDays`, `coverImageLicense`. All optional; a place may carry none of them | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 1 | Type the six new `places` fields — `contentId`, `contentIdEn`, `overview`, `openHours`, `closedDays`, `coverImageLicense`. All optional; a place may carry none of them | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 1b | **Render `overview` behind a 더 자세한 설명 보기 disclosure on 장소/상세, not as the summary.** `description` stays the visible line. They are different voices on purpose — one tells a fan where to stand, the other is tourist-board copy about the site | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 2 | **Credit 한국관광공사 wherever `coverImageLicense` is present**, and never crop, filter or overlay that image when the value is `Type3` | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 3 | Render `openHours` / `closedDays` on 장소/상세. Free prose, not a schedule — print it, do not parse it | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 4 | **Do not call TourAPI from the app.** 촬영지 data reaches the client only through `places`. The debounce-and-cache rows that assumed a client-side call were deleted from [`external-apis.md`](external-apis.md) §8 | [`places`](#placesplaceid--촬영지) | **New 08-26** |
@@ -104,7 +105,9 @@ written:
 | Field | Comes from |
 | --- | --- |
 | `location` · `radiusMeters` · `artistIds` · `workTitle` · `workKind` · `region` · `roman` | **A person**, on the admin page |
-| `name` · `description` · `address` · `openHours` · `closedDays` · `coverImageUrl` · `coverImageLicense` | **TourAPI**, fetched server-side from `contentId` / `contentIdEn` |
+| `description` — the fan-facing line | **A person.** TourAPI has no idea where the shot is framed from |
+| `overview` · `address` · `openHours` · `closedDays` · `coverImageUrl` · `coverImageLicense` | **TourAPI**, fetched server-side from `contentId` / `contentIdEn` |
+| `name` | **Either** — a hand-written name wins, TourAPI fills the locales left empty |
 
 **What it costs on the backend:** one more callable, an admin custom claim, a Hosting target, and
 moving the TourAPI service key into Secret Manager. The page itself is one HTML file, the Firebase
@@ -142,9 +145,10 @@ authoritative coordinate must come from here, never from the client.
 | --- | --- | --- |
 | `contentId` | `string` | TourAPI `contentid`. The dedupe key when the backend re-imports — same `contentId`, same document. Omitted for places registered by hand that TourAPI does not carry |
 | `contentIdEn` | `string` | The same place's id in TourAPI's **English** service, which numbers its content separately — 남산서울타워 is `126535` in Korean and `264550` in English. Present only when the backend found the English pair; without it the place carries no `en` copy from TourAPI |
-| `name` | `LocalizedString` | 주문진 방파제 / Jumunjin Breakwater / 注文津防波堤 |
+| `name` | `LocalizedString` | 주문진 방파제 / Jumunjin Breakwater. **A hand-written name wins**; the import fills only the locales that are missing. The filming spot is `N서울타워 전망대` where TourAPI registers `남산서울타워`, and ours is the more precise one |
 | `roman` | `string` | Latin caption shown under the Korean name — `Jumunjin Breakwater` |
-| `description` | `LocalizedString` | Shown on 장소/상세 |
+| `description` | `LocalizedString` | **Ours, never TourAPI's.** The line a fan needs before going — 자물쇠 벽 앞이 인증샷 포인트, 해질녘 30분이 가장 붐빕니다. Written by hand; the import never overwrites it |
+| `overview` | `LocalizedString` | TourAPI's own 개요 — a tourist-board description of the site, not of the shot. Long. Rendered behind 더 자세한 설명 보기 on 장소/상세, never as the summary. Absent for places TourAPI does not carry |
 | `address` | `string` | |
 | `region` | `LocalizedString` | 강원 강릉 — rendered beside the work title |
 | `workTitle` | `LocalizedString` | The drama or music video it appeared in |
