@@ -91,6 +91,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-22-assistant-slice-checklist.md](plans/2026-08-22-assistant-slice-checklist.md) | Pindom AI and 추천 코스 — built against a fixture, with the `askAssistant` request and response the client expects from the backend |
 | [2026-08-23-prototype-fidelity-checklist.md](plans/2026-08-23-prototype-fidelity-checklist.md) | The pass after every screen was built: each place the built screens diverged from the prototype in motion, interaction, layout or copy, the decision taken under the two-axis rule, and what the simulator confirmed. **Start here for motion or polish work** |
 | [2026-08-23-prototype-fidelity-audit.md](plans/2026-08-23-prototype-fidelity-audit.md) | The evidence behind that checklist — seven per-slice audits, one row per finding with the prototype value, the app value and the proposed fix |
+| [2026-08-26-integration-open-items.md](plans/2026-08-26-integration-open-items.md) | What the pre-switch verification run left open: the decisions this repo owes and the items handed to the backend, each as background, position and recommendation. **Start here if you are about to turn fixtures off** |
 
 ## Outside this folder
 
