@@ -15,8 +15,30 @@ import { Shape } from '@/features/shared';
 import { MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MapPin } from './MapPin';
 import { KOREA_CENTRE, type Position } from './position';
 
-/** Whole-country framing, which is where 1a opens the map (fidelity decision 12). */
+/**
+ * Whole-country framing, which is where 1a opens the map (fidelity decision 12).
+ *
+ * Only the fallback: the camera is normally fitted to the places' own bounds by
+ * `regionOf`, because a fixed zoom cannot know how tall the canvas is. Zoom 6
+ * shows about 350 km of latitude, and 지도's canvas is shorter than that — the
+ * first run against real tiles pushed the northern pins off the top of the
+ * screen. Used only when there is nothing to fit.
+ */
 const COUNTRY_ZOOM = 6;
+/** Breathing room around the fitted region, in points. */
+const REGION_BREATH = 8;
+/**
+ * The most of the canvas the room around the pins may take.
+ *
+ * 지도's chrome floats over more than a third of its map, and honouring all of
+ * it plus a pin would leave the places a sliver to fit into — which on real
+ * tiles means zooming out until Beijing and Tokyo are on screen. Past this cap
+ * the chrome is allowed to overlap the outermost pin instead: the map pans, a
+ * country that does not fit does not.
+ */
+const MAX_ROOM = 0.4;
+/** The span a single place gets, in degrees — roughly a city. */
+const SINGLE_PLACE_SPAN = 0.08;
 /** 1a's `pinDrop .5s` — every pin drops at once, no stagger. */
 const DROP_MS = 500;
 /** How far the stand-in keeps its pins from the edge of the field, as a share of it. */
@@ -158,6 +180,64 @@ function pinProps(
 
 type TilesProps = Omit<MapCanvasProps, 'origin'>;
 
+/**
+ * The bounds of the places framed for the canvas, as the SDK's south-west
+ * corner and deltas.
+ *
+ * The tile camera is fitted rather than zoomed for the same reason the stand-in
+ * projects rather than scales: the set of places is whatever the selected 최애
+ * has, from one city to the whole country, and only the bounds know which. A
+ * fixed zoom cannot know how tall the canvas is either — the first run against
+ * real tiles pushed 지도's northern pins off the top of the screen.
+ *
+ * The room around them is worked in **points and then converted**, the way the
+ * stand-in's `projector` does, because two of the three things needing room are
+ * pixel figures: the pin, which is drawn upward from its coordinate and whose
+ * caption is centred on it, and the chrome floating over the canvas. Note the
+ * asymmetry — the chrome is only at the top — and that `mapPadding` cannot
+ * carry it: the SDK applies that to a camera, not to a region fit, so the pins
+ * came back up under 지도's search field when it was tried.
+ */
+function regionOf(places: Position[], field: Field | null, inset: MapInset = {}) {
+  if (places.length === 0 || field == null || field.height <= 0 || field.width <= 0) {
+    return null;
+  }
+
+  const lats = places.map((p) => p.lat);
+  const lngs = places.map((p) => p.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+
+  const latSpan = Math.max(maxLat - minLat, SINGLE_PLACE_SPAN);
+  const lngSpan = Math.max(maxLng - minLng, SINGLE_PLACE_SPAN);
+
+  // A pin's head sits above its coordinate and its caption below the head, so
+  // the top needs a whole pin and the bottom only the caption's half.
+  const cap = (room: number, extent: number) => Math.min(room, extent * MAX_ROOM);
+  const roomTop = cap((inset.top ?? 0) + MAP_PIN_HEIGHT + REGION_BREATH, field.height);
+  const roomBottom = cap(
+    (inset.bottom ?? 0) + MAP_PIN_HEIGHT / 2 + REGION_BREATH,
+    field.height,
+  );
+  const roomLeft = cap((inset.left ?? 0) + MAP_PIN_WIDTH / 2 + REGION_BREATH, field.width);
+  const roomRight = cap((inset.right ?? 0) + MAP_PIN_WIDTH / 2 + REGION_BREATH, field.width);
+
+  // Degrees per point, from the band the pins are left to occupy.
+  const bandY = Math.max(field.height - roomTop - roomBottom, 1);
+  const bandX = Math.max(field.width - roomLeft - roomRight, 1);
+  const perPointY = latSpan / bandY;
+  const perPointX = lngSpan / bandX;
+
+  return {
+    latitude: minLat - roomBottom * perPointY,
+    longitude: minLng - roomLeft * perPointX,
+    latitudeDelta: latSpan + (roomTop + roomBottom) * perPointY,
+    longitudeDelta: lngSpan + (roomLeft + roomRight) * perPointX,
+  };
+}
+
 function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ordered, onSelect }: TilesProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -175,16 +255,36 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ord
     [path],
   );
 
+  // The canvas, so the fit can turn the pins' points into degrees.
+  const [field, setField] = useState<Field | null>(null);
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setField((f) => (f?.width === width && f?.height === height ? f : { width, height }));
+  };
+  // Re-fitted when the 최애 changes, which is when the set of places changes.
+  const region = useMemo(() => regionOf(places, field, inset), [places, field, inset]);
+
   return (
     <NaverMapView
       style={StyleSheet.absoluteFill}
-      initialCamera={{
-        latitude: KOREA_CENTRE.lat,
-        longitude: KOREA_CENTRE.lng,
-        zoom: COUNTRY_ZOOM,
-      }}
+      onLayout={onLayout}
+      {...(region != null
+        ? { region }
+        : {
+            initialCamera: {
+              latitude: KOREA_CENTRE.lat,
+              longitude: KOREA_CENTRE.lng,
+              zoom: COUNTRY_ZOOM,
+            },
+          })}
       mapPadding={inset}
       isShowLocationButton={hasPosition}
+      // 1a's map carries no chrome of the SDK's own: the pins and their
+      // captions are the content, and the zoom panel sat on top of them the
+      // first time 추천 코스 drew on real tiles. Pinch and the location button
+      // are the controls that remain.
+      isShowZoomControls={false}
+      isShowScaleBar={false}
       locale="ko"
     >
       {places.map((place, index) => {

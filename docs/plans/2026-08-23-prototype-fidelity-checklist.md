@@ -240,6 +240,8 @@ iPhone 17 Pro simulator, the dev client, the mock fixture, 2026-08-23. Motion wa
 | --- | --- | --- |
 | 홈 | Avatar, chip ring, three-way tier note (`10장이면 첫 응모가 열려요` at 4), 마감 임박 scroller, FAB ring + sparkle | Pass |
 | 지도 | Pin field on the stand-in (visited accent + ✓, unvisited outline, region captions), drop on entry and on a 최애 switch, chip cross-fade, one-line notice | Pass. Three Seoul places pile up at country scale — the projection is honest, the fixture is dense; see Still open |
+| 지도 (real tiles, 2026-08-25) | Naver tiles render; all five pins clear the floating chrome; a 최애 switch re-frames (200 km → 5 km for the one-place artist, roads and place names at that scale) | Pass, after the camera was refitted — see Still open |
+| 추천 코스 (real tiles, 2026-08-25) | Numbered stops (1 in the accent fill, 2 in the soft accent) with full captions, joined by the accent route over its surface halo | Pass, after the pins were given their room in points and the SDK's zoom panel was turned off |
 | 장소/상세 | `{최애} · {work kind} · {region}`, description under the title | Pass |
 | GPS인증 | Rings and fan turning from mount; rows reveal 900 ms apart under `위치를 확인하는 중`; `인증 완료 · 원본 컷이 열립니다`; 카메라 opens by itself; three refusals then the pass | Pass |
 | 인증 실패 | Amber glyph for the not-yet kinds | Pass |
@@ -265,10 +267,18 @@ arrives a beat after the card.
 
 ## Still open after this pass
 
-- The Naver client id is still unset, so `pinDrop` on tiles, the route overlay and the numbered
-  markers are written against the SDK's documented props but have never drawn. The pinned SDK
-  also drops `NaverMapPolylineOverlay`'s `pattern` before the native view, so on tiles the
-  route is solid until a release forwards it.
+- ~~The Naver client id is still unset~~ **Set 2026-08-25**, and the tile path is verified:
+  markers, their reveal, the numbered stops and the route all draw. Two things the first run
+  against real tiles settled, both in `MapCanvas`: the camera is fitted to the places' bounds
+  rather than opened at a fixed zoom — a zoom cannot know how tall the canvas is, and zoom 6
+  pushed 지도's northern pins off the top — and the room around the pins is worked in points,
+  because a pin's size and the floating chrome are pixel figures. `mapPadding` cannot carry
+  that room: the SDK applies it to a camera, not to a region fit. Where honouring all of it
+  would zoom out past the country, the chrome is allowed to overlap the outermost pin instead
+  (`MAX_ROOM`). The SDK's own zoom panel and scale bar are off — `1a` has neither, and the
+  panel sat on 추천 코스's first stop.
+- The pinned SDK drops `NaverMapPolylineOverlay`'s `pattern` before the native view, so on
+  tiles the route draws solid over its halo rather than dashed, until a release forwards it.
 - The stand-in map piles up places that share a city at country scale. A collision nudge, or
   the real tiles, would separate them.
 - `Artist.shortName`, `Place.shortRegion`, a preset avatar field and a figure-less
