@@ -188,10 +188,15 @@ function toUser(id: string, d: DocData): User {
 function toTicket(id: string, d: DocData): Ticket {
   const at = `tickets/${id}`;
   const spentOnEntryId = optStr(d, 'spentOnEntryId');
+  // `issueTicket` inherits this from the place, and 컬렉션 groups by it. It was
+  // written by the backend and read by nobody — the mock set it, so grouping
+  // would have looked right on fixtures and collapsed to one bucket on Firebase.
+  const artistId = optStr(d, 'artistId');
   return {
     id,
     userId: str(d, 'userId', at),
     placeId: str(d, 'placeId', at),
+    ...(artistId && { artistId }),
     placeName: str(d, 'placeName', at),
     photoUrl: str(d, 'photoUrl', at),
     serial: str(d, 'serial', at),
@@ -688,7 +693,23 @@ export const firebaseRepositories: Repositories = {
     create: (input: NewPost) =>
       attempt(async () => {
         const uid = requireUid();
-        const meSnap = await getDoc(doc(db(), 'users', uid));
+        // The place is read alongside the author because 커뮤니티 draws its
+        // location chip only when a post carries **both** `placeId` and
+        // `placeName` — see `PostRow`. `NewPost` carries only the id, so the
+        // name has to be denormalised here, exactly as the mock repository
+        // does; without it the pin silently disappears the moment the app stops
+        // serving fixtures, which is the one difference between the two
+        // implementations ADR 0005 exists to prevent.
+        //
+        // The read is deliberately not allowed to fail the write. A chip label
+        // is not worth losing a post someone typed, so a missing or unreadable
+        // place resolves to no pin rather than to an error — and the pair is
+        // written whole, because a `placeId` stored without its name is a chip
+        // that can never render and that no later read repairs.
+        const [meSnap, pin] = await Promise.all([
+          getDoc(doc(db(), 'users', uid)),
+          resolvePin(input.placeId),
+        ]);
         const me = toUser(uid, (meSnap.data() ?? {}) as DocData);
         const payload = {
           boardId: input.boardId,
@@ -698,7 +719,7 @@ export const firebaseRepositories: Repositories = {
           ...(me.avatarUrl && { authorAvatarUrl: me.avatarUrl }),
           body: input.body,
           imageUrls: input.imageUrls,
-          ...(input.placeId && { placeId: input.placeId }),
+          ...pin,
           ...(input.ticketId && { ticketId: input.ticketId }),
           likeCount: 0,
           commentCount: 0,
@@ -718,7 +739,14 @@ export const firebaseRepositories: Repositories = {
         if (!snap.exists()) {
           throw Object.assign(new Error('사용자 문서 없음'), { code: 'not-found' });
         }
-        return toUser(snap.id, snap.data() as DocData);
+        const me = toUser(snap.id, snap.data() as DocData);
+        // This is the load `firebase-mapping.ts` means by "the session layer calls
+        // `setActiveLocale` once the user document loads". Without it the mapper
+        // stays on its Korean default for the whole run and a user who chose
+        // English sees it only after setting the language a second time —
+        // `users.setLocale` was the only caller.
+        setActiveLocale(me.locale);
+        return me;
       }),
 
     updateProfile: (input) =>
@@ -754,6 +782,28 @@ function listTicketsByVisibility(visibility: 'public' | 'private') {
     );
     return snap.docs.map((d_) => toTicket(d_.id, d_.data() as DocData));
   });
+}
+
+/**
+ * The `placeId` / `placeName` pair a new post carries, or nothing.
+ *
+ * Resolved in `ko` rather than in the author's language: the value is written to
+ * the document and then read by everyone, so it must not be the writer's
+ * language — and `ko` is what the backend already denormalises onto
+ * `tickets.placeName`, so the same 촬영지 does not appear under two names.
+ */
+async function resolvePin(
+  placeId: string | undefined,
+): Promise<{ placeId: string; placeName: string } | Record<string, never>> {
+  if (placeId == null) return {};
+  try {
+    const snap = await getDoc(doc(db(), 'places', placeId));
+    if (!snap.exists()) return {};
+    const placeName = localized(snap.data() as DocData, 'name', `places/${placeId}`, DEFAULT_LOCALE);
+    return placeName ? { placeId, placeName } : {};
+  } catch {
+    return {};
+  }
 }
 
 /** Firestore paginates from a snapshot, not an id, so the cursor is re-read. */

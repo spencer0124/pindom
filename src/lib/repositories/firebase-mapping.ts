@@ -35,13 +35,23 @@ export function setActiveLocale(locale: Locale): void {
  *
  * Falls back to Korean, then to any populated value — a place with only Korean copy should
  * still render for an English reader rather than showing a blank.
+ *
+ * `locale` overrides the active one, and exists for the single case where the resolved string
+ * is **written back** rather than rendered: a denormalised copy is read by everyone, not by
+ * the person who wrote it, so it must not carry that person's language. Pass `DEFAULT_LOCALE`
+ * there and the record matches `tickets.placeName`, which the backend denormalises from `ko`.
  */
-export function localized(d: DocData, key: string, where: string): string {
+export function localized(
+  d: DocData,
+  key: string,
+  where: string,
+  locale: Locale = activeLocale,
+): string {
   const v = d[key];
   if (typeof v === 'string') return v; // tolerated: a plain string that was never localized
   if (v && typeof v === 'object') {
     const map = v as Partial<Record<Locale, string>>;
-    const hit = map[activeLocale] ?? map[DEFAULT_LOCALE] ?? Object.values(map).find(Boolean);
+    const hit = map[locale] ?? map[DEFAULT_LOCALE] ?? Object.values(map).find(Boolean);
     if (hit) return hit;
   }
   missing(key, where);

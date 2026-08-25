@@ -10,8 +10,15 @@ type State =
 
 /**
  * 보관함: the private tickets, and the one thing that can be done to them —
- * 공개 전환, which moves a ticket to 컬렉션 and writes a gallery entry
- * server-side. The same tickets as 컬렉션's, the other visibility.
+ * 공개 전환, which moves a ticket to 컬렉션. The same tickets as 컬렉션's, the
+ * other visibility.
+ *
+ * It does **not** write a gallery entry. `places/{placeId}/gallery` is written once, by
+ * `issueTicket`, and only for a ticket minted as public; no trigger watches
+ * `tickets` afterwards. So a ticket made public here never reaches 장소/상세, and
+ * — the direction that matters — a public ticket made private leaves its gallery
+ * photo on 장소/상세 for everyone. Syncing it is the backend's to fix; nothing in
+ * this repo can write that collection.
  */
 export function useVault() {
   const [state, setState] = useState<State>({ status: 'loading' });

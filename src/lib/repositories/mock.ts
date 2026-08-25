@@ -183,7 +183,24 @@ export const mockRepositories: Repositories = {
     },
 
     async signUp(email, _password, nickname) {
-      user = { ...mockUser, email, nickname, ticketBalance: 0, ticketsIssued: 0 };
+      // A new account, not the demo one with its name changed. Keeping
+      // `followedArtistIds` sent fixture sign-ups straight past 최애 찾기 — the
+      // routing asks whether the user follows anyone — and kept `placesVisited: 5`
+      // and someone else's avatar and bio on 마이페이지. Firebase writes exactly
+      // these fields at sign-up; the two have to start from the same place.
+      user = {
+        ...mockUser,
+        email,
+        nickname,
+        followedArtistIds: [],
+        ticketBalance: 0,
+        ticketsIssued: 0,
+        placesVisited: 0,
+        tier: 'club10',
+        createdAt: new Date(),
+      };
+      delete (user as { avatarUrl?: string }).avatarUrl;
+      delete (user as { bio?: string }).bio;
       tickets = [];
       session = { userId: user.id, email };
       return mockDelay(ResultHelper.ok(session));
