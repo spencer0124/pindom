@@ -59,7 +59,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
 | `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
-| `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — per-artist boards, a paged feed, no 전체 |
+| `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — 자유게시판 pinned first, then per-artist boards; a paged feed; no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
@@ -78,8 +78,9 @@ profile, language and vault sit at the root rather than under `/my`.
   `language`, `vault`. The `2026-08-20` drop added two more, below.
 - **장소/상세 grew** a photo gallery, a review list with tier badges and likes, and a stats
   row (인증 · 사진 · 거리).
-- **커뮤니티 is now segmented by artist.** Posts carry a board id; the feed is per 최애, not
-  global.
+- **커뮤니티 is segmented by board.** Posts carry a board id; the feed is per board, not
+  global. Most boards are a 최애; 자유게시판 is the one that is not, and it is where the tab
+  opens.
 - **홈 has four blocks, not three.** 마감 임박 응모, {최애}의 촬영지 and {최애} 지역 코스 sit under
   the 보유 티켓 summary. The 지역 코스 block is easy to miss — it is below the fold in `1a` and
   absent from `2b`'s mockup, which shows only the first two.
@@ -207,7 +208,7 @@ flowchart TD
 - [../plans/2026-08-22-capture-slice-checklist.md](../plans/2026-08-22-capture-slice-checklist.md) — how the Capture slice was built, and what the device run found
 - [../plans/2026-08-22-tickets-slice-checklist.md](../plans/2026-08-22-tickets-slice-checklist.md) — how the Tickets & raffle slice was built, and where the tier gauge and the contract disagree
 - [../plans/2026-08-22-auth-slice-checklist.md](../plans/2026-08-22-auth-slice-checklist.md) — how 온보딩 and 최애 찾기 were built, and the session gate
-- [../plans/2026-08-22-community-slice-checklist.md](../plans/2026-08-22-community-slice-checklist.md) — how 커뮤니티 and 글쓰기 were built, and why there is no 전체
+- [../plans/2026-08-22-community-slice-checklist.md](../plans/2026-08-22-community-slice-checklist.md) — how 커뮤니티 and 글쓰기 were built, why there is no 전체, and what 자유게시판 cost
 - [../plans/2026-08-22-profile-slice-checklist.md](../plans/2026-08-22-profile-slice-checklist.md) — how 마이페이지 and its three small screens were built
 - [../plans/2026-08-22-assistant-slice-checklist.md](../plans/2026-08-22-assistant-slice-checklist.md) — how Pindom AI and 추천 코스 were built, and the function the backend needs to provide
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why the prototype outranks Figma

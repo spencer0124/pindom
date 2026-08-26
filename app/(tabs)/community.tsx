@@ -4,8 +4,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, SdsSpacing, Txt, useAdaptive } from '@/design-system';
 import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
-import { BoardChips, BoardHeader, PostRow, useBoards, useFeed } from '@/features/community';
-import { useDiscoveryStore } from '@/features/discovery';
+import { BoardChips, BoardHeader, FREE_BOARD, PostRow, useBoards, useFeed } from '@/features/community';
 import { Shape } from '@/features/shared';
 
 /**
@@ -16,29 +15,36 @@ import { Shape } from '@/features/shared';
  * `33:2922` are the earlier frames; docs/reference/screens.md records that the
  * feed became per-artist after them.
  *
- * The board opens on the 최애 Discovery has selected and the chips switch it.
- * There is no 전체: the contract's feed takes a board id and has no global
- * query. The list pages on `cursor`, and the boards and the list both re-read
- * silently on focus, so a 최애 followed on 최애 찾기 has a chip and a post made
- * on 글쓰기 is at the top when the user comes back.
+ * The chip row opens on 자유게시판 and the chips switch it. There is still no
+ * 전체: the contract's feed takes a board id and has no global query, and
+ * 자유게시판 is one more board id rather than a merge across boards — which is
+ * why nothing below the screen had to change for it.
+ *
+ * Opening here rather than on the 최애 Discovery selected is deliberate, and it
+ * retires that link: `boardId` starts on a board that is always present, so the
+ * effect below returns before it can read Discovery. It buys a 커뮤니티 that is
+ * never empty for someone who follows nobody yet. The community slice checklist
+ * records the trade.
+ *
+ * The list pages on `cursor`, and the boards and the list both re-read silently
+ * on focus, so a 최애 followed on 최애 찾기 has a chip and a post made on 글쓰기
+ * is at the top when the user comes back.
  */
 export default function CommunityScreen() {
   const adaptive = useAdaptive();
-  const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
-  const { boards, reload: reloadBoards } = useBoards();
-  const [boardId, setBoardId] = useState<string | null>(selectedArtistId);
+  const { boards, artists, reload: reloadBoards } = useBoards();
+  const [boardId, setBoardId] = useState<string | null>(FREE_BOARD.id);
   const { state, reload, refresh, loadMore } = useFeed(boardId);
 
-  // Follow Discovery's pick until the user taps a chip here; and never sit on
-  // a board that is no longer followed.
+  // Never sit on a board that is no longer followed. 자유게시판 is always in
+  // `ids` and always first, so unfollowing the current 최애 lands there rather
+  // than on an empty screen.
   useEffect(() => {
     if (boards == null) return;
     const ids = boards.map((b) => b.id);
     if (boardId != null && ids.includes(boardId)) return;
-    setBoardId(
-      selectedArtistId != null && ids.includes(selectedArtistId) ? selectedArtistId : (ids[0] ?? null),
-    );
-  }, [boards, boardId, selectedArtistId]);
+    setBoardId(ids[0] ?? null);
+  }, [boards, boardId]);
 
   // Re-read silently on every return to the tab, not on the first focus —
   // 최애 찾기 changes the boards and 글쓰기 changes the feed, and both must be
@@ -54,7 +60,9 @@ export default function CommunityScreen() {
     }, [reloadBoards, refresh]),
   );
 
-  const board = boards?.find((b) => b.id === boardId) ?? null;
+  // Looked up in `artists`, not `boards`: 자유게시판 is not a 최애, so this is
+  // null there and the `{최애} 게시판` block below disappears — as 1a's does on 전체.
+  const board = artists?.find((a) => a.id === boardId) ?? null;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]} edges={['top']}>

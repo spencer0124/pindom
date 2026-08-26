@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, Post } from '@/lib/domain';
 import { artistRepository, postRepository } from '@/lib/repositories';
+import { boardsWithFree } from './boards';
 
 type State =
   | { status: 'loading' }
@@ -72,18 +73,29 @@ export function useFeed(boardId: string | null) {
   return { state, reload, refresh, loadMore };
 }
 
-/** The boards the user can post to — their followed 최애, in follow order. */
+/**
+ * The boards the user can post to — 자유게시판, then their followed 최애 in
+ * follow order.
+ *
+ * `artists` comes back alongside `boards` because the two are not the same
+ * list: the chip row wants both, and the `{최애} 게시판` header wants only a
+ * 최애. 자유게시판 has no `artists` document, so looking the selected board up
+ * in `artists` is what makes the header disappear on it — the same thing 1a
+ * does on its 전체 chip.
+ */
 export function useBoards() {
-  const [boards, setBoards] = useState<Artist[] | null>(null);
+  const [artists, setArtists] = useState<Artist[] | null>(null);
 
   const load = useCallback(async () => {
     const mine = await artistRepository.listMine();
-    setBoards(mine.ok ? mine.data : []);
+    setArtists(mine.ok ? mine.data : []);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { boards, reload: load };
+  const boards = artists == null ? null : boardsWithFree(artists);
+
+  return { boards, artists, reload: load };
 }

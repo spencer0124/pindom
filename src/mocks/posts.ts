@@ -8,8 +8,24 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000);
  * Enough entries that the feed paginates at the page size in the mock
  * repository, so 커뮤니티 2 (the populated feed) can be built against real
  * scroll behaviour rather than a single screenful.
+ *
+ * `board-free` entries are 자유게시판, the board that is not a 최애. The array
+ * stays in `createdAt`-descending order across every board because the mock
+ * `feed` slices it as-is rather than sorting — see `mock.ts`.
  */
 export const mockPosts: Post[] = [
+  {
+    id: 'post-012',
+    boardId: 'board-free',
+    authorId: 'user-jihoon',
+    authorNickname: '지훈',
+    authorTier: 'clubGo',
+    body: '다들 인증 몇 번씩 실패하고 성공하나요 저만 자꾸 반경 밖이라고 뜨는 건지 궁금',
+    imageUrls: [],
+    likeCount: 62,
+    commentCount: 31,
+    createdAt: minutesAgo(8),
+  },
   {
     id: 'post-011',
     boardId: 'artist-lumina',
@@ -42,6 +58,19 @@ export const mockPosts: Post[] = [
     likeCount: 76,
     commentCount: 9,
     createdAt: minutesAgo(95),
+  },
+  {
+    id: 'post-013',
+    boardId: 'board-free',
+    authorId: 'user-hana',
+    authorNickname: '하나',
+    authorTier: 'club10',
+    authorAvatarUrl: 'https://picsum.photos/seed/hana/200/200',
+    body: '최애 안 정하고 그냥 예쁜 데만 찍으러 다니는 사람 저 말고 또 있나요',
+    imageUrls: [],
+    likeCount: 88,
+    commentCount: 19,
+    createdAt: minutesAgo(210),
   },
   {
     id: 'post-009',
@@ -89,6 +118,21 @@ export const mockPosts: Post[] = [
     createdAt: minutesAgo(1400),
   },
   {
+    id: 'post-014',
+    boardId: 'board-free',
+    authorId: 'user-seojun',
+    authorNickname: '서준',
+    authorTier: 'club20',
+    body: '감천 다녀왔는데 골목이 생각보다 가팔라요 운동화 신고 가세요 진심으로',
+    imageUrls: [],
+    placeId: 'place-gamcheon',
+    placeName: '감천문화마을',
+    ticketId: 'ticket-0003',
+    likeCount: 174,
+    commentCount: 26,
+    createdAt: minutesAgo(1800),
+  },
+  {
     id: 'post-006',
     boardId: 'artist-nightpost',
     authorId: 'user-seojun',
@@ -114,6 +158,19 @@ export const mockPosts: Post[] = [
     likeCount: 310,
     commentCount: 42,
     createdAt: minutesAgo(3000),
+  },
+  {
+    id: 'post-015',
+    boardId: 'board-free',
+    authorId: 'user-demo',
+    authorNickname: '도민',
+    authorTier: 'club10',
+    authorAvatarUrl: 'https://picsum.photos/seed/pindomuser/200/200',
+    body: '티켓 처음 뽑아봤는데 뜯는 거 왜 이렇게 재밌죠 계속 뜯고 싶어짐',
+    imageUrls: [],
+    likeCount: 39,
+    commentCount: 8,
+    createdAt: minutesAgo(3600),
   },
   {
     id: 'post-004',

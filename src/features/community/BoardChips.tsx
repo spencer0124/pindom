@@ -16,23 +16,30 @@ import {
   useTypographyTheme,
 } from '@/design-system';
 import type { Artist } from '@/lib/domain';
+import type { Board } from './boards';
 import { Shape } from '@/features/shared';
 
 /** The prototype's `transition: background-color .3s ease, color .3s ease`. */
 const SELECT_MS = 300;
 
 interface BoardChipsProps {
-  boards: Artist[];
+  boards: Board[];
   selectedId: string | null;
-  onSelect: (artistId: string) => void;
+  onSelect: (boardId: string) => void;
 }
 
 /**
- * The board chips — one per followed 최애, no 전체.
+ * The board chips — 자유게시판 first, then one per followed 최애. Still no 전체.
  *
- * 1a puts 전체 first. The contract's feed takes a board id and has no global
- * query, so a 전체 chip would have to fan out across boards and merge by
- * time on the client; it is left off rather than faked.
+ * 1a puts 전체 in the first slot. The contract's feed takes a board id and has
+ * no global query, so a 전체 chip would have to fan out across boards and merge
+ * by time on the client; it is left off rather than faked. 자유게시판 takes that
+ * slot instead — it is one more board id, not a merge, so the feed, 글쓰기 and
+ * the repository all work unchanged.
+ *
+ * A chip only ever renders `board.name`, which is why `Board` is the narrow
+ * `{ id, name }` an `Artist` already satisfies: the two kinds of board share
+ * one array with no union and no adapter.
  *
  * Selection cross-fades: 1a transitions the chip's fill and label colour over
  * 300 ms with CSS `ease`, which is the design system's `out` curve. The fill
@@ -51,9 +58,9 @@ export function BoardChips({ boards, selectedId, onSelect }: BoardChipsProps) {
 }
 
 interface BoardChipProps {
-  board: Artist;
+  board: Board;
   on: boolean;
-  onSelect: (artistId: string) => void;
+  onSelect: (boardId: string) => void;
 }
 
 function BoardChip({ board, on, onSelect }: BoardChipProps) {

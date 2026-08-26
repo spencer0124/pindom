@@ -3,7 +3,7 @@ title: Community Slice Checklist
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-23
+last-updated: 2026-08-26
 audience: internal
 ---
 
@@ -63,6 +63,7 @@ frames.
 
 | Where | Line |
 | --- | --- |
+| 커뮤니티, the pinned first chip | 자유게시판 |
 | 커뮤니티, no board followed | 팔로우한 최애의 게시판이 여기 열려요 |
 | 커뮤니티, empty board | 아직 글이 없어요 |
 | 커뮤니티, first load | 피드를 불러오는 중 |
@@ -74,16 +75,22 @@ frames.
 
 | # | `1a` prototype | Contract / `2b` | Taken | Why |
 | --- | --- | --- | --- | --- |
-| 1 | A 전체 chip before the boards | `posts.feed(boardId)` — per board, **never global**; the wrong id silently shows another fandom | No 전체 | A 전체 feed would have to fan out across boards and merge by time on the client. Left off rather than faked |
+| 1 | A 전체 chip before the boards | `posts.feed(boardId)` — per board, **never global**; the wrong id silently shows another fandom | No 전체. **자유게시판 takes that slot instead** (2026-08-26) | A 전체 feed would have to fan out across boards and merge by time on the client. Left off rather than faked. 자유게시판 is one more board id, not a merge, so the feed, 글쓰기 and the repository all work unchanged — see the two rows at the end of this table |
 | 2 | Rows are text, a pin and counts | `posts.imageUrls` — the feed is 인증샷 자랑 | `1a`'s row; no photo | Layout is `1a`'s axis. The field is there for the day the row grows a photo |
 | 3 | The tier badge is pink on pink | `2b` | An acid hairline | Colour |
 | 4 | `♡ n` | Nothing in the contract writes `likeCount` from the client | A figure, not a control | Same as 촬영 팁's 도움됐어요 |
 | 5 | The title, chips and board block scroll with the feed (the root is `overflow-y:auto`) | — | Title, chips and board block stay pinned; only the feed scrolls | The title row doubles as the nav bar and the chips are the screen's primary control; the prototype's posts container clips rather than scrolls, so its one-page scroll is an artefact as much as an intent. Fidelity audit C-06 |
 | 6 | 등록 is always enabled and an empty draft posts fixture filler; no `autoFocus`; no inline error | — | 등록 is disabled until the draft has text; the composer takes focus on open; a repository failure prints under the toggle | The always-on 등록 exists to demo the feed. An empty post is not a post. Fidelity audit C-10 |
 | 7 | The pin block on a row is inert; 지도에서 보기 is a caption | — | The block opens 장소/상세 | The detail has the map hero and 길찾기, which is what "see on the map" promises; the 지도 tab has no focused-place state to land on. Fidelity decision 23 |
+| 8 | 1a has no board that is not a 최애 | The contract calls `boardId` an `artists/{artistId}` | **자유게시판**, a reserved `boardId` of `board-free` with no `artists` document | Someone who follows nobody had an empty 커뮤니티. The deployed rules never validate `boardId` on create, reads are open to any signed-in user, and the deployed index is already `boardId + createdAt` — so this cost **zero backend work**. A separate collection would have needed a rules deploy; the ruleset ends in a catch-all deny. Verified against the live project 2026-08-26 |
+| 9 | — | 커뮤니티 opened on the 최애 Discovery had selected (fidelity audit C-03) | **커뮤니티 opens on 자유게시판**; the Discovery link is retired | `boardId` now starts on a board that is always present, so the effect returns before it can read `selectedArtistId`. The trade buys a 커뮤니티 that is never empty. To restore it, the initial state becomes `selectedArtistId ?? FREE_BOARD.id` — one line in `app/(tabs)/community.tsx` |
 
 ## Still open
 
+- **자유게시판 has no board header.** `BoardHeader` renders `{최애} 게시판 · 촬영지 n곳` from an
+  `Artist`, and 자유게시판 is not one, so the block is hidden there — the same thing `1a` does
+  on its 전체 chip. The selected chip is the only label. A one-line alternative is a fixed
+  header for it; nobody has asked yet.
 - **Posts have no detail screen.** `posts.getById` exists and a row's 답글 n goes nowhere; the
   prototype has no post screen either.
 - **The photo field is unrendered** (disagreement 2). When the row grows a photo, the upload

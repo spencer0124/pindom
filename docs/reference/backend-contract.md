@@ -241,7 +241,7 @@ feed.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `boardId` | `string` | The `artists/{artistId}` whose board this post belongs to. **The feed is per artist board, never global**, so every query filters on it |
+| `boardId` | `string` | The board this post belongs to — an `artists/{artistId}`, or the reserved id `board-free` for 자유게시판, which has no `artists` document. **The feed is per board, never global**, so every query filters on it. See the warning below |
 | `authorId` | `string` | |
 | `authorNickname` | `string` | Denormalised so the feed is one query. Cross-checked against the author's `users` document, as on 리뷰 |
 | `authorTier` | `'club10' \| 'club20' \| 'clubGo'` | Denormalised, cross-checked the same way. Rendered as the badge on every card |
@@ -254,6 +254,18 @@ feed.
 | `likeCount` | `number` | Display-only for now — no like interaction is designed |
 | `commentCount` | `number` | Display-only for now |
 | `createdAt` | `Timestamp` | |
+
+> [!WARNING]
+> **`boardId` is not validated by the rules, and 자유게시판 depends on that.** The deployed
+> `posts` create rule checks the author's identity, the two counters and the server clock —
+> it never asks whether `boardId` names a real artist. That is what lets 자유게시판 exist as
+> the reserved id `board-free` with no backend change: reads are open to any signed-in user
+> and the deployed composite index is already `boardId + createdAt`.
+>
+> A rule tightened to `exists(/databases/$(database)/documents/artists/$(request.resource.data.boardId))`
+> would kill 자유게시판 silently — posts would stop being accepted with no client-visible
+> reason beyond a permission failure. If that constraint is ever wanted, it has to exempt
+> `board-free`. Verified against the live project on 2026-08-26.
 
 ### `verificationSessions/{sessionId}`
 
