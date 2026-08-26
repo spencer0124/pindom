@@ -23,7 +23,16 @@ export interface HomeData {
   selectedArtist: Artist | null;
   /** Open raffles, soonest deadline first. 마감 임박 응모 shows the first two. */
   closingRaffles: Raffle[];
-  /** 추천 촬영지 for the selected 최애, re-sorted by distance for the 거리순 label. */
+  /**
+   * The selected 최애's 촬영지, nearest first — the 거리순 label is literal.
+   *
+   * Ranked on the client out of `listAll` rather than read from a popularity
+   * query. A `ticketCount`-ordered top ten ranks across every artist, so an
+   * artist whose 촬영지 all sit outside it would render an empty section that
+   * reads as a loading bug; and 홈 already reads every place for the 인증
+   * count, so the ranked query was a second read whose order this screen
+   * discarded anyway. See the 2026-08-26 integration open items.
+   */
   places: PlaceWithDistance[];
   courses: Course[];
   /** True while a switched 최애's 코스 are still loading — the section skeletons. */
@@ -50,8 +59,10 @@ interface Base {
   user: User;
   artists: Artist[];
   closingRaffles: Raffle[];
-  places: PlaceWithDistance[];
-  /** Every place in the country, read once so the per-최애 verified count is whole. */
+  /**
+   * Every place in the country, read once. Both the 촬영지 section and the
+   * 인증 count are filtered out of it — one read, two per-최애 answers.
+   */
   allPlaces: PlaceWithDistance[];
   visitedPlaceIds: string[];
   hasPosition: boolean;
@@ -95,14 +106,13 @@ export function useHomeData() {
     const position = await readPosition();
     const origin = position ?? KOREA_CENTRE;
 
-    const [userResult, artistsResult, rafflesResult, placesResult, allPlacesResult, visitedPlaceIds] =
+    const [userResult, artistsResult, rafflesResult, allPlacesResult, visitedPlaceIds] =
       await Promise.all([
         userRepository.me(),
         artistRepository.listMine(),
         raffleRepository.list(),
-        placeRepository.listRecommended(position?.lat, position?.lng),
-        // `listRecommended` is a ranked subset; the 인증 count needs every place
-        // of the 최애, or a verified place outside the ranking goes uncounted.
+        // Every place, once. A ranked subset would have to be whole for the
+        // 인증 count anyway, and its order does not survive the 거리순 label.
         placeRepository.listAll(origin.lat, origin.lng),
         readVisitedPlaceIds(),
       ]);
@@ -113,8 +123,6 @@ export function useHomeData() {
       return setBase({ status: 'error', message: failureMessage(artistsResult.failure) });
     if (!rafflesResult.ok)
       return setBase({ status: 'error', message: failureMessage(rafflesResult.failure) });
-    if (!placesResult.ok)
-      return setBase({ status: 'error', message: failureMessage(placesResult.failure) });
     if (!allPlacesResult.ok)
       return setBase({ status: 'error', message: failureMessage(allPlacesResult.failure) });
 
@@ -136,10 +144,6 @@ export function useHomeData() {
         closingRaffles: rafflesResult.data
           .filter((r) => isEnterable(r))
           .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime()),
-        // listRecommended ranks by popularity; the section is labelled 거리순, so
-        // the order shown is by distance. See docs/plans for the note on that
-        // mismatch between the contract and the design.
-        places: [...placesResult.data].sort((a, b) => a.distanceMeters - b.distanceMeters),
         allPlaces: allPlacesResult.data,
         visitedPlaceIds,
         hasPosition: position != null,
@@ -192,10 +196,9 @@ export function useHomeData() {
         verifiedCount: allPlaces.filter(
           (p) => ofArtist(p) && base.data.visitedPlaceIds.includes(p.id),
         ).length,
-        // The section is titled {최애}의 촬영지, so it has to be that 최애's.
-        // `listRecommended` ranks across every artist — the filter is the
-        // screen's, because the title is the screen's.
-        places: base.data.places.filter(ofArtist),
+        // The section is titled {최애}의 촬영지 and labelled 거리순, and this
+        // is both: that 최애's places, in the order `listAll` already put them.
+        places: allPlaces.filter(ofArtist),
         courses,
         coursesLoading,
       },

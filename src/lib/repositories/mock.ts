@@ -226,14 +226,6 @@ export const mockRepositories: Repositories = {
       return mockDelay(ResultHelper.ok(all));
     },
 
-    async listRecommended(lat, lng) {
-      const from = lat !== undefined && lng !== undefined ? { lat, lng } : undefined;
-      const ranked = [...mockPlaces]
-        .sort((a, b) => b.ticketCount - a.ticketCount)
-        .map((p) => withDistance(p, from));
-      return mockDelay(ResultHelper.ok(ranked));
-    },
-
     async getById(placeId) {
       const place = mockPlaces.find((p) => p.id === placeId);
       return mockDelay(place ? ResultHelper.ok(place) : notFound<Place>('촬영지'));

@@ -68,8 +68,6 @@ export const authRepository: AuthRepository = {
 
 export const placeRepository: PlaceRepository = {
   listAll: async (lat, lng) => (await impl()).places.listAll(lat, lng),
-  listRecommended: async (lat, lng) =>
-    (await impl()).places.listRecommended(lat, lng),
   getById: async (placeId) => (await impl()).places.getById(placeId),
   reviews: async (placeId) => (await impl()).places.reviews(placeId),
   gallery: async (placeId) => (await impl()).places.gallery(placeId),

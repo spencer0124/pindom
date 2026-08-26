@@ -20,9 +20,11 @@ const PRESSED_OPACITY = 0.6;
  * earlier frame.
  *
  * The board comes from 커뮤니티 as a route param; a post always belongs to one.
- * The pin is 1a's: the screen opens with the most recently verified 촬영지 —
- * the newest ticket — already attached, and a tap detaches it; the post
- * carries its `placeId` and `ticketId` unless the user tapped it off. The
+ * The pin is 1a's: the screen opens with the 촬영지 of the newest **public**
+ * ticket already attached, and a tap detaches it; the post carries its
+ * `placeId` and `ticketId` unless the user tapped it off. 보관함 tickets are
+ * not offered — see `useWritePost` — so the copy names the public list rather
+ * than saying 인증한, which would be a promise this screen does not keep. The
  * toggle waits for the ticket read so its first frame is the attached state,
  * never a "no ticket" line that the next frame contradicts. The composer is a
  * raw TextInput for the reason 촬영 팁's is — `TextField` still reads
@@ -121,10 +123,10 @@ export default function WritePostScreen() {
               </Txt>
               <Txt typography="st13" color={adaptive.grey600}>
                 {!canPin
-                  ? '인증한 촬영지가 아직 없어요'
+                  ? '공개한 티켓이 아직 없어요'
                   : on
                     ? '탭하면 첨부를 해제합니다'
-                    : '탭하면 최근 인증한 촬영지를 첨부합니다'}
+                    : '탭하면 최근 공개 티켓의 촬영지를 첨부합니다'}
               </Txt>
             </View>
           </Pressable>

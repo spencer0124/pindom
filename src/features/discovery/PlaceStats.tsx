@@ -10,7 +10,15 @@ interface PlaceStatsProps {
 }
 
 /**
- * 방문 인증 · 공개 사진 · 현재 거리.
+ * 방문 인증 · 촬영된 사진 · 현재 거리.
+ *
+ * 1a labels the middle cell 공개 사진. It is the one place the prototype is
+ * followed against rather than with: `issueTicket` increments `photoCount` on
+ * every mint, public or 보관함, so the number counts photos taken here and the
+ * word 공개 was never true of it. The counter is the more useful statistic —
+ * asking the backend to increment only for public mints would make the label
+ * honest by destroying the only record of how much traffic a place sees — so
+ * the label moved instead. Decided 2026-08-26.
  *
  * `1a` draws three filled tiles with a 12px radius. Under `2b` they are three
  * cells divided by vertical rules — the direction says section rules run
@@ -27,7 +35,7 @@ export function PlaceStats({ verifyCount, photoCount, distance }: PlaceStatsProp
 
   const cells: { label: string; value: string; accent?: boolean }[] = [
     { label: '방문 인증', value: verifyCount.toLocaleString('ko-KR') },
-    { label: '공개 사진', value: photoCount.toLocaleString('ko-KR') },
+    { label: '촬영된 사진', value: photoCount.toLocaleString('ko-KR') },
     ...(distance != null
       ? [{ label: '현재 거리', value: formatDistance(distance), accent: true }]
       : []),

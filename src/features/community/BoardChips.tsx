@@ -104,7 +104,18 @@ interface BoardHeaderProps {
   board: Artist;
 }
 
-/** `{최애} 게시판 · 멤버 n` — the block under the chips. */
+/**
+ * `{최애} 게시판 · 촬영지 n곳` — the block under the chips.
+ *
+ * 1a's second line is 멤버 n. Nothing writes `artists.memberCount`: following
+ * is a write to the *user's* `followedArtistIds`, and no function watches it,
+ * so the header printed `0` for every board however many people followed it.
+ * Keeping it honest needs a Firestore trigger on `users` — a new deployment
+ * unit for a decorative number. `placeCount` is written by the seed, is
+ * already printed as `{최애} n곳` on 홈, and tells a reader of a board
+ * something they can act on. Decided 2026-08-26; the field is gone from
+ * `Artist` rather than mapped and ignored.
+ */
 export function BoardHeader({ board }: BoardHeaderProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -121,7 +132,7 @@ export function BoardHeader({ board }: BoardHeaderProps) {
           {board.name} 게시판
         </Txt>
         <Txt typography="st13" color={adaptive.grey600}>
-          멤버 {board.memberCount.toLocaleString()}
+          촬영지 {board.placeCount.toLocaleString()}곳
         </Txt>
       </View>
     </View>

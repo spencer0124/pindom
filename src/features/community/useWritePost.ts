@@ -8,10 +8,16 @@ type State = { status: 'idle' } | { status: 'busy' } | { status: 'error'; messag
 /**
  * 글쓰기's two pieces: the ticket a pin can attach, and the post.
  *
- * 1a's pin attaches "the 촬영지 most recently verified" — that is the newest
- * ticket, and the post carries its `placeId` and `ticketId` so 커뮤니티's
- * 지도에서 보기 has somewhere to go. With no ticket yet there is nothing to
- * attach, and the toggle says so.
+ * 1a's pin attaches "the 촬영지 most recently verified" — here, the newest
+ * **public** ticket, and the post carries its `placeId` and `ticketId` so
+ * 커뮤니티's 지도에서 보기 has somewhere to go. With no ticket yet there is
+ * nothing to attach, and the toggle says so.
+ *
+ * 보관함 tickets are deliberately not considered. `listVault` would make "most
+ * recent" literal, but 보관함 exists so a photo can be kept out of public view,
+ * and putting the place it was taken at on a public post gives away the part
+ * the user chose to withhold. Decided 2026-08-26; the toggle's copy names the
+ * public list rather than implying every verification.
  */
 export function useWritePost(boardId: string | null) {
   const [latest, setLatest] = useState<Ticket | null | undefined>(undefined);

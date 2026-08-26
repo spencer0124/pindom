@@ -257,7 +257,6 @@ function toArtist(id: string, d: DocData): Artist {
     initial: str(d, 'initial', at),
     ...(imageUrl && { imageUrl }),
     placeCount: num(d, 'placeCount', at),
-    memberCount: num(d, 'memberCount', at),
     ...(accentColor && { accentColor }),
   };
 }
@@ -448,20 +447,6 @@ export const firebaseRepositories: Repositories = {
             distanceMeters: distanceMeters({ lat, lng }, p),
           }))
           .sort((a, b) => a.distanceMeters - b.distanceMeters);
-      }),
-
-    listRecommended: (lat, lng) =>
-      attempt(async () => {
-        const snap = await getDocs(
-          query(collection(db(), 'places'), orderBy('ticketCount', 'desc'), limit(10)),
-        );
-        const from = lat !== undefined && lng !== undefined ? { lat, lng } : undefined;
-        return snap.docs
-          .map((doc_) => toPlace(doc_.id, doc_.data() as DocData))
-          .map<PlaceWithDistance>((p) => ({
-            ...p,
-            distanceMeters: from ? distanceMeters(from, p) : 0,
-          }));
       }),
 
     getById: (placeId) =>

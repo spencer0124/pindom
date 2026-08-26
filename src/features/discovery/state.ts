@@ -1,20 +1,24 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { mmkvStateStorage } from '@/lib/store/mmkv-storage';
 
 interface DiscoveryState {
-  /** The 최애 every Discovery screen is keyed to. Null until the first load seeds it. */
+  /** The 최애 every Discovery screen is keyed to. Null until a load or the disk seeds it. */
   selectedArtistId: string | null;
   /** A deliberate choice — a chip tap on 홈 or 지도. */
   select: (artistId: string) => void;
   /**
    * A default, taken from whichever screen loaded first. Does nothing once a
    * selection exists, so arriving at 지도 second cannot silently reset what the
-   * user picked on 홈.
+   * user picked on 홈 — and, since the store rehydrates before the first load
+   * resolves, cannot reset what they picked in a previous session either.
    */
   seed: (artistId: string | null) => void;
   /**
    * The followed list changed under the selection. Keeps it when it is still
    * followed; otherwise falls to the first followed artist, or to nothing.
-   * 최애 찾기 can unfollow the very artist 홈 is keyed to.
+   * 최애 찾기 can unfollow the very artist 홈 is keyed to, and a restored
+   * selection can name an artist unfollowed on another device.
    */
   reconcile: (followedIds: string[]) => void;
 }
@@ -32,16 +36,34 @@ interface DiscoveryState {
  * the readers (three screens plus their data hooks) are not in one subtree, and
  * a provider high enough to cover them would re-render the whole tab stack on
  * every tap.
+ *
+ * Persisted, because the selection is a preference and not a session fact.
+ * Without this the store came back empty on every cold start and `seed` fell to
+ * `followedArtistIds[0]` — so a user who follows more than one 최애 found the
+ * app back on the first of them every launch, which is a default nobody chose.
+ * MMKV is synchronous, so rehydration happens during the first render and no
+ * screen ever paints the wrong 최애 first. Only the id is written: the artists
+ * themselves are server-owned and belong in the cache, not in settings.
  */
-export const useDiscoveryStore = create<DiscoveryState>((set, get) => ({
-  selectedArtistId: null,
-  select: (artistId) => set({ selectedArtistId: artistId }),
-  seed: (artistId) => {
-    if (get().selectedArtistId == null) set({ selectedArtistId: artistId });
-  },
-  reconcile: (followedIds) => {
-    const current = get().selectedArtistId;
-    if (current != null && followedIds.includes(current)) return;
-    set({ selectedArtistId: followedIds[0] ?? null });
-  },
-}));
+export const useDiscoveryStore = create<DiscoveryState>()(
+  persist(
+    (set, get) => ({
+      selectedArtistId: null,
+      select: (artistId) => set({ selectedArtistId: artistId }),
+      seed: (artistId) => {
+        if (get().selectedArtistId == null) set({ selectedArtistId: artistId });
+      },
+      reconcile: (followedIds) => {
+        const current = get().selectedArtistId;
+        if (current != null && followedIds.includes(current)) return;
+        set({ selectedArtistId: followedIds[0] ?? null });
+      },
+    }),
+    {
+      name: 'discovery',
+      storage: createJSONStorage(() => mmkvStateStorage),
+      // The actions are recreated on every launch; only the choice is state.
+      partialize: (s) => ({ selectedArtistId: s.selectedArtistId }),
+    },
+  ),
+);

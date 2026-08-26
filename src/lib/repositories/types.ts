@@ -82,11 +82,6 @@ export interface PlaceRepository {
    * feedback: the 50m check is adjudicated server-side against the stored coordinate.
    */
   listAll(lat: number, lng: number): Promise<Result<PlaceWithDistance[]>>;
-  /** 홈 — 추천 촬영지, ordered by popularity rather than proximity. */
-  listRecommended(
-    lat?: number,
-    lng?: number,
-  ): Promise<Result<PlaceWithDistance[]>>;
   getById(placeId: string): Promise<Result<Place>>;
   /** 장소/상세 리뷰 list. */
   reviews(placeId: string): Promise<Result<Review[]>>;

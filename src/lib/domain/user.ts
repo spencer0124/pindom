@@ -16,9 +16,10 @@ export type Tier = 'club10' | 'club20' | 'clubGo';
  * exists so the fixture repository moves the badge the same way the real one does;
  * without it the 20-ticket boundary could only be reached against the live backend.
  *
- * Bands are 10 wide, read off the prototype's `TIER 10—19`. The `clubGo` boundary is
- * extrapolated rather than observed and is still an open product question — this is
- * the one place the app states it.
+ * Bands are 10 wide, read off the prototype's `TIER 10—19`. The `clubGo` boundary at
+ * 30 keeps that width. It was extrapolated rather than observed, and was decided on
+ * 2026-08-26 rather than left open: no account has crossed it yet, so confirming it
+ * costs nothing, while changing it after someone has 30 tickets demotes them.
  */
 export function tierFor(ticketsIssued: number): Tier {
   if (ticketsIssued >= 30) return 'clubGo';

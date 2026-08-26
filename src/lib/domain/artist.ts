@@ -11,10 +11,8 @@ export interface Artist {
   /** One or two characters, used as the avatar fallback throughout */
   initial: string;
   imageUrl?: string;
-  /** 촬영지 count, shown on 최애 찾기 */
+  /** 촬영지 count, shown on 최애 찾기 and in the 커뮤니티 board header */
   placeCount: number;
-  /** Board members, shown in the 커뮤니티 header */
-  memberCount: number;
   /** Per-artist tint for the board header */
   accentColor?: string;
 }

@@ -14,7 +14,6 @@ export const mockArtists: Artist[] = [
     initial: 'LM',
     imageUrl: 'https://picsum.photos/seed/lumina/300/300',
     placeCount: 5,
-    memberCount: 12840,
     accentColor: '#58CF04',
   },
   {
@@ -25,7 +24,6 @@ export const mockArtists: Artist[] = [
     // Counted from `places.ts` rather than guessed — this read 2 while only one
     // 촬영지 named 에코라인, and 홈 prints the number next to the list.
     placeCount: 1,
-    memberCount: 5121,
     accentColor: '#FF5E00',
   },
   {
@@ -33,6 +31,5 @@ export const mockArtists: Artist[] = [
     name: '나이트포스트',
     initial: 'NP',
     placeCount: 1,
-    memberCount: 903,
   },
 ];
