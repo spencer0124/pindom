@@ -61,6 +61,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: 'com.zoyoong.pindom',
     supportsTablet: false,
+    // App Store Connect refuses a build number it has already seen for this
+    // `version`, so this has to move every upload. Build 1 of 1.0.0 went up on
+    // 2026-08-25. It lives here rather than in Info.plist because `ios/` is
+    // gitignored — a number kept only there is lost at the next prebuild, and
+    // the next uploader finds out from a rejected upload.
+    buildNumber: '2',
     ...(firebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
