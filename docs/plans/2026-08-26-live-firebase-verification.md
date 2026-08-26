@@ -145,7 +145,7 @@ one user, which is the intended end state.
 
 | # | Check | Status |
 | --- | --- | --- |
-| J1 | Per-artist boards, no 전체 | pass |
+| J1 | Per-artist boards, no 전체 | pass **as the app stood during this run**. `c0c7406`, committed later the same day, adds 자유게시판 on the reserved `board-free` id — so the tab now opens on a board that is not an artist's. The finding is unaffected; the row just no longer describes the current build |
 | J2 | Header prints `촬영지 n곳` from `placeCount` | pass — decision 4; `placeCount` verified consistent |
 | J3 | Feed reads `posts` | pass — empty before the write, as seeded |
 | J4 | 글쓰기 writes under the deployed rules | pass — author identity and literal `0` counters accepted |
