@@ -46,9 +46,9 @@ withdrawn** — do not delete a row to make the list shorter.
 
 | # | What the app has to do | Where | Status |
 | --- | --- | --- | --- |
-| 1 | Type the six new `places` fields — `contentId`, `contentIdEn`, `overview`, `openHours`, `closedDays`, `coverImageLicense`. All optional; a place may carry none of them | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 1 | Type the five new `places` fields — `contentId`, `contentIdEn`, `overview`, `openHours`, `closedDays`. All optional; a place may carry none of them | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 1b | **Render `overview` behind a 더 자세한 설명 보기 disclosure on 장소/상세, not as the summary.** `description` stays the visible line. They are different voices on purpose — one tells a fan where to stand, the other is tourist-board copy about the site | [`places`](#placesplaceid--촬영지) | **New 08-26** |
-| 2 | **Credit 한국관광공사 wherever `coverImageLicense` is present**, and never crop, filter or overlay that image when the value is `Type3` | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 2 | ~~Credit 한국관광공사 wherever `coverImageLicense` is present~~ | — | **Withdrawn 08-26** — TourAPI photos are not used, so the field and the crediting requirement are both gone. 공공누리 `Type3` forbids altering the image, which a cover crop counts as; carrying that obligation for a photo we would replace anyway bought nothing |
 | 3 | Render `openHours` / `closedDays` on 장소/상세. Free prose, not a schedule — print it, do not parse it | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 4 | **Do not call TourAPI from the app.** 촬영지 data reaches the client only through `places`. The debounce-and-cache rows that assumed a client-side call were deleted from [`external-apis.md`](external-apis.md) §8 | [`places`](#placesplaceid--촬영지) | **New 08-26** |
 | 5 | Stop discarding what the callables return — `issueTicket` sends `tier`, `enterRaffle` sends `ticketBalance`, and both are re-read from `users` today | [`issueTicket`](#issueticket) · [`enterRaffle`](#enterraffle) | Carried from 08-22 |
@@ -104,9 +104,9 @@ written:
 
 | Field | Comes from |
 | --- | --- |
-| `location` · `radiusMeters` · `artistIds` · `workTitle` · `workKind` · `region` · `roman` | **A person**, on the admin page |
+| `location` · `radiusMeters` · `artistIds` · `workTitle` · `workKind` · `region` · `roman` · `coverImageUrl` | **A person**, on the admin page |
 | `description` — the fan-facing line | **A person.** TourAPI has no idea where the shot is framed from |
-| `overview` · `address` · `openHours` · `closedDays` · `coverImageUrl` · `coverImageLicense` | **TourAPI**, fetched server-side from `contentId` / `contentIdEn` |
+| `overview` · `address` · `openHours` · `closedDays` | **TourAPI**, fetched server-side from `contentId` / `contentIdEn` |
 | `name` | **Either** — a hand-written name wins, TourAPI fills the locales left empty |
 
 **What it costs on the backend:** one more callable, an admin custom claim, a Hosting target, and
@@ -159,8 +159,7 @@ authoritative coordinate must come from here, never from the client.
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |
 | `radiusMeters` | `number` | Verification radius. Defaults to 50; per-place so it stays tunable without a deploy |
-| `coverImageUrl` | `string` | |
-| `coverImageLicense` | `'Type1' \| 'Type3'` | Present only while `coverImageUrl` points at a TourAPI image. 공공누리 유형 — `Type1` requires the source credited, `Type3` requires that **and forbids altering the image** (a crop or a filter counts). The screen must credit 한국관광공사 whenever this field is present. Absent for our own photography |
+| `coverImageUrl` | `string` | **Ours.** TourAPI's `firstimage` is not imported — see the withdrawn row 2 in [App action items](#app-action-items) |
 | `ticketCount` | `number` | **Function-only.** How many tickets have been minted here. Feeds 홈 recommendations |
 | `openHours` | `LocalizedString` | TourAPI `usetime`. Free prose — 상시 개방, not a parseable schedule. Rendered on 장소/상세 so a visitor does not travel to a closed gate and lose the ticket. Absent for places with no opening hours (an outdoor breakwater) |
 | `closedDays` | `LocalizedString` | TourAPI `restdate` — 연중무휴 and the like. Same rules as `openHours` |
@@ -831,7 +830,7 @@ answers are already written into the sections above:
 
 ## Related
 
-- [`tourapi-usage.md`](https://github.com/spencer0124/pindom-server/blob/main/docs/tourapi-usage.md) (backend repo) — which TourAPI operation fills which `places` field, and the 공공누리 licence rules behind `coverImageLicense`
+- [`tourapi-usage.md`](https://github.com/spencer0124/pindom-server/blob/main/docs/tourapi-usage.md) (backend repo) — which TourAPI operation fills which `places` field, and why its photos are not imported
 - [`external-apis.md`](external-apis.md) — the third-party services this product calls. §8 no longer describes a client-side TourAPI call
 - [2026-08-22 handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) — what the deployed backend did differently from what this page said. Its "Still owed" list now lives in [App action items](#app-action-items); read it for the reasoning, not the status
 - [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) — every finding from the backend developer's review and the decision taken on it. The round before that
