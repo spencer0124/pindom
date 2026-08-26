@@ -52,7 +52,11 @@ export default function VerifyFailedScreen() {
           v: reason === 'implausible_speed' ? '이동속도 검증 (위조 방지)' : '위치 조작 앱 감지',
         },
         { k: '위치 정확도', v: measured ? `±${accuracy}m` : '기기가 알려주지 않음' },
-        { k: '조치', v: '검토 대기 (24h)' },
+        // 1a says `검토 대기 (24h)`. Nothing implements it — no function writes a
+        // flag, there is no review queue, and the button beside it used to land on
+        // 마이페이지. A rejection costs this reading and nothing else, so that is
+        // what the row says (2026-08-26 live verification, finding 4).
+        { k: '조치', v: '이번 인증만 무효' },
       ]
     : blurry
       ? [
@@ -83,7 +87,7 @@ export default function VerifyFailedScreen() {
         </Txt>
         <Txt typography="t6" color={adaptive.grey700}>
           {spoof
-            ? '위치 조작이 의심되어 이번 인증은 무효 처리되고, 계정에 검토 플래그가 등록됐습니다. 관리자 검토는 보통 24시간 안에 끝납니다.'
+            ? '위치 조작이 의심되어 이번 인증은 무효 처리됐어요. 촬영지에 도착한 뒤 다시 인증해 주세요.'
             : blurry
               ? measured
                 ? `위치 오차가 ±${accuracy}m라 반경 ${radius}m 판정을 내릴 수 없어요. 하늘이 트인 곳에서 잠시 기다렸다가 다시 인증해 주세요.`
@@ -117,12 +121,13 @@ export default function VerifyFailedScreen() {
           type="primary"
           display="block"
           onPress={() =>
-            spoof
-              ? router.navigate('/my' as never)
-              : router.replace({ pathname: '/verify/gps', params: { placeId: params.placeId } } as never)
+            router.replace({ pathname: '/verify/gps', params: { placeId: params.placeId } } as never)
           }
         >
-          {spoof ? '검토 상태 확인' : '다시 인증하기'}
+          {/* 1a sends the spoof branch to 검토 상태 확인. There is no review to
+              check, and the button landed on 마이페이지 — a dead end dressed as a
+              status screen. Retrying is the real affordance for every branch. */}
+          다시 인증하기
         </Button>
         <Button
           size="large"

@@ -152,6 +152,10 @@ const ListRowInner = forwardRef<ListRowRef, ListRowProps>(function ListRow(
           underlayOpacity.value = withTiming(0, { duration: 200 });
         }}
         style={[styles.pressable, style]}
+        // A `Pressable` does not carry a role of its own, so without this the row
+        // announces as text VoiceOver cannot activate — and every list in the app
+        // is built on this component. Before the spread, so a caller can override.
+        accessibilityRole="button"
         {...a11yProps}
       >
         <Animated.View

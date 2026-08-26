@@ -36,10 +36,13 @@ export function setActiveLocale(locale: Locale): void {
  * Falls back to Korean, then to any populated value — a place with only Korean copy should
  * still render for an English reader rather than showing a blank.
  *
- * `locale` overrides the active one, and exists for the single case where the resolved string
- * is **written back** rather than rendered: a denormalised copy is read by everyone, not by
- * the person who wrote it, so it must not carry that person's language. Pass `DEFAULT_LOCALE`
- * there and the record matches `tickets.placeName`, which the backend denormalises from `ko`.
+ * `locale` overrides the active one. Two callers pass it, both with `DEFAULT_LOCALE`:
+ *
+ *   1. A string that is **written back** rather than rendered — a denormalised copy is read by
+ *      everyone, not by the person who wrote it, so it must not carry that person's language.
+ *      The record then matches `tickets.placeName`, which the backend denormalises from `ko`.
+ *   2. A 촬영지 **name**, which is never translated in any locale. That is a product rule 언어
+ *      states outright, not an oversight — see `toPlace`.
  */
 export function localized(
   d: DocData,

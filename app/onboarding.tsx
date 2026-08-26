@@ -115,6 +115,11 @@ export default function OnboardingScreen() {
                 placeholder="닉네임"
                 placeholderTextColor={adaptive.grey400}
                 maxLength={12}
+                // A name is not a word, and it is stored as typed — rules compare
+                // `authorNickname` against this exact string. 프로필 편집 already
+                // carries both; this field was the half that was missed.
+                autoCorrect={false}
+                autoCapitalize="none"
                 style={[styles.input, { color: adaptive.grey900, borderBottomColor: adaptive.grey200 }]}
               />
             )}

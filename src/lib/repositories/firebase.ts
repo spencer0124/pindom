@@ -140,7 +140,13 @@ function toPlace(id: string, d: DocData): Place {
   const { lat, lng } = geo(d, 'location', at);
   return {
     id,
-    name: localized(d, 'name', at),
+    // A 촬영지 name is **not** translated, on purpose. 언어 says so in as many
+    // words — `촬영지 이름은 번역하지 않습니다`, because a name that disagrees with
+    // the signage and the map is worse than a foreign one when you are standing
+    // in front of it looking for the spot. `roman` is the Latin caption that goes
+    // under it; the seed's `name.en` is a translation (`Gwangtonggyo Bridge`) and
+    // is deliberately not read. See the 2026-08-26 live verification, finding 7.
+    name: localized(d, 'name', at, DEFAULT_LOCALE),
     roman: str(d, 'roman', at),
     description: localized(d, 'description', at),
     address: str(d, 'address', at),
