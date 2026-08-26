@@ -57,6 +57,7 @@ withdrawn** — do not delete a row to make the list shorter.
 | 8 | Re-encode before upload on both photo paths — that is what strips EXIF and what keeps the file under the 10 MB cap | [Cloud Storage](#cloud-storage) | Carried from 08-22 |
 | 9 | Decide whether 리뷰 needs the visit requirement. If yes, write the review at document id `ticketId` and send `ticketId` as a field; the rule is stubbed and waiting. If no, delete the proposal rather than leaving it as an unfulfilled intention | [리뷰](#placesplaceidreviewsreviewid--리뷰) | Carried from 08-22 |
 | 10 | Drop `places.reviewCount` from the app's types when the backend drops it from the seed. Nothing writes it | [`places`](#placesplaceid--촬영지) | Carried from 08-22 |
+| 12 | **Pindom AI.** The `chat` screen runs on a fixture and nothing behind it exists. Six decisions are open, and one of them — the per-user rate limit — has to land before launch, because this is the first function that spends money per call | [Proposal](#proposal--pindom-ai) | **Proposal 08-26** — no work yet |
 | 11 | **Do not build an in-app admin screen for adding 촬영지.** The proposal is a small admin web page on Firebase Hosting, owned by the backend; agree or object here before either repo builds toward it | [Proposal](#proposal--a-small-admin-web-page-for-촬영지) | **Proposal 08-26** — no work yet |
 
 ## Backend answers
@@ -73,6 +74,98 @@ deployed code rather than by recollection.
 
 The remaining open item, `clubGo` at 30, is a product decision rather than a question about the
 code; it is at the [bottom](#open-questions).
+
+## Proposal — Pindom AI
+
+The `chat` screen is built and renders a fixture. Nothing behind it exists yet: no function, no
+collection, no shapes. This section is what it would take, written down before either repo builds
+against a different assumption. **Nothing to do yet.**
+
+### What it does
+
+1. **Answers questions about the service** — how a ticket is issued, what 등급 means, when a 응모
+   closes. The model needs PINDOM's own rules in its system prompt; none of that is public
+   knowledge.
+2. **Recommends places near somewhere** — "여기 근처 갈 만한 곳".
+3. **Recommends stops on the way to a 촬영지** — "이 인증 장소 가면서 들를 만한 곳".
+
+A recommendation comes back as pins on a map. Tapping one opens its detail. **내 지도에 추가하기**
+puts it on the user's own map, where it stays.
+
+### The one rule that shapes everything else
+
+**A recommendation is not a 촬영지, and must never land in `places`.** `places` holds the
+authoritative coordinate `verifyLocation` adjudicates against; a café in that collection is a
+place a fan could try to verify at. Recommendations get their own collection, carry no
+`radiusMeters`, and no code path moves a row from one to the other.
+
+### `users/{uid}/savedPlaces/{savedPlaceId}` — 내 지도
+
+A subcollection, because a saved place is only ever read by the person who saved it.
+**Client-writable** — it is a bookmark with nothing of value attached, so a callable would be
+ceremony. Rules: own document only, read and write.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `string` | As the source names it. Not a `LocalizedString` — the POI source returns one language |
+| `category` | `string` | 카페 · 음식점 · 관광지. Drives the pin icon |
+| `location` | `GeoPoint` | Display only. **Never a verification anchor** |
+| `address` | `string` | |
+| `source` | `'kakao' \| 'tourapi'` | Which API produced it. Needed to re-fetch a detail view |
+| `sourceId` | `string` | That API's own id |
+| `savedFrom` | `string?` | The `placeId` the recommendation was anchored to, when it came from a 가는 길 answer |
+| `createdAt` | `Timestamp` | `serverTimestamp()`, as everywhere else |
+
+### `askAssistant` — the callable
+
+```ts
+// request
+{
+  message: string;
+  sessionId?: string;          // omitted on the first turn
+  near?: { lat: number; lng: number };   // the user's position, when they allowed it
+  towardPlaceId?: string;      // set when the question is about getting to a 촬영지
+}
+
+// response
+{
+  sessionId: string;
+  reply: string;
+  suggestions: Array<{
+    name: string; category: string; address: string;
+    lat: number; lng: number;
+    source: 'kakao' | 'tourapi'; sourceId: string;
+    distanceMeters?: number;
+  }>;
+}
+```
+
+`suggestions` is what the map draws. An answer with no recommendation returns it empty, and the
+screen shows text only.
+
+The model runs server-side and the app holds no key and builds no prompt — the same boundary
+[ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) draws around
+Firebase, and what [`external-apis.md`](external-apis.md) §6 already requires.
+
+### Open decisions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| 1 | **Model.** `external-apis.md` §6 names Claude Messages API | The backend is going with **`gpt-4o-mini`**. Recorded here because the app dev would otherwise still read Claude. Provider choice is the backend's and nothing on the client changes |
+| 2 | **Does chat history persist?** | Start without it. The screen is one conversation at a time; `sessionId` keeps a turn's context in the function's own store. Add a collection when someone asks to reopen an old thread |
+| 3 | **Where do POIs come from?** | **카카오 로컬.** TourAPI only carries registered tourism businesses — its own manual's 한계 표 says so — and 갈 만한 카페 is exactly what it lacks. Needs a Kakao REST key, backend-side |
+| 4 | **How is "가면서 들를 만한 곳" computed?** | Sample two or three points on the straight line between the user and the 촬영지 and search around each. A real route needs 카카오모빌리티 and a second key; the straight line is wrong on a coastline and fine everywhere else. Upgrade when it visibly misleads |
+| 5 | **Rate limit** | Required before launch, not after — see the warning below |
+| 6 | **답변 신고하기** | Undesigned. The app doc names it as the backend's and stops there |
+
+> [!WARNING]
+> **This function spends money per call, which no existing function does.** The callable URL is
+> public and App Check is not in the initial release, so a script can invoke it directly.
+> `maxInstances: 10` caps concurrency, not spend: `verifyLocation` under attack costs a few
+> Firestore reads, while `askAssistant` under attack costs an OpenAI bill that does not stop at a
+> quota — it just keeps billing. A per-user daily cap, checked inside the function against a
+> counter on `users/{uid}`, is the minimum. Tool calls multiply it: one question can fan out into
+> several model turns plus a Kakao query.
 
 ## Proposal — a small admin web page for 촬영지
 
