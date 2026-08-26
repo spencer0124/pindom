@@ -127,6 +127,7 @@ None of these are user-visible; they cost a reader or a newcomer rather than a f
 | The README names a JDK formula rather than a version | Previous list, item 8 |
 | `places.reviewCount` is written by nothing | Still `0` with a review present. The same shape as `verifyCount` was; 리뷰 counts the list it already loaded, so the honest fix is to drop the field from the seed |
 | `askAssistant` returned a transient GFE `401` once, then succeeded on retry | Observed once during verification and not reproduced. Recorded to watch, not to act on |
+| `askAssistant`'s `route` has only ever been observed as `null`, and `suggestions` only as `[]` | Please confirm what `route` carries when an answer does draw a course — a bare `courses` id, or an object. The client currently accepts either and draws the 지도에서 코스 보기 card only when it can resolve an id, which is tolerance standing in for a known shape. `suggestions` has no client consumer yet; say if it is meant to have one |
 
 ## Related
 

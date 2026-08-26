@@ -73,6 +73,13 @@ a Figma frame.
 The client is written against this. Names are proposals until
 [backend-contract.md](../reference/backend-contract.md) records them.
 
+> [!IMPORTANT]
+> **Superseded.** The shape below is what the client proposed. The function deployed on
+> 2026-08-26 answers `{ reply, suggestions, route }` instead, and because neither spelling was in
+> the contract the mismatch surfaced as an empty chat bubble rather than an error. The deployed
+> shape is now recorded in [backend-contract.md](../reference/backend-contract.md) and is the one
+> to build against; this block is kept because it is what the request side was designed from.
+
 ```ts
 // callable: askAssistant
 // request

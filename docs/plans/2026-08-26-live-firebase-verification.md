@@ -174,7 +174,7 @@ one user, which is the intended end state.
 
 | # | Check | Status |
 | --- | --- | --- |
-| L1 | Pindom AI answers | pass at the time of the run — `askAssistant` was **not deployed** and the chat degraded to 잠시 후 다시 시도해 주세요 rather than crashing. The backend deployed it later the same day, so the screen now has a real answer to render; re-checked in-app under [R11](#backend--verify-what-was-fixed) |
+| L1 | Pindom AI answers | **fail, then fixed.** At the time of the run `askAssistant` was not deployed and the chat degraded to 잠시 후 다시 시도해 주세요. Once the backend deployed it the call succeeded but the screen drew an empty bubble — see [finding 11](#11-askassistant-shipped-one-field-spelling-and-the-app-read-another) |
 | L2 | 추천 코스 renders | not run |
 
 ## Findings
@@ -348,6 +348,36 @@ value — but it is the same decided fix, applied to one of the two screens that
 > [auth slice checklist](2026-08-22-auth-slice-checklist.md) already documents as the design,
 > and what actually happened is that this run drove the sign-up button while expecting sign-in.
 > No failed sign-in was ever exercised, so no claim is made about one.
+
+### 11. `askAssistant` shipped one field spelling and the app read another
+
+Found when the newly deployed function was re-checked in the app. The call **succeeds** — and
+챗 draws an **empty bubble**.
+
+The function answers `{ reply, suggestions, route }`. `firebase.ts` read `data.text` and
+`data.courseId`, so the text resolved to `''` and the course card was never eligible. Neither
+side was wrong: `askAssistant` was never written into
+[backend-contract.md](../reference/backend-contract.md), and the two repositories each recorded
+a spelling with nothing to referee them.
+
+**This is the same failure mode as a renamed Firestore field, in a place nobody was watching for
+it.** The runbook's troubleshooting table opens with "a field renders `undefined`… Firestore has
+no schema and never errors on a wrong key" — a callable behaves identically. The call resolved,
+so nothing threw, nothing logged, and the only symptom was blank space. It is measurably worse
+than the state before the deployment, when the screen at least said 잠시 후 다시 시도해 주세요.
+
+**Fixed on both sides of the cause.** The mapper reads `reply` with `text` as a fallback, derives
+the course id from `route` in either form it can plausibly take, and — the part that matters
+beyond this bug — **turns an empty answer into a failure**, so a future drift renders a sentence
+rather than a blank. And `askAssistant` is now in the contract, which is the reason the drift was
+possible at all.
+
+Re-checked in the app: two turns, both rendering real Korean prose, no empty bubble, and neither
+failure sentence shown. **What is still unproven is the `route` branch** — every answer observed
+has carried `route: null`, so no 지도에서 코스 보기 card has ever been drawn and the id-extraction
+path has never run. It is written to accept either shape rather than to bet on one, but that is
+tolerance standing in for a verified shape, and it stays on the backend page until someone sees a
+route answer.
 
 ## What this run confirmed about the backend's list
 
