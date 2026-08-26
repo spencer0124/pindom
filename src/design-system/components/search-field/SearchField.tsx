@@ -74,6 +74,11 @@ export const SearchField = forwardRef<TextInput, SearchFieldProps>(function Sear
         placeholderTextColor={adaptive.grey400}
         returnKeyType="search"
         allowFontScaling={false}
+        // A query is matched against 촬영지, 지역 and 최애 names, not written as
+        // prose — capitalising or correcting it only moves it away from what is
+        // stored. Before the spread, so a caller that wants either can say so.
+        autoCapitalize="none"
+        autoCorrect={false}
         {...rest}
       />
       {showClear && (
