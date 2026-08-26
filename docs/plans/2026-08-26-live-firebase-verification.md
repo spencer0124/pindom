@@ -274,10 +274,17 @@ missing control in this repo.
 
 `ListRow` spreads `accessibilityLabel` through but never sets `accessibilityRole="button"`, and
 React Native's `Pressable` does not add one implicitly. Every row built on it — the 촬영지 lists
-on 홈 and 지도, the 언어 options, the 마이페이지 rows — reports as `other` with no action, so
-VoiceOver announces text that cannot be activated. `app/vault.tsx:42` sets the role correctly on
-a bare `Pressable`, so the codebase knows the idiom; the primitive just omits it. One line in
-`ListRow` fixes every screen at once.
+on 홈 and 지도, the 마이페이지 menu rows — reports as `other` with no action, so VoiceOver
+announces text that cannot be activated. `app/vault.tsx:42` sets the role correctly on a bare
+`Pressable`, so the codebase knows the idiom; the primitive just omits it. One line in `ListRow`
+fixes every screen at once.
+
+> [!NOTE]
+> **The 언어 options are not affected**, contrary to an earlier draft of this page. They are a
+> bare `Pressable` in `app/language.tsx` carrying `accessibilityRole="radio"`,
+> `accessibilityLabel` and `accessibilityState={{ selected }}` — correct and complete. They are
+> invisible to the *automation* harness, whose role vocabulary has no `radio`, which is what
+> made them look broken. A screen reader reads them fine.
 
 ### 7. 촬영지 이름 is translated, against the screen's own note
 
@@ -380,11 +387,12 @@ re-checked before moving on. `verify` names the check that was actually run, not
 
 | # | Fix | File | Status | Verify |
 | --- | --- | --- | --- | --- |
-| R1 | `ListRow` sets `accessibilityRole="button"` when pressable | `src/design-system/components/list-row/ListRow.tsx` | done | rows report `tap\|button` in a runtime snapshot |
-| R2 | 온보딩 nickname gets `autoCapitalize`/`autoCorrect` | `app/onboarding.tsx` | done | typed nickname stored verbatim |
-| R3 | 인증 실패 stops promising a review that does not exist | `app/verify/failed.tsx` | done | copy no longer claims a flag; no dead button |
+| R1 | `ListRow` sets `accessibilityRole="button"` when pressable | `src/design-system/components/list-row/ListRow.tsx` | **verified** | 촬영지 rows on 홈 and 지도 and the 마이 menu rows all report `tap\|button`; a row was opened by elementRef, which was impossible before |
+| R2 | 온보딩 nickname gets `autoCapitalize`/`autoCorrect` | `app/onboarding.tsx` | **verified** | field reads `pindomtester`; the same harness typing the same string into a field without the prop still returns `Pindomtester`, so the test is live |
+| R3 | 인증 실패 stops promising a review that does not exist | `app/verify/failed.tsx` | **verified** | 조치 reads 이번 인증만 무효, button is 다시 인증하기 and lands on the radar; 검토 플래그 / 검토 대기 (24h) / 검토 상태 확인 appear nowhere |
 | R4 | Runbook says the switch needs a rebuild | `docs/how-to/connect-the-app-to-firebase.md` | done | markdownlint green |
 | R5 | Runbook's GPS coordinate corrected in both docs | runbook + `2026-08-22-backend-handoff-reconciliation.md` | done | now `37.8796220881, 128.8335906768`, matching the seed |
+| R8b | `SearchField` stops capitalising and correcting the query | `src/design-system/components/search-field/SearchField.tsx` | done | 지도 search reads back lowercase |
 
 ### App — decision first
 
