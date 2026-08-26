@@ -38,6 +38,11 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# Firebase 에뮬레이터가 실행할 때마다 새로 쓰는 로그
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
 # Build artifacts
 *.ipa
 *.aab
