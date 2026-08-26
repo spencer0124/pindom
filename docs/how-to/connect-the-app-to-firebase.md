@@ -3,7 +3,7 @@ title: Connect the App to Firebase
 type: how-to
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-26
 audience: internal
 ---
 
@@ -358,7 +358,7 @@ Everything Firebase-adjacent, reachable from here.
 | --- | --- |
 | [backend-contract.md](../reference/backend-contract.md) | The Firestore collections, field names, and the three Cloud Function signatures. **The document the backend dev implements against** |
 | [2026-08-22 handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) | What the deployed backend does differently from the contract, and the app changes still owed. **Read this before switching off fixtures** |
-| [2026-08-26 integration open items](../plans/2026-08-26-integration-open-items.md) | What the pre-switch verification run left open once every fixable defect had landed: the decisions this repo owes and the items handed to the backend. **Read this with the reconciliation** |
+| [2026-08-26 integration open items](../plans/2026-08-26-integration-open-items.md) | What the pre-switch verification run left open once every fixable defect had landed, and how it closed: six app-side decisions taken the same day, and the nine items still handed to the backend. **Read this with the reconciliation** |
 | [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | Every finding from the backend developer's review of that contract, and the decision taken on it. Read it when you want to know *why* a field is shaped the way it is |
 | [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) | Why Firebase sits behind `src/lib/repositories/`, and why `src/lib/api/` is superseded |
 | [architecture.md](../explanation/architecture.md) | The product loop, the repo layout, and the trust boundary that makes GPS adjudication server-side |

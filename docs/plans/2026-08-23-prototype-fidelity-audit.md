@@ -3,7 +3,7 @@ title: Prototype Fidelity Audit
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-23
+last-updated: 2026-08-26
 audience: internal
 ---
 
@@ -80,6 +80,8 @@ Two facts about the prototype that shape the findings below:
 - `도움됐어요 N` is a static figure, not 1a's like toggle (`proto.jsx:1228-1230`) — same table.
 - Gallery is shown whenever there are photos, not gated on `placeVisited` — same table.
 - Distance is hidden (홈/지도 rows) or the stat cell dropped (장소/상세) when there is no fix — same table.
+- 장소/상세's middle stat reads 촬영된 사진, not 1a's 공개 사진 — `issueTicket` increments `photoCount` on every mint, 보관함 included, so the number counts photos taken here and 공개 was never true of it; the label moved rather than the counter, which is the only record of a place's traffic ([2026-08-26 integration open items](2026-08-26-integration-open-items.md), decision 6).
+- 홈's 촬영지 section is the selected 최애's places nearest first, taken from `listAll`, not the tail of a global `ticketCount` top ten — the popularity order never survived the 거리순 label, and a global ranking empties the section for an artist outside it (same page, decision 1).
 - On 지도 the state line `방문 완료 · 티켓 발행됨` / `미방문 · 인증 가능` is printed in grey, not 1a's semantic `#B4536A` / `#0098B2` (`proto.jsx:977-978`); on 홈 the line is not printed at all — "What the device run found" (accent appeared six times) and `PlaceList.tsx:20-27, 111-116`.
 - Row thumbnail is 56px on both screens with the stamp as a bar across its foot — device run.
 - `SectionHeader` drops a zero count, so `촬영 팁 0` is never printed — device run.
@@ -369,7 +371,9 @@ the `timeAgo` table (방금 / n분 전 / n시간 전 / 어제 / n일 전 / n주 
 - The row draws no photo although `imageUrls` is on the contract (checklist disagreement 2; "Still open").
 - Tier badge is an acid hairline, not `#B4536A` on `rgba(248,174,187,.2)` with radius 5 (checklist disagreement 3 — 2b).
 - `♡ n` is a figure, not a like control; `답글 n` goes nowhere because there is no post detail screen (checklist disagreement 4; "Still open").
-- App-only copy already recorded: 팔로우한 최애의 게시판이 여기 열려요 · 아직 글이 없어요 · 인증한 촬영지가 아직 없어요.
+- App-only copy already recorded: 팔로우한 최애의 게시판이 여기 열려요 · 아직 글이 없어요.
+- 글쓰기's pin toggle names the public list — `탭하면 최근 공개 티켓의 촬영지를 첨부합니다`, empty state `공개한 티켓이 아직 없어요`, where 1a says 인증한. The pin draws on `listMine`, which is public tickets only, and that is a policy: 보관함 exists to keep a photo out of public view, so putting its place on a public post leaks the withheld part ([2026-08-26 integration open items](2026-08-26-integration-open-items.md), decision 2).
+- The board header's second line is 촬영지 n곳, not 1a's 멤버 n — nothing writes `artists.memberCount`, so it printed `0` for every board, and keeping it accurate needs a `users` trigger for a decorative number (same page, backend item 4).
 - 2b colour/corner readings: the board block is a hairline box, not a `surfaceAlt` radius-14 card; the textarea and pin toggle are square, not radius 12; chips are `Shape.chipRadius` (4px), not 9999 pills; the `pinNote` is a rule-topped paragraph, not a `surfaceAlt` radius-12 card; pin toggle border is the 1px hairline, not 1.5px; 등록 and the selected chip use `token.accent` rather than `#B4536A` / `#F8AEBB`.
 - The 글쓰기 header button is the design-system `Button size="medium"` (radius 10, minHeight 38) rather than the prototype's 36px accent pill; flattening `Button`'s radius for 2b is tracked as "Not started" in `docs/reference/design-tokens.md`.
 - The composer is a raw `TextInput` rather than `TextField` because `TextField` still reads light-mode ink (`write.tsx` doc comment; same as 촬영 팁).

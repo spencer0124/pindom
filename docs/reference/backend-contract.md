@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-26
 audience: internal
 ---
 
@@ -78,7 +78,7 @@ authoritative coordinate must come from here, never from the client.
 | `workKind` | `'mv' \| 'drama' \| 'self'` | Drives the `MV / GANGNEUNG` caption and the map filter |
 | `artistIds` | `string[]` | Which 최애 this place belongs to. The map and 홈 filter on it |
 | `verifyCount` | `number` | **Dead field — nothing writes it.** `verifyLocation` never touches `places`, and `issueTicket` increments `ticketCount` and `photoCount` but not this. 장소/상세 renders it as `0` forever. Either `verifyLocation` increments it on an accepted reading, or the stat comes off the screen — the current state shows a number that is not one |
-| `photoCount` | `number` | 사진 stat on 장소/상세 |
+| `photoCount` | `number` | 사진 stat on 장소/상세. Incremented by `issueTicket` on **every** mint, 보관함 included, so it counts photos taken here rather than photos the 갤러리 shows. The screen was labelled 공개 사진 and now reads 촬영된 사진 — the counter is the more useful statistic and the word 공개 was the part that was never true (decided 2026-08-26) |
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |
 | `radiusMeters` | `number` | Verification radius. Defaults to 50; per-place so it stays tunable without a deploy |
@@ -104,11 +104,11 @@ no `tier` yet reads as `club10`, in the app's mappers and in the rules alike.
 | `nickname` | `string` | Shown as post author |
 | `avatarUrl` | `string?` | |
 | `bio` | `string?` | Editable on 프로필 편집 |
-| `followedArtistIds` | `string[]` | The 최애 set chosen at 최애 찾기 and edited on 프로필 편집. Keys the home screen and the community boards |
+| `followedArtistIds` | `string[]` | The 최애 set chosen at 최애 찾기 and edited on 프로필 편집. Keys the home screen and the community boards. **Uncapped**, and the active one is the user's last explicit chip tap, persisted on the device (decided 2026-08-26) |
 | `ticketBalance` | `number` | **Function-only.** Read by 홈 and the 잔여 티켓 충족 branch on 응모 |
 | `ticketsIssued` | `number` | **Function-only.** 마이페이지 stat |
 | `placesVisited` | `number` | **Function-only.** 마이페이지 stat. Increments only on the caller's **first** ticket at a given place |
-| `tier` | `'club10' \| 'club20' \| 'clubGo'` | **Function-only.** Recomputed from `ticketsIssued` inside `issueTicket` — `club10` 0–19, `club20` 20–29, `clubGo` 30+, **global, not per-artist**. Rendered as a badge beside the nickname and on every post. Issued count, never balance: a balance-derived tier would demote the user every time they spend on a raffle |
+| `tier` | `'club10' \| 'club20' \| 'clubGo'` | **Function-only.** Recomputed from `ticketsIssued` inside `issueTicket` — `club10` 0–19, `club20` 20–29, `clubGo` 30+ (confirmed 2026-08-26), **global, not per-artist**. Rendered as a badge beside the nickname and on every post. Issued count, never balance: a balance-derived tier would demote the user every time they spend on a raffle |
 | `profileVisibility` | `'public' \| 'private'` | Set on 프로필 편집 |
 | `locale` | `'ko' \| 'en'` | Set on 언어. `ko` is the default |
 | `createdAt` | `Timestamp` | |
@@ -123,8 +123,8 @@ boards are all keyed to this. Seeded by the backend.
 | `name` | `LocalizedString` | |
 | `initial` | `string` | One or two characters, used as the avatar fallback throughout |
 | `imageUrl` | `string?` | |
-| `placeCount` | `number` | Written by the **seed**, not by a function — it counts seeded 촬영지, which only the seed creates. Shown on 최애 찾기 |
-| `memberCount` | `number` | **Dead field — nothing writes it.** Following an artist is a write to the *user's* `followedArtistIds`, and no function watches that, so the 커뮤니티 header reads `0` forever. Reviving it needs a Firestore trigger on `users`, which is a fourth deployment unit — decide before the header ships a number |
+| `placeCount` | `number` | Written by the **seed**, not by a function — it counts seeded 촬영지, which only the seed creates. Shown on 최애 찾기 and, since 2026-08-26, in the 커뮤니티 board header |
+| `memberCount` | `number` | **Dead field, and the app no longer reads it.** Following an artist is a write to the *user's* `followedArtistIds`, and no function watches that, so this was `0` for every board. Reviving it needs a Firestore trigger on `users` — a fourth deployment unit for a decorative number. The 커뮤니티 header prints `촬영지 n곳` instead and `Artist` has dropped the field (decided 2026-08-26). Drop it from the seed when convenient |
 | `accentColor` | `string?` | Per-artist tint for the board header |
 
 ### `courses/{courseId}` — 코스
@@ -574,26 +574,40 @@ This table is the specification for `firestore.rules`.
 
 ## Open questions
 
-Still unresolved. Each needs a decision before the matching screen is built. Answered questions
-do not stay here — speed, cooldown, `serial`, EXIF and locales were settled in the
-[2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md), and
-tier thresholds and the review-visit question were settled by the 2026-08-22 deployment. All of
-them now live in the sections above.
+**None are open.** Answered questions do not stay here — speed, cooldown, `serial`, EXIF and
+locales were settled in the
+[2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md);
+tier thresholds and the review-visit question were settled by the 2026-08-22 deployment; and the
+last two were decided on 2026-08-26. All of them now live in the sections above; this section is
+kept as the record of where each answer came from.
 
-| Question | Proposal | Blocking |
-| --- | --- | --- |
-| **Is `followedArtistIds` capped?** | 홈 is keyed to one selected artist at a time. Decide whether the set is capped and how the active one is chosen | Before 최애 찾기 is built |
-| **Is `clubGo` at 30 the right boundary?** | Shipped as 30 to keep the band width consistent, but the prototype shows no evidence for it — `club10` and `club20` were read off a real label, `clubGo` was extrapolated. A different number is one constant and one redeploy | Not blocking. Decide before anyone has 30 tickets |
+The two this section carried last — whether `followedArtistIds` is capped, and whether `clubGo`
+belongs at 30 — were decided in the
+[2026-08-26 integration open items](../plans/2026-08-26-integration-open-items.md):
 
-Two questions this section carried were answered by the deployed backend rather than by a
-decision, and both answers are already written into the sections above:
+- **`followedArtistIds` is uncapped**, and the active 최애 is the user's last explicit chip tap,
+  persisted on the device. A cap of one was considered and rejected: 커뮤니티's board chips and
+  the 지도 filter are both built per followed artist, so capping the set at one would empty two
+  screens' worth of affordance to remove an ambiguity that the persisted selection already
+  removes. What was actually wrong was the *rule*, not the size — the store was in-memory, so
+  every cold start fell back to `followedArtistIds[0]`, a default nobody chose
+- **`clubGo` stays at 30.** Confirmed rather than left open because it is free today and stops
+  being free the first time an account crosses whatever number ships — at that point changing it
+  demotes someone
+
+Two further questions were answered by the deployed backend rather than by a decision, and both
+answers are already written into the sections above:
 
 - **Tier thresholds** — `club10` 0–19, `club20` 20–29, `clubGo` 30+, on `ticketsIssued`, global.
   The band width of 10 comes from the prototype's `TIER 10—19` label
 - **Can a user review a place they have not verified?** — the intended answer was no; the
   deployed answer is **yes**, because the app writes reviews with a generated id and no
-  `ticketId`, which leaves rules with nothing to check against. This is a gap, not a decision —
-  the 리뷰 warning above records what reopens it
+  `ticketId`, which leaves rules with nothing to check against. **Accepted for the 공모전** on
+  2026-08-26: nothing in the judging depends on review integrity, and requiring a ticket makes
+  the demo materially harder to populate. Reviving it is not expensive — the app writes the
+  review at document id `ticketId` and sends `ticketId` as a field, and rules gain two lines
+  confirming the caller owns that ticket and that it belongs to this place, which also makes it
+  one review per ticket for free. The 리뷰 warning above records the same recipe
 
 ## Related
 

@@ -1,7 +1,7 @@
 ---
 title: 2026-08-26 Integration Open Items
 type: plan
-status: draft
+status: accepted
 owner: zoyoong124@gmail.com
 last-updated: 2026-08-26
 audience: internal
@@ -9,7 +9,7 @@ audience: internal
 
 # 2026-08-26 — Integration Open Items
 
-> Before switching the app off fixtures, its own mappers and queries were run against the emulator carrying the deployed rules, indexes, functions and seed. Everything that could be fixed without a decision has landed. This page is what is left: the questions this repo has to answer, and the ones the backend has to. Each item is written as background, where it stands, and a recommendation, so it can be decided without re-deriving it.
+> Before switching the app off fixtures, its own mappers and queries were run against the emulator carrying the deployed rules, indexes, functions and seed. Everything that could be fixed without a decision landed first. This page is what was left: the questions this repo had to answer — all six now decided and shipped — and the ones the backend still has. Each item is written as background, the decision, and what changed, so it can be re-read without re-deriving it.
 
 ## What the run settled
 
@@ -27,70 +27,82 @@ files. The runbook's [check section](../how-to/connect-the-app-to-firebase.md) r
 repeat it and the two traps that cost a run each.
 
 Eight app-side defects came out of it and are fixed. What follows is only what a decision, or
-another repository, stands in front of.
+another repository, stood in front of.
 
-## Decisions this repo owes
+## Decided in this repo
 
-### 1. 홈's recommendations are the global top ten, then filtered
+All six were decided on 2026-08-26 and are in the working tree. Field-level consequences are
+written into [backend-contract.md](../reference/backend-contract.md), which stays the referee.
 
-**Background.** `places.listRecommended` orders the whole collection by `ticketCount` and takes
-the first ten; `useHomeData` then keeps the ones belonging to the selected 최애. The ranking is
-global, the display is per-artist, and nothing guarantees the two intersect.
+### 1. 홈's recommendations were the global top ten, then filtered
 
-**Where it stands.** Harmless today — there are five seeded 촬영지, so the "top ten" is all of
-them. It stops being harmless the moment the collection outgrows a page: an artist whose
-촬영지 are all outside the global top ten gets an empty `{최애}의 촬영지` block, which reads as a
-loading bug rather than as a ranking. Worth knowing separately: every seeded counter starts at
-`0`, so until the first ticket is minted the order is arbitrary rather than meaningful.
+**Background.** `places.listRecommended` ordered the whole collection by `ticketCount` and took
+the first ten; `useHomeData` then kept the ones belonging to the selected 최애. The ranking was
+global, the display per-artist, and nothing guaranteed the two intersect.
 
-**Recommendation.** Rank client-side from the full collection. 지도 already reads every place
-for its pins and the result is cached, so the second query is the one that can be removed rather
-than added — and per-artist ranking then costs nothing and needs no new index. The alternative,
-querying `artistIds` with `array-contains` and ordering by `ticketCount`, is more correct in the
-abstract but needs a composite index the backend would have to deploy, for a collection that is
-not going to be large before the 공모전.
+**Decided.** Rank on the client out of the full collection, and delete the popularity query.
+Reading the code settled it more cheaply than the abstract argument did: 홈 was already issuing
+both reads in one `Promise.all` — the ranked ten *and* every place, the latter because the
+per-최애 인증 count cannot be taken from a subset — and then re-sorting the ranked ten by
+distance for the 거리순 label. The popularity order never reached the screen. It selected which
+ten documents survived, and that was its only effect.
+
+**What changed.** `useHomeData` reads `listAll` once and derives both the 촬영지 section and the
+인증 count from it. `listRecommended` is gone from `PlaceRepository` and from both
+implementations rather than left unused — a method that encodes a ranking no screen wants is a
+trap for the next reader. The visible result today is identical (five seeded 촬영지 means the
+top ten was all of them); what goes away is the empty `{최애}의 촬영지` block that arrives the
+moment the collection outgrows a page, one query, and the app's only dependence on a
+`ticketCount` index.
 
 ### 2. 글쓰기 offers the newest **public** ticket's place
 
 **Background.** The pin 글쓰기 attaches comes from `ticketRepository.listMine()`, which is the
-public collection only. 보관함 tickets are not considered.
+public collection only. 보관함 tickets were not considered, and the toggle's copy read
+`탭하면 최근 인증한 촬영지를 첨부합니다`.
 
-**Where it stands.** This is the same shape as the 티켓 절취 bug that was fixed — there, the
-preview disagreed with what the server actually spends, which made it wrong outright. Here
-nothing disagrees: the server is not involved, and the screen simply has a policy. If the
-newest ticket is private, the pin silently belongs to an older place.
+**Decided.** Keep it public-only, as a policy rather than an oversight. 보관함 exists so a photo
+can be kept out of public view; surfacing the place it was taken at, on a public post, gives
+away the part the user chose to withhold.
 
-**Recommendation.** Leave it public-only, and treat this as a decision rather than an oversight.
-보관함 exists so a photo can be kept out of public view; surfacing the place it was taken at, on
-a public post, gives away the part the user chose to withhold. If the answer is instead "most
-recent means most recent", both lists have to feed it, the way `useRaffles` now does.
+**What changed.** The policy is unchanged; the copy is, because it was the part that lied. A
+user whose newest ticket is private was told the pin was 최근 인증한 — and, if every ticket they
+own is private, that they had never verified anywhere. The toggle now reads
+`탭하면 최근 공개 티켓의 촬영지를 첨부합니다`, and its empty state `공개한 티켓이 아직 없어요`.
+`useWritePost` carries the reasoning so the next reader does not "fix" it by adding `listVault`.
 
 ### 3. `clubGo` starts at 30
 
 **Background.** The tier bands are ten wide. `club10` and `club20` are read off the prototype's
 `TIER 10—19` label; `clubGo` is the band after them, extrapolated rather than observed.
 
-**Where it stands.** The number now exists in exactly two places — `tierFor` in
-`src/lib/domain/user.ts`, which the fixtures use, and the same function in the Cloud Functions,
-which is authoritative. Changing it is one constant on each side and one redeploy.
+**Decided.** 30, confirmed rather than left open. The number lives in exactly two places —
+`tierFor` in `src/lib/domain/user.ts` and the same function in the Cloud Functions, which is
+authoritative — and it is free to change today. It stops being free the first time an account
+crosses whatever number ships: at that point changing it demotes someone.
 
-**Recommendation.** Decide it now rather than later, even if the answer is "30". It is free
-today and stops being free the first time an account crosses whatever number ships — at that
-point changing it demotes someone. Nothing else is blocked by it.
+**What changed.** Only the note above `tierFor`, which had carried it as an open product
+question, and the contract's tier row. No behaviour.
 
-### 4. Whether `followedArtistIds` is capped
+### 4. `followedArtistIds` is uncapped, and the active 최애 is now a decision
 
-**Background.** 홈 is keyed to one 최애 at a time, and the user document holds a list. The
-contract has carried this as an open question since it was written: neither the cap nor the rule
-for choosing the active artist is decided.
+**Background.** 홈 is keyed to one 최애 at a time and the user document holds a list. The
+contract carried both halves as open since it was written: the cap, and the rule for choosing
+the active artist.
 
-**Where it stands.** The app follows and unfollows without a limit, and 홈 opens on the first
-entry of the list. That is a default nobody chose, not a design.
+**Decided.** No cap, and the active 최애 is the user's last explicit chip tap, persisted on the
+device. A cap of one was considered and rejected on the evidence in the app: 커뮤니티's board
+chips and the 지도 filter are both built one-per-followed-artist, so capping at one would empty
+two screens' worth of affordance in order to remove an ambiguity that persistence removes
+anyway.
 
-**Recommendation.** Decide the cap and the active-artist rule together, before 최애 찾기 is
-refined — they are the same question asked twice. If the 공모전 build only ever demonstrates one
-최애, say so explicitly and cap it at one; a cap of one is a much simpler screen than an
-uncapped list with an implicit "first wins".
+**What changed.** The size was never the real problem — the rule was. `useDiscoveryStore` was
+in-memory, so every cold start came back empty and fell to `followedArtistIds[0]`: a user
+following more than one 최애 found the app back on the first of them at every launch, which is a
+default nobody chose. The store now persists through `mmkvStateStorage`, whose first consumer
+this is. MMKV is synchronous, so rehydration lands during the first render and no screen paints
+the wrong 최애 first; `reconcile` already handled a selection that is no longer followed, which
+is exactly what a restored id can be.
 
 ### 5. A review needs neither a visit nor a limit
 
@@ -99,32 +111,39 @@ Rules cannot run a query, so with no ticket reference on the document there is n
 that can ask whether this user has ever verified at this place. The check is not weak; it is
 unwritable as the document is shaped.
 
-**Where it stands.** As deployed, anyone signed in can review any 촬영지, as many times as they
-like, having never been there. The backend left the rule stubbed for the day the shape changes.
+**Decided.** Accepted for the 공모전, and recorded as accepted rather than left as a silent gap.
+As deployed, anyone signed in can review any 촬영지, as many times as they like, having never
+been there. Nothing in the judging depends on review integrity, and requiring a ticket makes the
+demo materially harder to populate.
 
-**Recommendation.** Accept it for the 공모전 and record it as accepted. Reviving it costs little
-— the app writes the review at document id `ticketId` and sends `ticketId` as a field, and rules
-gain two lines that confirm the caller owns that ticket and that it belongs to this place, which
-also makes it one review per ticket for free. But it makes the demo harder to populate, and
-nothing in the judging depends on review integrity.
+**What changed.** The contract's record of it, from "this is a gap" to "this is accepted, and
+here is the recipe": the app writes the review at document id `ticketId` and sends `ticketId` as
+a field, and rules gain two lines confirming the caller owns that ticket and that it belongs to
+this place — which also makes it one review per ticket for free. Doing the app half early was
+considered and rejected: it would require a ticket to write a review from the day it lands, so
+it buys nothing and costs the demo now.
 
 ### 6. `photoCount` counts photos the 갤러리 will not show
 
 **Background.** `issueTicket` increments `places.photoCount` on every mint. The gallery entry
-beside it is written only when the ticket is public. 장소/상세 labels the number 공개 사진.
+beside it is written only when the ticket is public. 장소/상세 labelled the number 공개 사진, so
+label and number disagreed by however many private tickets a place has.
 
-**Where it stands.** The label and the number disagree by however many private tickets a place
-has. Nobody has noticed because no ticket has been minted against the real project.
+**Decided.** Change the label, not the counter. `photoCount` as "how many photos were taken
+here" is the more useful statistic and the one the increment already implements; 공개 was the
+word that was never true. Asking the backend to increment only for public mints would make the
+number match the gallery by destroying the only record of how much traffic a place actually
+sees.
 
-**Recommendation.** Change the label rather than the counter. `photoCount` as "how many photos
-were taken here" is the more useful statistic and the one the increment already implements; the
-word 공개 is what was never true. The alternative — asking the backend to increment only for
-public mints — makes the number match the gallery but destroys the only record of how much
-activity a place actually sees.
+**What changed.** `PlaceStats` reads 촬영된 사진. This is a deliberate deviation from prototype
+block `1a`, which is why it is written down twice — in the component and in the fidelity audit's
+already-decided list — so a later fidelity pass does not restore the prototype's word and with
+it the disagreement.
 
 ## Handed to the backend
 
-Ordered by how much they matter, not by how hard they are.
+Ordered by how much they matter, not by how hard they are. Items 3 and 4 changed shape when the
+app-side decisions above landed.
 
 ### 1. The 갤러리 does not follow a visibility flip
 
@@ -140,7 +159,9 @@ server handled this; the comment has been corrected to say it does not.
 
 **Recommendation.** A trigger on `tickets` update: create the gallery entry when `visibility`
 becomes `public`, delete it when it becomes `private`. This cannot be done from the app — the
-rules that make the gallery trustworthy are the same rules that stop the client repairing it.
+rules that make the gallery trustworthy are the same rules that stop the client repairing it,
+and the app hiding its own private photos from its own screen would fix nothing for the other
+viewers who can still see them.
 
 ### 2. The function-test command in the README does not work as written
 
@@ -162,24 +183,28 @@ means the address is wrong, and there are two ways to get the address wrong.
 **Background.** `verifyLocation` never touches `places`, and `issueTicket` increments
 `ticketCount` and `photoCount` beside this field without touching it either.
 
-**Where it stands.** 장소/상세 renders it as an 인증 statistic and it will read `0` forever. The
-contract now marks it dead, alongside `reviewCount`, which was already in that state.
+**Where it stands.** 장소/상세 renders it as an 인증 statistic and it will read `0` forever.
 
-**Recommendation.** Either `verifyLocation` increments it on an accepted reading, or the stat
-comes off the screen. Both are fine; a number that is permanently zero is not, because it reads
-as "nobody has ever verified here" rather than as "this is not measured".
+**Recommendation.** `verifyLocation` increments it on an accepted reading. The other branch —
+taking the stat off the screen — is closed: 방문 인증 is the one figure on 장소/상세 that says
+this place is real to other people, and the app kept it deliberately when it dropped the
+comparable dead number from the 커뮤니티 header (item 4). A permanently zero counter reads as
+"nobody has ever verified here" rather than as "this is not measured", which is worse than no
+figure and worse than a true one.
 
-### 4. `artists.memberCount` is written by nothing
+### 4. `artists.memberCount` is written by nothing — the app has stopped reading it
 
 **Background.** Following a 최애 is a write to the user's own `followedArtistIds`. No function
 watches that field, and there is no trigger on `users`.
 
-**Where it stands.** The 커뮤니티 board header shows `0` members regardless of how many people
-follow the artist.
+**Where it stands.** Resolved on the app side, which was the cheaper honest answer: keeping the
+number accurate needs a trigger on every profile write — a fourth deployment unit for a
+decorative figure. The 커뮤니티 board header now prints `촬영지 n곳` from `placeCount`, which the
+seed writes and 홈 already renders, and `memberCount` is gone from `Artist` and from the mapper
+rather than mapped and ignored.
 
-**Recommendation.** This one genuinely needs a decision before code: keeping it accurate means a
-trigger on every profile write, which is a new deployment unit for a decorative number. Dropping
-the field and the header line is the cheaper honest answer.
+**Recommendation.** Drop the field from the seed whenever convenient. Nothing reads it, so this
+is tidying rather than work — but leaving it invites the next person to render it.
 
 ### 5. `issueTicket` denormalises `placeName` from Korean only
 
@@ -246,6 +271,7 @@ loop for the first time is exactly the cold-start case.
 ## Related
 
 - [connect-the-app-to-firebase.md](../how-to/connect-the-app-to-firebase.md) — the runbook, including how to repeat the check this page reports on
-- [backend-contract.md](../reference/backend-contract.md) — the referee for every field name argued about here
+- [backend-contract.md](../reference/backend-contract.md) — the referee for every field name argued about here, and where the six decisions above are written at field level
+- [2026-08-23 prototype fidelity audit](2026-08-23-prototype-fidelity-audit.md) — carries the two copy deviations decisions 2 and 6 introduced, so a later pass does not undo them
 - [2026-08-22 backend handoff reconciliation](2026-08-22-backend-handoff-reconciliation.md) — the previous round, where the deployed backend and the contract were reconciled
 - [ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) — why an item lands in one list or the other

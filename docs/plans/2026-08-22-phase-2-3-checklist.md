@@ -3,7 +3,7 @@ title: 2026-08-22 Phase 2–3 Checklist
 type: plan
 status: draft
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-26
 audience: internal
 ---
 
@@ -275,10 +275,13 @@ Three things it settled that were not obvious from the plan:
 
 ### Two questions 홈 raised, both left open
 
-- [ ] **`listRecommended` is documented as popularity-ordered, and the section is labelled 거리순.**
-      홈 currently sorts what it gets by distance so the label is honest, which makes the section
-      "the nearest of the popular ones" rather than the nearest overall. Whether the contract or
-      the label should move is the backend contract's call, not the screen's
+- [x] **`listRecommended` is documented as popularity-ordered, and the section is labelled 거리순.**
+      Answered 2026-08-26 by removing the query rather than by moving either the contract or the
+      label. 홈 was already reading every place for the per-최애 인증 count, and re-sorting the
+      ranked ten by distance — so the popularity order chose which ten documents survived and
+      nothing else. The section is now the nearest of that 최애's places, the label is literal,
+      and `listRecommended` is gone from `PlaceRepository`. See the
+      [2026-08-26 integration open items](2026-08-26-integration-open-items.md), decision 1
 - [ ] **The `ticket card` gap in [../reference/design-system.md](../reference/design-system.md) is
       not what 홈 needed.** That entry describes the collectible ticket — block `1c`, needed by
       컬렉션, 티켓 발행 and 응모완료. 홈's card is a balance summary with one consumer, so it was
