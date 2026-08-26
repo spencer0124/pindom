@@ -69,7 +69,7 @@ deployed code rather than by recollection.
 | **Which seeded fields became `{ ko, en }` maps?** | **No mismatch.** `places.address`, `places.roman`, `raffles.title` and `raffles.prizeDescription` are plain strings in the seed, exactly as this page types them. The maps are `name`, `description`, `region`, `workTitle` on `places`, `name`/`description` on `courses`, and `name` on `artists` — all already typed as maps here |
 | **Which locale does `issueTicket` copy into `tickets.placeName`?** | **`ko`.** `issueTicket` reads `places.name.ko`. `tickets.placeName` stays a plain `string` and is Korean regardless of the user's `locale`. An English UI showing a Korean place name on 티켓 발행 is the deployed behaviour, not a bug — say so if that needs to change |
 | **Is the `tickets` read rule own-or-public, or own-only?** | **Both, on different operations, as this page says.** `get` succeeds for own tickets *or* any ticket with `visibility == 'public'`; `list` requires the query itself to carry `userId == request.auth.uid`. The handoff summary that said own-only was describing the `list` case |
-| **Does the last-ticket speed check key off the first *measurement* or the first *accepted* one?** | **The app was right, and it is now fixed.** It keyed off an empty `readings` array, which a deliberate rejection could fill. It now keys off the call that creates the session and runs ahead of every gate. See [What the function adjudicates](#what-the-function-adjudicates). Not yet redeployed |
+| **Does the last-ticket speed check key off the first *measurement* or the first *accepted* one?** | **The app was right, and it is now fixed.** It keyed off an empty `readings` array, which a deliberate rejection could fill. It now keys off the call that creates the session and runs ahead of every gate, and is deployed. See [What the function adjudicates](#what-the-function-adjudicates) |
 
 The remaining open item, `clubGo` at 30, is a product decision rather than a question about the
 code; it is at the [bottom](#open-questions).
@@ -531,7 +531,7 @@ a short interval, so only pairs that moved far enough are evaluated:
 > a session consumed the gate and the rest of it went unjudged. Fixed 2026-08-26 — the check is
 > now keyed to the call that creates the session and sits ahead of all four gates. A first ping
 > that is both out of radius and impossibly fast therefore reports `implausible_speed` rather than
-> `out_of_radius`. Nothing on the client changes.
+> `out_of_radius`. Deployed to `pindom-1234` on 2026-08-26. Nothing on the client changes.
 
 Distance is computed after subtracting the reported accuracy radius. A time-based trigger was
 rejected during review: "skip the check when the readings are under 30 seconds apart" is evaded
