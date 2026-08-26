@@ -309,21 +309,49 @@ function toGalleryPhoto(placeId: string, id: string, d: DocData): GalleryPhoto {
 export const firebaseRepositories: Repositories = {
   assistant: {
     /**
-     * Proposed, not contracted: no assistant function is in
-     * docs/reference/backend-contract.md yet. The name and the shape here are
-     * what the client sends and expects — recorded in the Assistant checklist
-     * for the backend developer — and until the function exists the call
-     * fails as `not-found`, which the chat renders as an answer it could not
-     * get rather than a crash.
+     * `askAssistant` was deployed on 2026-08-26 answering
+     * `{ reply, suggestions, route }`, while the shape the client had recorded
+     * in the Assistant checklist was `{ text, courseId }`. Neither side was
+     * wrong: the function was never written into
+     * docs/reference/backend-contract.md, so the two names drifted with nothing
+     * to referee them. The contract now carries it; both spellings are read
+     * until the deployment and the contract agree.
+     *
+     * The cost of the drift is worth remembering — the call *succeeded*, so
+     * nothing threw and nothing logged, and 챗 simply drew an empty bubble.
+     * That is the same silent-mismatch failure a renamed Firestore field
+     * produces, and it is why the empty answer below is turned into an error.
      */
     ask: (input) =>
       attempt(async () => {
         const call = httpsCallable(fns(), 'askAssistant');
         const res = await call(input);
         const data = res.data as DocData;
+
+        const text = String(data.reply ?? data.text ?? '').trim();
+
+        // `route` came back null on every answer observed, so its populated
+        // shape is unverified. Accept the two forms it can reasonably take —
+        // a bare `courses` id, or an object carrying one — rather than betting
+        // on either and drawing a card that opens nothing.
+        const route = data.route;
+        const fromRoute =
+          typeof route === 'string'
+            ? route
+            : route != null && typeof route === 'object'
+              ? (route as DocData).courseId
+              : undefined;
+        const courseId = typeof fromRoute === 'string' ? fromRoute : data.courseId;
+
+        // An answer with no text is not an answer. Throwing puts it down the
+        // same path a failed call takes, so the transcript says the assistant
+        // could not answer — a blank bubble reads as the app being broken, and
+        // is worse than the `not-found` this screen used to render.
+        if (!text) throw new Error('답변을 받지 못했습니다.');
+
         return {
-          text: String(data.text ?? ''),
-          ...(typeof data.courseId === 'string' && { courseId: data.courseId }),
+          text,
+          ...(typeof courseId === 'string' && { courseId }),
         };
       }),
   },
