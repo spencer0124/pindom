@@ -177,6 +177,26 @@ Dropping the config files in does **not** silently switch you to live data — a
 `EXPO_PUBLIC_USE_MOCKS` always wins, so you choose when to cross over. With the variable unset,
 fixtures turn off automatically once Firebase becomes reachable.
 
+> [!IMPORTANT]
+> **Editing `.env` is not enough — rebuild.** `AppConfig` reads
+> `Constants.expoConfig.extra`, and in a dev build that object is baked into the app bundle at
+> build time as `EXConstants.bundle/app.config`; Metro's manifest serves `extra: null`. So
+> restarting Metro updates the inlined `process.env.EXPO_PUBLIC_*` strings in the JS bundle but
+> **not** the `extra` block the switch is actually read from, and the app keeps serving fixtures
+> while every file on disk says otherwise.
+>
+> ```bash
+> yarn ios          # or: yarn android
+> ```
+>
+> Confirm which side is live from Metro's own log rather than from `.env` — on first use it
+> prints one of these, and it is the only unambiguous signal:
+>
+> ```text
+> iOS Bundled … src/lib/repositories/mock.ts        ← fixtures
+> iOS Bundled … src/lib/repositories/firebase.ts    ← live
+> ```
+
 #### Checking the contract before you cross over
 
 The switch is cheap to flip and expensive to debug, because the failure mode is silence: a
@@ -214,7 +234,7 @@ while developing:
 | `raffles` | `raffle-fansign` · `raffle-album` · `raffle-concert` · `raffle-closed` |
 
 **To exercise GPS인증 for real, send a coordinate within 50 m of `place-jumunjin`** —
-`37.8983, 128.8306`. The simulator's location override reaches it; you do not need to be in 강릉.
+`37.8796220881, 128.8335906768`, which is the `location` on the seeded document. The simulator's location override reaches it; you do not need to be in 강릉.
 Two things it will not do for you:
 
 - The reading's `accuracy` still has to come back at **65 m or better**, or the call is rejected

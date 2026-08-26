@@ -77,7 +77,7 @@ authoritative coordinate must come from here, never from the client.
 | `workTitle` | `LocalizedString` | The drama or music video it appeared in |
 | `workKind` | `'mv' \| 'drama' \| 'self'` | Drives the `MV / GANGNEUNG` caption and the map filter |
 | `artistIds` | `string[]` | Which 최애 this place belongs to. The map and 홈 filter on it |
-| `verifyCount` | `number` | **Dead field — nothing writes it.** `verifyLocation` never touches `places`, and `issueTicket` increments `ticketCount` and `photoCount` but not this. 장소/상세 renders it as `0` forever. Either `verifyLocation` increments it on an accepted reading, or the stat comes off the screen — the current state shows a number that is not one |
+| `verifyCount` | `number` | **Function-only.** `verifyLocation` increments it on an accepted reading — confirmed against the deployed project on 2026-08-26, when it moved `0 → 1` on a verification that returned a grant, leaving `ticketCount` and `photoCount` untouched. It was a dead field until then; 장소/상세's 방문 인증 stat is live now |
 | `photoCount` | `number` | 사진 stat on 장소/상세. Incremented by `issueTicket` on **every** mint, 보관함 included, so it counts photos taken here rather than photos the 갤러리 shows. The screen was labelled 공개 사진 and now reads 촬영된 사진 — the counter is the more useful statistic and the word 공개 was the part that was never true (decided 2026-08-26) |
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |

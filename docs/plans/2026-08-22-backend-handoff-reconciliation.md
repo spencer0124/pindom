@@ -234,7 +234,7 @@ Then, with `EXPO_PUBLIC_USE_MOCKS=false` and the config files in place:
 
 1. Sign up. A `users/{uid}` document should appear with three zeros and no `tier`
 2. Open 홈. 최애, 촬영지 and 코스 render from the seed; every counter reads `0`
-3. Send a coordinate within 50 m of `place-jumunjin` (`37.8983, 128.8306`) from the simulator's
+3. Send a coordinate within 50 m of `place-jumunjin` (`37.8796220881, 128.8335906768`) from the simulator's
    location override. `verifyLocation` should return `verified: true` with a grant — provided the
    reading's `accuracy` is 65 m or better, and provided you are not on Android, where an override
    trips the mock-provider flag and earns `mock_location` instead

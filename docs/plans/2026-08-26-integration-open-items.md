@@ -178,19 +178,16 @@ so nothing is wrong with the functions themselves.
 its own somewhere: `not-found` from a callable almost never means the function is missing, it
 means the address is wrong, and there are two ways to get the address wrong.
 
-### 3. `places.verifyCount` is written by nothing
+### 3. ~~`places.verifyCount` is written by nothing~~ — fixed 2026-08-26
 
-**Background.** `verifyLocation` never touches `places`, and `issueTicket` increments
-`ticketCount` and `photoCount` beside this field without touching it either.
+**Resolved by the backend**, and verified against the deployed project rather than taken on
+trust: an accepted `verifyLocation` moved `place-jumunjin`'s `verifyCount` from `0` to `1`,
+while `ticketCount` and `photoCount` stayed where they were. The recommendation below was taken
+as written — the counter is incremented rather than the stat being dropped from 장소/상세 — so
+방문 인증 now shows a real number instead of a permanent `0`.
 
-**Where it stands.** 장소/상세 renders it as an 인증 statistic and it will read `0` forever.
-
-**Recommendation.** `verifyLocation` increments it on an accepted reading. The other branch —
-taking the stat off the screen — is closed: 방문 인증 is the one figure on 장소/상세 that says
-this place is real to other people, and the app kept it deliberately when it dropped the
-comparable dead number from the 커뮤니티 header (item 4). A permanently zero counter reads as
-"nobody has ever verified here" rather than as "this is not measured", which is worse than no
-figure and worse than a true one.
+The contract's [`verifyCount` row](../reference/backend-contract.md) has been moved from
+"dead field" to "function-only" to match.
 
 ### 4. `artists.memberCount` is written by nothing — the app has stopped reading it
 
@@ -234,17 +231,19 @@ no longer picks one, watches 티켓 절취 to the end, and is then told it close
 matters if anything ever reads `status` without also reading `closesAt` — an admin view, an
 export, a second client. If nothing will, leaving it is defensible.
 
-### 7. `askAssistant` is not deployed
+### 7. ~~`askAssistant` is not deployed~~ — deployed 2026-08-26
 
-**Background.** The app calls a callable of that name; the deployment has three functions and
-this is not one of them. The request and response shapes are recorded in the Assistant
-checklist.
+**Resolved by the backend.** The callable answers in `asia-northeast3` and returns real Korean
+copy in the shape the Assistant checklist recorded — `{ reply, suggestions, route }`. Checked
+that this is a real deployment and not a routing accident: an unknown function name returns
+Google's own HTML `404`, while `askAssistant` without an auth header returns the *function's*
+`{"error":{"message":"로그인이 필요하다","status":"UNAUTHENTICATED"}}`, identical in shape to
+`issueTicket`.
 
-**Where it stands.** The call fails with `not-found`, which the chat renders as an answer it
-could not get rather than as a crash. The screen is built and works against fixtures.
-
-**Recommendation.** Decide whether it is in scope for the 공모전 before building anything else
-around it. If it is not, the fixture path is already the demo path and nothing needs to change.
+Two things to carry forward. Its first call cost **4.2 s** against 0.8–1.9 s warm, so it is the
+clearest cold start in the project now that it exists — the same argument as item 9 applies to
+it. And one call in this check came back as a transient GFE `401` before three retries
+succeeded; worth watching rather than acting on.
 
 ### 8. The JDK line in the README
 
