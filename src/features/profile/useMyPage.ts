@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, User } from '@/lib/domain';
+import { resetModeration } from '@/features/moderation';
 import { artistRepository, authRepository, ticketRepository, userRepository } from '@/lib/repositories';
 
 export interface MyPageData {
@@ -25,6 +26,11 @@ type State =
  * The permission row reads the OS's answer rather than remembering one: a
  * user who revoked location in Settings should see that here, and the row
  * opens Settings because that is the only place it can be changed.
+ *
+ * Both ways out of the account clear the blocklist store. It is in-memory and
+ * keyed to a uid, so leaving it behind would let the next person to sign in on
+ * this device filter their feed against someone else's blocks for as long as it
+ * took `me()` to answer.
  */
 export function useMyPage() {
   const [state, setState] = useState<State>({ status: 'loading' });
@@ -66,11 +72,29 @@ export function useMyPage() {
 
   const signOut = useCallback(async () => {
     const result = await authRepository.signOut();
+    if (result.ok) resetModeration();
     return result.ok;
+  }, []);
+
+  /**
+   * 회원 탈퇴 — irreversible, and the screen must route away on success.
+   *
+   * Resolves a message on failure rather than a boolean because the two things
+   * that can go wrong here read very differently to a user: a network fault is
+   * worth retrying, and being signed out already is not. The repository has
+   * already signed out locally by the time this resolves — see
+   * `AuthRepository.deleteAccount` — so there is nothing left on this device to
+   * clean up but the in-memory stores.
+   */
+  const deleteAccount = useCallback(async (): Promise<string | null> => {
+    const result = await authRepository.deleteAccount();
+    if (!result.ok) return failureMessage(result.failure);
+    resetModeration();
+    return null;
   }, []);
 
   const reload = useCallback(() => load(), [load]);
   const refresh = useCallback(() => load(true), [load]);
 
-  return { state, reload, refresh, signOut };
+  return { state, reload, refresh, signOut, deleteAccount };
 }
