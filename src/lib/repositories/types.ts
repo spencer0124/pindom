@@ -10,6 +10,7 @@ import type {
   Review,
   LocationReading,
   NewPost,
+  NewReport,
   Place,
   PlaceWithDistance,
   Post,
@@ -52,6 +53,21 @@ export interface AuthRepository {
   signOut(): Promise<Result<void>>;
   /** Resolves `null` when nobody is signed in — that is not a failure. */
   currentSession(): Promise<Result<Session | null>>;
+  /**
+   * 회원 탈퇴 — the `deleteAccount` callable, then a local sign-out.
+   *
+   * Lives here rather than on `UserRepository` because what it ends is the
+   * session: the function deletes the Firestore documents, then the Storage
+   * originals, then the Auth account **last**, so that a failure part-way
+   * leaves a user who can still call it again. Once it returns there is no
+   * account behind the cached token, and every later read would fail with a
+   * permission error rather than an empty screen — so the implementation
+   * signs out locally before resolving, and the caller only has to route.
+   *
+   * Irreversible. Nothing below this line asks for confirmation; the screen
+   * owns that.
+   */
+  deleteAccount(): Promise<Result<void>>;
 }
 
 export interface ArtistRepository {
@@ -169,6 +185,23 @@ export interface PostRepository {
   create(input: NewPost): Promise<Result<Post>>;
 }
 
+/**
+ * 신고 — a write-only box.
+ *
+ * There is no read, and that is the contract rather than an omission: the
+ * deployed rules refuse `read`, `update` and `delete` to everyone, the
+ * reporter included. A readable `reports` collection is a list of who reported
+ * whom, queryable by the people being reported. Moderation happens in the
+ * Firebase console.
+ *
+ * `create` therefore resolves `void` — there is no document to hand back, and
+ * a repository that returned one would be describing a permission the app does
+ * not have.
+ */
+export interface ReportRepository {
+  create(input: NewReport): Promise<Result<void>>;
+}
+
 export interface UserRepository {
   /** 마이페이지, and the ticket balance 홈 and 응모 read. */
   me(): Promise<Result<User>>;
@@ -181,6 +214,20 @@ export interface UserRepository {
   }): Promise<Result<User>>;
   /** 언어. */
   setLocale(locale: Locale): Promise<Result<User>>;
+  /**
+   * 차단 / 차단 해제 — add or remove one uid on the caller's own
+   * `blockedUserIds`.
+   *
+   * Both resolve the **updated** user rather than `void`, because the list is
+   * what every feed filters against: a caller that had to re-read `me()` to
+   * learn the new list would render one frame of the feed still showing the
+   * user it just blocked.
+   *
+   * Blocking yourself is refused at this boundary. Nothing in the rules stops
+   * it, and it would hide your own posts from your own feed.
+   */
+  block(userId: string): Promise<Result<User>>;
+  unblock(userId: string): Promise<Result<User>>;
 }
 
 export interface AssistantRepository {
@@ -205,5 +252,6 @@ export interface Repositories {
   tickets: TicketRepository;
   raffles: RaffleRepository;
   posts: PostRepository;
+  reports: ReportRepository;
   users: UserRepository;
 }

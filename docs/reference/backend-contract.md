@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-26
+last-updated: 2026-08-27
 audience: internal
 ---
 
@@ -105,6 +105,7 @@ no `tier` yet reads as `club10`, in the app's mappers and in the rules alike.
 | `avatarUrl` | `string?` | |
 | `bio` | `string?` | Editable on 프로필 편집 |
 | `followedArtistIds` | `string[]` | The 최애 set chosen at 최애 찾기 and edited on 프로필 편집. Keys the home screen and the community boards. **Uncapped**, and the active one is the user's last explicit chip tap, persisted on the device (decided 2026-08-26) |
+| `blockedUserIds` | `string[]` | The users this account has blocked, capped at **1000**. Client-written, on the caller's own document only. **Rules do not filter on it** — see the warning under 신고/차단 |
 | `ticketBalance` | `number` | **Function-only.** Read by 홈 and the 잔여 티켓 충족 branch on 응모 |
 | `ticketsIssued` | `number` | **Function-only.** 마이페이지 stat |
 | `placesVisited` | `number` | **Function-only.** 마이페이지 stat. Increments only on the caller's **first** ticket at a given place |
@@ -267,6 +268,46 @@ feed.
 > reason beyond a permission failure. If that constraint is ever wanted, it has to exempt
 > `board-free`. Verified against the live project on 2026-08-26.
 
+### `reports/{reportId}` — 신고
+
+Added 2026-08-27 for App Store guideline 1.2, which requires a way to report objectionable
+user-generated content. **A write-only box**: create is open to any signed-in user, and
+`read`, `update` and `delete` are `false` for everyone — the reporter included.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `reporterId` | `string` | The caller's uid. Anonymised to the literal `'deleted'` by `deleteAccount`, never removed |
+| `targetType` | `string` | One of `post`, `comment`, `review`, `photo`, `user`. `comment` has no screen yet |
+| `targetId` | `string` | Document id of the reported thing. **128 characters** |
+| `reason` | `string` | Free text. **500 characters** |
+| `createdAt` | `Timestamp` | `serverTimestamp()` |
+
+> [!WARNING]
+> **Exactly those five fields, and no others.** The rule uses `hasOnly`, so one extra key — a
+> `targetName` to save the console a lookup, a client `createdAt` — is refused as a bare
+> permission error naming nothing. The app builds the payload in one place,
+> `reports.create` in `src/lib/repositories/firebase.ts`, for that reason.
+
+**Why nobody can read it.** An openable `reports` collection is a list of who reported whom,
+and Firestore cannot grant a reporter read access to their own rows without also making the
+rows queryable by the people named in them. Triage happens in the Firebase console.
+
+**Why 탈퇴 does not delete them.** `deleteAccount` overwrites `reporterId` with `'deleted'`
+and leaves the document. Deleting outright would let one account erase the moderation record
+of every other account it had reported.
+
+### 차단 — `users.blockedUserIds`, not a collection
+
+Blocking is a write to the blocker's own user document, so there is no collection and no
+function. Rules check the shape of the field and nothing else.
+
+> [!WARNING]
+> **The server does not hide a blocked user's content, and an answer to Apple must not say it
+> does.** Firestore rules adjudicate a query; they do not subtract rows from its result. Every
+> list that renders another user's content — 커뮤니티's feed, 촬영 팁, the 갤러리 — filters
+> the blocked authors out on the client, through `hideBlocked` in `src/lib/domain/user.ts`.
+> A blocked user's post is still fetched; it is just never drawn.
+
 ### `verificationSessions/{sessionId}`
 
 The audit log the speed check computes against, and the reason the client submits repeatedly
@@ -288,7 +329,7 @@ only passes the `sessionId` back on subsequent calls.
 
 ## Cloud Functions
 
-All three are **callable** functions, not HTTP endpoints — the client invokes them through the
+All four are **callable** functions, not HTTP endpoints — the client invokes them through the
 SDK, which attaches the auth token automatically.
 
 > [!NOTE]
@@ -297,7 +338,7 @@ SDK, which attaches the auth token automatically.
 > callable would fail with `not-found`. Deploying anywhere else means updating
 > `EXPO_PUBLIC_FUNCTIONS_REGION` in the app — say so before you do it.
 
-All three are deployed, 2nd gen, `minInstances: 0`. **A cold call takes 2–4 seconds**, which is a
+All four are deployed, 2nd gen, `minInstances: 0`. **A cold call takes 2–4 seconds**, which is a
 UI requirement rather than a footnote: GPS인증 has to hold a believable loading state for that
 long on the first verification of a session. `maxInstances: 10` caps the blast radius of a
 scripted attack while App Check is out; `verifyLocation` gets a warm instance before launch.
@@ -559,6 +600,42 @@ A route answer that produces a course should write it as a `courses` document fo
 time, shooting window, nearby food — are the route and local APIs' figures; if they are to be
 shown they belong on that document, not on the reply.
 
+### `deleteAccount`
+
+Deployed 2026-08-27 for App Store guideline 5.1.1(v): an app with account creation must offer
+in-app account deletion, and deleting must remove the account itself rather than deactivate it.
+
+```ts
+// request
+{}                          // the caller's uid is the only input, and it comes from the token
+
+// response
+{ ok: true }                // the app ignores the body; a resolved call is the signal
+```
+
+What it removes, in this order:
+
+1. **Firestore** — the `users` document, and everything keyed to the uid: tickets, gallery
+   entries, posts, reviews, raffle entries, verification sessions, and the `savedPlaces`
+   subcollection. Reports are the exception: `reporterId` becomes `'deleted'` and the document
+   stays.
+2. **Storage** — the originals under `tickets/{uid}/` and `posts/{uid}/`.
+3. **Auth** — the account, **last**.
+
+> [!NOTE]
+> **Auth is deleted last on purpose.** A failure part-way leaves a signed-in user who can call
+> the function again; deleting Auth first would leave orphaned documents with nobody able to
+> reach them. The client relies on this — a failed 탈퇴 is safe to retry.
+
+> [!WARNING]
+> **A resolved call leaves the client holding a token for an account that no longer exists.**
+> The SDK does not notice: `auth().currentUser` stays populated and every subsequent read
+> comes back `permission-denied`, which renders as a broken screen rather than a signed-out
+> one. `authRepository.deleteAccount` signs out locally before resolving for that reason.
+
+No pagination — each collection is read once per call, on the assumption that one person's
+data does not run to thousands of documents. If it starts to, this becomes a cursor loop.
+
 ## Cloud Storage
 
 | Path | Written by | Rules |
@@ -607,11 +684,12 @@ This table is the specification for `firestore.rules`.
 | `places` | any signed-in user | never |
 | `places/*/reviews` | any signed-in user | create, update (`text`, `tags`) and delete **own**. `likeCount` must be present and literal `0` on create, and is never written again by a client. `authorNickname` and `authorTier` **are** client-written, and rules reject them unless they match the author's `users` document. **Not** limited to one per place, and not limited to places the author verified — see the warning on 리뷰 |
 | `places/*/gallery` | any signed-in user | **never** — written by `issueTicket` |
-| `users` | **own document only** | **create** own document once, with `ticketBalance`, `ticketsIssued` and `placesVisited` at literal `0` and no `tier` — reject the create otherwise. **update** own `nickname`, `avatarUrl`, `bio`, `followedArtistIds`, `profileVisibility`, `locale` — all six, and nothing else in the same write. **Never** `tier` or the counters |
+| `users` | **own document only** | **create** own document once, with `ticketBalance`, `ticketsIssued` and `placesVisited` at literal `0` and no `tier` — reject the create otherwise. **update** own `nickname`, `avatarUrl`, `bio`, `followedArtistIds`, `blockedUserIds`, `profileVisibility`, `locale` — all seven, and nothing else in the same write. **Never** `tier` or the counters |
 | `tickets` | **`get`** — own, or `visibility == 'public'`. **`list`** — only when the query itself carries `userId == request.auth.uid` (보관함 is that query plus `visibility == 'private'`) | **never** — `issueTicket` only, except toggling own `visibility` |
 | `raffles` | any signed-in user | never |
 | `raffleEntries` | own entries | **never** — `enterRaffle` only |
 | `posts` | any signed-in user | create own; update (`body`, `imageUrls`) and delete own. `likeCount` and `commentCount` must be present and literal `0` on create, and are never written again by a client. `authorNickname` and `authorTier` are client-written and cross-checked, as on 리뷰 |
+| `reports` | **never** — not even own | create only, with exactly `reporterId`, `targetType`, `targetId`, `reason`, `createdAt`. No update, no delete |
 | `verificationSessions` | never | **never** — `verifyLocation` only |
 
 > [!NOTE]

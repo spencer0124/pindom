@@ -16,12 +16,14 @@ export { DEFAULT_LOCALE, LOCALES } from './locale';
 export type { Locale } from './locale';
 export type { Place, PlaceWithDistance, PlaceWorkKind } from './place';
 export type { Post, NewPost, FeedPage } from './post';
+export { REPORT_REASON_MAX, REPORT_TARGET_ID_MAX } from './report';
+export type { NewReport, ReportTargetType } from './report';
 export { isEnterable } from './raffle';
 export type { Raffle, RaffleEntry, RaffleStatus } from './raffle';
 export type { Ticket, TicketVisibility } from './ticket';
 export type { GalleryPhoto, NewReview, Review } from './review';
 export type { AssistantAsk, AssistantMessage, AssistantReply } from './assistant';
-export { tierFor } from './user';
+export { BLOCKED_USERS_MAX, hideBlocked, tierFor } from './user';
 export type { ProfileVisibility, Session, Tier, User } from './user';
 export type {
   LocationReading,

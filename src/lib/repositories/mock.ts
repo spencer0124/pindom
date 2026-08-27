@@ -8,6 +8,7 @@ import type {
   Review,
   LocationReading,
   NewPost,
+  NewReport,
   Place,
   PlaceWithDistance,
   Post,
@@ -18,7 +19,7 @@ import type {
   User,
   VerificationResult,
 } from '../domain';
-import { tierFor } from '../domain';
+import { BLOCKED_USERS_MAX, tierFor } from '../domain';
 import { distanceMeters } from '../geo';
 import {
   mockArtists,
@@ -56,6 +57,14 @@ let tickets: Ticket[] = [...mockTickets];
 let posts: Post[] = [...mockPosts];
 let reviews: Review[] = [...mockReviews];
 const entries: RaffleEntry[] = [];
+/**
+ * Every 신고 this run has filed.
+ *
+ * Kept even though no screen can read it, and the real collection refuses every
+ * read: without it a fixture run cannot tell "신고 succeeded" from "신고 did
+ * nothing", and the sheet's success state would be the only evidence.
+ */
+const reports: (NewReport & { reporterId: string; createdAt: Date })[] = [];
 
 /** How far through `mockVerificationSequence` each verify session has walked. */
 const verifyProgress = new Map<string, number>();
@@ -207,6 +216,28 @@ export const mockRepositories: Repositories = {
     },
 
     async signOut() {
+      session = null;
+      return mockDelay(ResultHelper.ok<void>(undefined));
+    },
+
+    // Wipes the same fixture state 회원 탈퇴 wipes on the server — the user
+    // document, the tickets, the posts and the reviews — then ends the session.
+    // Reports survive with the reporter anonymised, which is the one part of
+    // the real function that is not a deletion, and the part a fixture run
+    // would otherwise never show.
+    async deleteAccount() {
+      if (!session) return mockDelay(unauthenticated<void>());
+      const uid = user.id;
+      // Filtered by owner, not emptied. Every ticket fixture happens to belong
+      // to the demo user today, which makes the two identical — and would make
+      // a second author's tickets vanish on 탈퇴 the day one is added.
+      tickets = tickets.filter((t) => t.userId !== uid);
+      posts = posts.filter((p) => p.authorId !== uid);
+      reviews = reviews.filter((r) => r.authorId !== uid);
+      for (const report of reports) {
+        if (report.reporterId === uid) report.reporterId = 'deleted';
+      }
+      user = { ...mockUser };
       session = null;
       return mockDelay(ResultHelper.ok<void>(undefined));
     },
@@ -493,6 +524,14 @@ export const mockRepositories: Repositories = {
     },
   },
 
+  reports: {
+    async create(input: NewReport) {
+      if (!session) return mockDelay(unauthenticated<void>());
+      reports.push({ ...input, reporterId: user.id, createdAt: new Date() });
+      return mockDelay(ResultHelper.ok<void>(undefined));
+    },
+  },
+
   users: {
     async me() {
       if (!session) return mockDelay(unauthenticated<User>());
@@ -516,6 +555,43 @@ export const mockRepositories: Repositories = {
     async setLocale(locale: Locale) {
       if (!session) return mockDelay(unauthenticated<User>());
       user = { ...user, locale };
+      return mockDelay(ResultHelper.ok(user));
+    },
+
+    async block(userId: string) {
+      if (!session) return mockDelay(unauthenticated<User>());
+      // The same three refusals the Firebase side makes, so a screen cannot
+      // behave one way on fixtures and another against the live project.
+      if (userId === user.id) {
+        return mockDelay(
+          ResultHelper.error<User>(
+            Failure.firebase('invalid-argument', '본인은 차단할 수 없습니다.'),
+          ),
+        );
+      }
+      if (user.blockedUserIds.includes(userId)) {
+        return mockDelay(ResultHelper.ok(user));
+      }
+      if (user.blockedUserIds.length >= BLOCKED_USERS_MAX) {
+        return mockDelay(
+          ResultHelper.error<User>(
+            Failure.firebase(
+              'resource-exhausted',
+              `차단은 최대 ${BLOCKED_USERS_MAX}명까지 가능합니다.`,
+            ),
+          ),
+        );
+      }
+      user = { ...user, blockedUserIds: [...user.blockedUserIds, userId] };
+      return mockDelay(ResultHelper.ok(user));
+    },
+
+    async unblock(userId: string) {
+      if (!session) return mockDelay(unauthenticated<User>());
+      user = {
+        ...user,
+        blockedUserIds: user.blockedUserIds.filter((id) => id !== userId),
+      };
       return mockDelay(ResultHelper.ok(user));
     },
   },

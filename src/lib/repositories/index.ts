@@ -7,6 +7,7 @@ import type {
   PlaceRepository,
   PostRepository,
   RaffleRepository,
+  ReportRepository,
   Repositories,
   TicketRepository,
   UserRepository,
@@ -64,6 +65,7 @@ export const authRepository: AuthRepository = {
     (await impl()).auth.signUp(email, password, nickname),
   signOut: async () => (await impl()).auth.signOut(),
   currentSession: async () => (await impl()).auth.currentSession(),
+  deleteAccount: async () => (await impl()).auth.deleteAccount(),
 };
 
 export const placeRepository: PlaceRepository = {
@@ -102,10 +104,16 @@ export const postRepository: PostRepository = {
   create: async (input) => (await impl()).posts.create(input),
 };
 
+export const reportRepository: ReportRepository = {
+  create: async (input) => (await impl()).reports.create(input),
+};
+
 export const userRepository: UserRepository = {
   me: async () => (await impl()).users.me(),
   updateProfile: async (input) => (await impl()).users.updateProfile(input),
   setLocale: async (locale) => (await impl()).users.setLocale(locale),
+  block: async (userId) => (await impl()).users.block(userId),
+  unblock: async (userId) => (await impl()).users.unblock(userId),
 };
 
 export type {
@@ -115,6 +123,7 @@ export type {
   PlaceRepository,
   PostRepository,
   RaffleRepository,
+  ReportRepository,
   Repositories,
   TicketRepository,
   UserRepository,

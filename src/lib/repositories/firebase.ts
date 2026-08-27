@@ -28,7 +28,7 @@ import { getStorage, putFile, ref } from '@react-native-firebase/storage';
 
 import { AppConfig } from '../config';
 import { Failure, ResultHelper, type AppFailure, type Result } from '../api/types';
-import { DEFAULT_LOCALE, LOCALES } from '../domain';
+import { BLOCKED_USERS_MAX, DEFAULT_LOCALE, LOCALES } from '../domain';
 import type {
   Artist,
   Course,
@@ -39,6 +39,7 @@ import type {
   Review,
   LocationReading,
   NewPost,
+  NewReport,
   Place,
   PlaceWithDistance,
   Post,
@@ -179,6 +180,10 @@ function toUser(id: string, d: DocData): User {
     ...(avatarUrl && { avatarUrl }),
     ...(bio && { bio }),
     followedArtistIds: strList(d, 'followedArtistIds'),
+    // Absent on every account created before 차단 shipped, and `strList`
+    // resolves a missing array to `[]` rather than reporting it — which is the
+    // behaviour wanted here: nobody blocked is the correct reading of no field.
+    blockedUserIds: strList(d, 'blockedUserIds'),
     ticketBalance: num(d, 'ticketBalance', at),
     ticketsIssued: num(d, 'ticketsIssued', at),
     placesVisited: num(d, 'placesVisited', at),
@@ -453,6 +458,34 @@ export const firebaseRepositories: Repositories = {
       attempt<Session | null>(async () => {
         const u = auth().currentUser;
         return u ? { userId: u.uid, email: u.email ?? '' } : null;
+      }),
+
+    deleteAccount: () =>
+      attempt(async () => {
+        requireUid();
+        const call = httpsCallable(fns(), 'deleteAccount');
+        await call({});
+        // The function deletes the Auth account itself, and it does that last.
+        // The SDK does not notice: `auth().currentUser` is still populated from
+        // a token that now names nobody, so 마이페이지 would re-render a user
+        // whose every read comes back `permission-denied`. Clearing it here
+        // rather than in the screen means no caller can forget, and it is the
+        // reason this method sits on `AuthRepository`.
+        //
+        // Deliberately not inside the same `attempt`-level failure path as the
+        // call: if the deletion succeeded and only the local sign-out threw,
+        // the account is still gone and reporting an error would invite the
+        // user to try again against an account that no longer exists.
+        try {
+          await firebaseSignOut(auth());
+        } catch {
+          // Local sign-out is an in-process token clear and effectively cannot
+          // fail, but if it did there is nothing to retry against — the account
+          // is gone. **The caller must route away from the signed-in tree on
+          // success regardless**, which is what makes this safe: 마이페이지
+          // replaces the stack with 온보딩, so no screen is left reading against
+          // the dead token even in that case.
+        }
       }),
   },
 
@@ -753,6 +786,24 @@ export const firebaseRepositories: Repositories = {
       }),
   },
 
+  reports: {
+    create: (input: NewReport) =>
+      attempt(async () => {
+        const uid = requireUid();
+        // Exactly these five keys. The deployed rule uses `hasOnly`, so one
+        // extra field — a client-side `createdAt`, a `targetName` for the
+        // console's convenience — makes the whole write a permission error
+        // with nothing naming the offending key.
+        await addDoc(collection(db(), 'reports'), {
+          reporterId: uid,
+          targetType: input.targetType,
+          targetId: input.targetId,
+          reason: input.reason,
+          createdAt: serverTimestamp(),
+        });
+      }),
+  },
+
   users: {
     me: () =>
       attempt(async () => {
@@ -788,8 +839,56 @@ export const firebaseRepositories: Repositories = {
         const snap = await getDoc(doc(db(), 'users', uid));
         return toUser(uid, (snap.data() ?? {}) as DocData);
       }),
+
+    block: (userId: string) => writeBlocklist(userId, 'add'),
+    unblock: (userId: string) => writeBlocklist(userId, 'remove'),
   },
 };
+
+/**
+ * 차단 and 차단 해제 — the same write with the array operator flipped.
+ *
+ * `arrayUnion` / `arrayRemove` rather than a read-modify-write, so two devices
+ * blocking two different people at once cannot drop one of them. Blocking
+ * someone already blocked is a no-op at the server, which is what makes the
+ * button safe to double-tap.
+ *
+ * The `BLOCKED_USERS_MAX` check is client-side and advisory: the rule is the
+ * real cap, and `arrayUnion` on an already-present uid does not grow the array,
+ * so this only refuses genuine additions past the limit.
+ */
+function writeBlocklist(userId: string, op: 'add' | 'remove'): Promise<Result<User>> {
+  return attempt(async () => {
+    const uid = requireUid();
+    const ref = doc(db(), 'users', uid);
+    if (op === 'add') {
+      // Only the add path refuses this. Unblocking yourself is an `arrayRemove`
+      // of a uid that was never in the list — a no-op — and refusing it would
+      // mean a 차단 해제 loop over a stale list could fail on an entry that is
+      // already absent.
+      if (userId === uid) {
+        throw Object.assign(new Error('본인은 차단할 수 없습니다.'), {
+          code: 'invalid-argument',
+        });
+      }
+      const current = toUser(uid, ((await getDoc(ref)).data() ?? {}) as DocData);
+      if (
+        !current.blockedUserIds.includes(userId) &&
+        current.blockedUserIds.length >= BLOCKED_USERS_MAX
+      ) {
+        throw Object.assign(
+          new Error(`차단은 최대 ${BLOCKED_USERS_MAX}명까지 가능합니다.`),
+          { code: 'resource-exhausted' },
+        );
+      }
+    }
+    await updateDoc(ref, {
+      blockedUserIds: op === 'add' ? arrayUnion(userId) : arrayRemove(userId),
+    });
+    const snap = await getDoc(ref);
+    return toUser(uid, (snap.data() ?? {}) as DocData);
+  });
+}
 
 /** 컬렉션 and 보관함 are the same query with the visibility flag flipped. */
 function listTicketsByVisibility(visibility: 'public' | 'private') {
