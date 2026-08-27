@@ -3,7 +3,7 @@ title: 2026-08-26 App Store Submission Setup
 type: plan
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-26
+last-updated: 2026-08-27
 audience: internal
 ---
 
@@ -55,12 +55,16 @@ what is collected, that page is what goes stale.**
 
 ## Two judgment calls to review before submitting
 
-Both are honest readings of the app rather than facts, so they deserve a second opinion.
+Both were honest readings of the app rather than facts. The first has since been decided; the
+second still deserves a second opinion.
 
 1. **`contests` is declared `INFREQUENT_OR_MILD`.** The 응모/추첨 flow is a prize draw, and
    under-declaring it is the worse mistake. It is part of why the rating landed at 13+ (15+ in
-   Korea). Be aware that guideline 5.3.4 expects the developer to be the sponsor of any real
-   sweepstakes — if the draw is demonstration-only, say so in the review notes.
+   Korea). This one is **settled as of 2026-08-27**: the draw is real and PINDOM sponsors it,
+   which is what guideline 5.3.4 requires, and `/raffle/rules` states that in the app along with
+   the 5.3.2 Apple non-sponsorship sentence. The review notes must **not** call the flow
+   demonstration-only — see
+   [the App Review app items](2026-08-27-apple-review-app-items.md).
 2. **`socialMedia` is declared `true`.** The per-artist community boards are the reason. This
    pulled in Apple's new social-media age question, which is answered
    `socialMediaAgeRestricted: false` — the API rejects `true` unless `ageAssurance` is also true,
@@ -124,7 +128,10 @@ Two API behaviours worth remembering:
   it enforced here: `ageRatingOverride` cannot be sent alongside `ageRatingOverrideV2`, and
   `socialMediaAgeRestricted` may only be `true` when `ageAssurance` and `socialMedia` both are.
 
-Related: [the live Firebase verification](2026-08-26-live-firebase-verification.md) is what
+Related: [the App Review app items](2026-08-27-apple-review-app-items.md) is what the app owed
+Apple beyond this record — 신고, 차단, 회원 탈퇴, the rules screen and the support-page copy — and
+it is where the support and privacy URLs above are now read from in code.
+[The live Firebase verification](2026-08-26-live-firebase-verification.md) is what
 established that build 2 — the build attached here — actually talks to `pindom-1234`, and
 [the open integration items](2026-08-26-integration-open-items.md) lists what is still
 unexercised on it.

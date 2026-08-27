@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-22
+last-updated: 2026-08-27
 audience: internal
 ---
 
@@ -63,10 +63,12 @@ profile, language and vault sit at the root rather than under `/my`.
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
-| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩 |
+| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
 | `vault` | 보관함 | — | `/vault` | **built** — private tickets, 공개 전환 per row |
+| — | 차단한 사용자 | — | `/blocked` | **built** — App Store 1.2. Not the prototype's; nicknames are remembered locally because other users' documents are unreadable |
+| — | 응모 공식 규정 | — | `/raffle/rules` | **built** — App Store 5.3.2. Not the prototype's; linked from 응모 and from 마이페이지 |
 
 ### What changed against the Figma frames
 
@@ -146,6 +148,7 @@ building them apart is how three incompatible route signatures happen.
 | Community | 커뮤니티, 글쓰기 | board (artist), feed page, draft post |
 | Profile | 마이페이지, 프로필 편집, 언어, 보관함 | user, followed artists, vault |
 | Assistant | Pindom AI, 추천 코스 | selected artist, conversation history, the course the answer produced |
+| Moderation | 차단한 사용자, and the 신고/차단 sheet on 커뮤니티 · 장소/상세 | the blocklist, shared by every list that renders another user's content |
 
 > [!NOTE]
 > Slice membership follows the flow, not the visual grouping. 공개설정 belongs to Capture

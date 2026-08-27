@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-26
+last-updated: 2026-08-27
 audience: internal
 ---
 
@@ -93,6 +93,7 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-23-prototype-fidelity-audit.md](plans/2026-08-23-prototype-fidelity-audit.md) | The evidence behind that checklist — seven per-slice audits, one row per finding with the prototype value, the app value and the proposed fix |
 | [2026-08-26-integration-open-items.md](plans/2026-08-26-integration-open-items.md) | What the pre-switch verification run left open, and how it closed: the app-side decisions, each as background, decision and what changed, plus the items handed to the backend and which of them have since been resolved. **Start here if you are about to turn fixtures off** |
 | [2026-08-26-live-firebase-verification.md](plans/2026-08-26-live-firebase-verification.md) | The app driven end to end against the deployed project with fixtures off, every write checked back over REST and the console read directly: what passed, what was blocked, the findings that came out of it, and the remediation worked from them. **Start here to know what live Firebase actually does** |
+| [2026-08-27-apple-review-app-items.md](plans/2026-08-27-apple-review-app-items.md) | The app's half of the App Store review checklist — 신고, 차단, 회원 탈퇴, 응모 공식 규정 and the support page: what landed, the two judgment calls, and the sentences the review notes must and must not say. **Start here for App Review work** |
 | [2026-08-26-backend-fix-requests.md](plans/2026-08-26-backend-fix-requests.md) | The one page to hand the backend developer: what is still broken in the deployed project, how to reproduce each, and what would close it — ordered by what it costs a user. **Start here if you are picking up backend work** |
 
 ## Outside this folder
