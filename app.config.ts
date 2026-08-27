@@ -63,10 +63,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     // App Store Connect refuses a build number it has already seen for this
     // `version`, so this has to move every upload. Build 1 of 1.0.0 went up on
-    // 2026-08-25. It lives here rather than in Info.plist because `ios/` is
-    // gitignored — a number kept only there is lost at the next prebuild, and
-    // the next uploader finds out from a rejected upload.
-    buildNumber: '2',
+    // 2026-08-25, build 2 on 2026-08-26. Build 3 carries the real app icon —
+    // 1 and 2 shipped the Expo template placeholder. It lives here rather than
+    // in Info.plist because `ios/` is gitignored — a number kept only there is
+    // lost at the next prebuild, and the next uploader finds out from a
+    // rejected upload.
+    buildNumber: '3',
     ...(firebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -84,7 +86,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: 'com.zoyoong.pindom',
     ...(firebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
-      backgroundColor: '#6541F2',
+      // The ground the icon is drawn on. `#6541F2` here was the violet brand
+      // the prototype superseded — see docs/reference/design-tokens.md.
+      backgroundColor: '#0B0B0B',
       foregroundImage: './assets/images/android-icon-foreground.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
@@ -128,7 +132,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         image: './assets/images/splash-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#ffffff',
+        // Every screen is dark under direction 2b (ADR 0004, ADR 0006), so a
+        // white splash flashes light for a beat before the app paints black.
+        backgroundColor: '#0B0B0B',
       },
     ],
     [
