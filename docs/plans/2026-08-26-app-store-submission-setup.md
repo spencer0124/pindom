@@ -25,8 +25,8 @@ left to a human.
 | Area | Value | Written via |
 | --- | --- | --- |
 | Version string | `1.0.0` (was `1.0`) | API |
-| Copyright / release | `2026 조승용` / `AFTER_APPROVAL` | API |
-| Build | build 2, the live-Firebase upload | API |
+| Copyright / release | `© 2026 pindom` / `AFTER_APPROVAL` | API |
+| Build | build 3 — the first with a real app icon | API |
 | Subtitle | 촬영지에 도착해야 열리는 티켓 | API |
 | Description, keywords, promo text | see the version localization | API |
 | Privacy policy / support / marketing URL | Notion published pages, below | API |
@@ -87,6 +87,25 @@ Two things had to be true before the app would render anything worth capturing:
   com.zoyoong.pindom` plus `xcrun simctl location <sim> set <lat>,<lon>` avoids it.
 - **Clean the status bar.** `xcrun simctl status_bar <sim> override --time "9:41"` with full
   battery and bars, which is what Apple's own screenshots show.
+
+## The icon needed a whole new build
+
+Builds 1 and 2 carried the Expo template placeholder. **There is no way to fix that from the
+web form** — since iOS 11 Apple reads the 1024×1024 marketing icon out of the uploaded
+binary's asset catalog, so App Store Connect has no icon field at all. Changing it means a new
+archive and a new upload; build 3 (2026-08-27) is that.
+
+The version string did not move. Nothing had been submitted yet, so swapping the attached build
+from 2 to 3 on the same `1.0.0` record was enough — only `ios.buildNumber` had to change, because
+App Store Connect refuses a build number it has already seen for a version.
+
+**Verify the asset catalog after `expo prebuild`, before paying for the archive.** Prebuild
+reports `reusing /ios` and does not guarantee it overwrites native files; an unchanged icon is
+otherwise discovered only after a long build and an upload. Do not compare checksums against the
+source PNG — Expo re-encodes it (and strips the alpha iOS forbids), so the hash differs by
+design. Look at `ios/PINDOM/Images.xcassets/AppIcon.appiconset/` and at the built
+`PINDOM.app/AppIcon60x60@2x.png`. That second file is an Apple-only **CgBI** PNG variant, which
+ordinary decoders misread as enormous; `sips` converts it to something viewable.
 
 ## What the API could not do
 
