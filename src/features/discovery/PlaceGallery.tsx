@@ -1,6 +1,7 @@
 import { Image, StyleSheet, View } from 'react-native';
 import { useAdaptive } from '@/design-system';
 import type { GalleryPhoto } from '@/lib/domain';
+import { ModerationButton } from '@/features/moderation';
 import { Shape } from '@/features/shared';
 
 const COLUMNS = 3;
@@ -24,6 +25,12 @@ interface PlaceGalleryProps {
  * The cells are butted together and separated by a hairline drawn on each one,
  * rather than spaced by a gutter and rounded. That is the same rule that
  * separates every other block on the screen — `2b` builds structure from rules.
+ *
+ * Every cell carries a ⋯ in its corner. A photo is user-submitted content that
+ * a moderator may have to act on, and App Store guideline 1.2 wants the control
+ * on the content — a grid with no per-photo affordance is the case the guideline
+ * is written about. It is the `overlay` variant because a bare glyph on an
+ * arbitrary photograph is unreadable half the time.
  */
 export function PlaceGallery({ photos }: PlaceGalleryProps) {
   const adaptive = useAdaptive();
@@ -43,6 +50,13 @@ export function PlaceGallery({ photos }: PlaceGalleryProps) {
             style={styles.image}
             resizeMode="cover"
             accessibilityIgnoresInvertColors
+          />
+          {/* No nickname is passed: `GalleryPhoto` has none, and the contract
+              does not denormalise one onto the collection. The sheet falls back
+              to 이 사용자. */}
+          <ModerationButton
+            variant="overlay"
+            target={{ type: 'photo', id: photo.id, authorId: photo.authorId }}
           />
         </View>
       ))}

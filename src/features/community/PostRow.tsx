@@ -3,6 +3,7 @@ import { MapPinIcon } from 'phosphor-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import type { Post } from '@/lib/domain';
+import { ModerationButton } from '@/features/moderation';
 import { formatTimeAgo, Shape, tierLabel } from '@/features/shared';
 
 /** 1a's 15px map-pin outline — the same glyph the 지도 tab draws. */
@@ -25,6 +26,11 @@ interface PostRowProps {
  * The pin is the one thing on the row that goes somewhere: 지도에서 보기 opens
  * the 촬영지. ♡ is a figure, not a control — nothing in the contract writes
  * `likeCount` from the client.
+ *
+ * The ⋯ at the end of the byline is the 신고 / 차단 affordance App Store
+ * guideline 1.2 requires on user-generated content. 1a does not draw it — it
+ * predates the review — and it goes on the byline rather than beside the counts
+ * because it acts on the author as much as on the post.
  */
 export function PostRow({ post, now, onOpenPlace }: PostRowProps) {
   const adaptive = useAdaptive();
@@ -41,7 +47,7 @@ export function PostRow({ post, now, onOpenPlace }: PostRowProps) {
         <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
           {post.authorNickname}
         </Txt>
-        <Txt typography="st13" color={adaptive.grey500}>
+        <Txt typography="st13" color={adaptive.grey500} style={styles.time}>
           {formatTimeAgo(post.createdAt, now)}
         </Txt>
         <View style={[styles.tier, { borderColor: token.accent.fillColor }]}>
@@ -49,6 +55,14 @@ export function PostRow({ post, now, onOpenPlace }: PostRowProps) {
             {tierLabel[post.authorTier]}
           </Txt>
         </View>
+        <ModerationButton
+          target={{
+            type: 'post',
+            id: post.id,
+            authorId: post.authorId,
+            authorNickname: post.authorNickname,
+          }}
+        />
       </View>
 
       <Txt typography="t6" color={adaptive.grey900}>
@@ -108,8 +122,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  tier: {
+  // Was `marginLeft: 'auto'` on the badge, back when the badge ended the row.
+  // The ⋯ ends it now, so the push moved to the timestamp — leaving it here
+  // would have pinned the badge right and left the ⋯ floating beside it.
+  time: {
     marginLeft: 'auto',
+  },
+  tier: {
     borderWidth: 1,
     paddingHorizontal: 7,
     paddingVertical: 4,

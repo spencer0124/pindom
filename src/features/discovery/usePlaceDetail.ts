@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
-import type { Artist, GalleryPhoto, Place, Review } from '@/lib/domain';
+import { hideBlocked, type Artist, type GalleryPhoto, type Place, type Review } from '@/lib/domain';
 import { distanceMeters } from '@/lib/geo';
+import { useBlocklist } from '@/features/moderation';
 import { artistRepository, placeRepository } from '@/lib/repositories';
 import { readPosition } from './position';
 import { useDiscoveryStore } from './state';
@@ -37,6 +38,13 @@ type State =
  * the Discovery slice. A place can belong to several 최애, and labelling it with
  * whichever happens to be first would rename the badge depending on how you got
  * here.
+ *
+ * 촬영 팁 and the 갤러리 both drop blocked authors before the screen sees them,
+ * the same way 커뮤니티's feed does and for the same reason — the server cannot.
+ * Filtering here rather than in the screen is what keeps the two counts honest:
+ * 장소/상세 prints `reviews.length` in the section header and shows the gallery
+ * block only when it is non-empty, so a screen-level filter would have left a
+ * header counting tips it no longer draws, and an empty grid under a title.
  */
 export function usePlaceDetail(placeId: string | undefined) {
   const [state, setState] = useState<State>({ status: 'loading' });
@@ -117,5 +125,18 @@ export function usePlaceDetail(placeId: string | undefined) {
     [placeId],
   );
 
-  return { state, reload: load, addReview };
+  const blockedUserIds = useBlocklist();
+  const visible = useMemo(() => {
+    if (state.status !== 'ready') return state;
+    return {
+      status: 'ready' as const,
+      data: {
+        ...state.data,
+        gallery: hideBlocked(state.data.gallery, blockedUserIds),
+        reviews: hideBlocked(state.data.reviews, blockedUserIds),
+      },
+    };
+  }, [state, blockedUserIds]);
+
+  return { state: visible, reload: load, addReview };
 }

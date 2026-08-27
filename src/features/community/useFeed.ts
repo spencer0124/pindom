@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
-import type { Artist, Post } from '@/lib/domain';
+import { hideBlocked, type Artist, type Post } from '@/lib/domain';
+import { useBlocklist } from '@/features/moderation';
 import { artistRepository, postRepository } from '@/lib/repositories';
 import { boardsWithFree } from './boards';
 
@@ -16,6 +17,14 @@ type State =
  * `boardId` is required, and the wrong one silently shows another fandom's
  * posts. So there is no 전체 here; the board is the 최애 the chips name, and
  * switching boards starts the list over from its first page.
+ *
+ * Blocked authors are removed **on the way out, not on the way in**. The raw
+ * pages stay in state and the filter is applied where the screen reads them, so
+ * blocking someone whose post is on screen removes it on the next render rather
+ * than on the next fetch — and unblocking brings it back without one either.
+ * Firestore has no `not-in` that would let the query do this, and rules judge a
+ * query rather than narrowing its result, so client-side is the only place it
+ * can happen at all. See the 차단 warning in the backend contract.
  */
 export function useFeed(boardId: string | null) {
   const [state, setState] = useState<State>({ status: 'loading' });
@@ -70,7 +79,23 @@ export function useFeed(boardId: string | null) {
   const reload = useCallback(() => load(), [load]);
   const refresh = useCallback(() => load(true), [load]);
 
-  return { state, reload, refresh, loadMore };
+  const blockedUserIds = useBlocklist();
+  /**
+   * The list the screen renders.
+   *
+   * `loadMore` deliberately keeps reading the unfiltered `state`: the cursor is
+   * the last **fetched** post's id, and paginating from the last *visible* one
+   * would skip every post between it and the blocked ones. The cost is that a
+   * page mostly written by blocked authors arrives short, and a short page may
+   * not reach `onEndReached` — acceptable while a blocklist holds a handful of
+   * people, and the reason the cap is 1000 rather than unbounded.
+   */
+  const visible = useMemo(() => {
+    if (state.status !== 'ready') return state;
+    return { ...state, posts: hideBlocked(state.posts, blockedUserIds) };
+  }, [state, blockedUserIds]);
+
+  return { state: visible, reload, refresh, loadMore };
 }
 
 /**

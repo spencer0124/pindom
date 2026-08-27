@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
 import type { Review } from '@/lib/domain';
+import { ModerationButton } from '@/features/moderation';
 import { formatTimeAgo, Rule, Shape, tierLabel } from '@/features/shared';
 
 /**
@@ -43,6 +44,11 @@ interface ReviewListProps {
  * moves the selection, nothing deselects, and a submit keeps it. A tip is
  * never posted untagged. The toggle reads 팁 남기기 open or closed, as 1a's
  * does; the open state is signalled by the chip's selected treatment.
+ *
+ * Each tip carries the ⋯ that 커뮤니티's posts carry, for the same reason: a
+ * 촬영 팁 is user-written text, and App Store guideline 1.2 wants 신고 and 차단
+ * reachable from the content itself. `targetType` is `review` because that is
+ * the collection's name on the server, even though every screen calls it 촬영 팁.
  */
 export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
   const adaptive = useAdaptive();
@@ -165,6 +171,14 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
                 <Txt typography="t7" color={adaptive.grey400} style={styles.time}>
                   {formatTimeAgo(review.createdAt, now)}
                 </Txt>
+                <ModerationButton
+                  target={{
+                    type: 'review',
+                    id: review.id,
+                    authorId: review.authorId,
+                    authorNickname: review.authorNickname,
+                  }}
+                />
               </View>
 
               <Txt typography="t6" color={adaptive.grey800}>
