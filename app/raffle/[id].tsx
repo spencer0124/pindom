@@ -125,6 +125,20 @@ export default function RaffleScreen() {
               ? `티켓 뜯어서 응모하기 · ${selected.ticketCost}장`
               : `${selected.ticketCost}장을 모아야 응모할 수 있어요`}
           </Button>
+          {/* App Store guideline 5.3.2: the official rules of a prize draw have
+              to be presented inside the app. This is the point of decision —
+              the user is about to spend tickets — so the link belongs beside
+              the CTA rather than behind a menu. 마이페이지 carries the same
+              link for anyone who has no tickets to reach this screen with. */}
+          <Pressable
+            onPress={() => router.push('/raffle/rules' as never)}
+            accessibilityRole="button"
+            style={styles.rules}
+          >
+            <Txt typography="st13" color={adaptive.grey500}>
+              응모 공식 규정 보기
+            </Txt>
+          </Pressable>
           <Pressable onPress={toCollection} accessibilityRole="button" style={styles.cancel}>
             <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
               취소하고 컬렉션으로
@@ -169,6 +183,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+  },
+  rules: {
+    alignSelf: 'center',
   },
   cancel: {
     alignSelf: 'center',

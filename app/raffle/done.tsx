@@ -57,6 +57,14 @@ const fadeUp = (delay: number) =>
  * when that answer carried none. Never computed here. 1a prints a fixed draw
  * date; the contract has none, so the line names the raffle's closing date,
  * which the Tickets checklist records.
+ *
+ * That line said 앱 알림으로 until 2026-08-27. It cannot: `PINDOM.entitlements`
+ * is an empty dict, so the build has no push capability, and nothing in the
+ * repo registers for notifications. It now says 가입 이메일로, matching
+ * `/raffle/rules` — which became the operative rules of a **real** prize draw
+ * on the same day, so a channel the app does not have is no longer a thing it
+ * may promise. Deliberate divergence from 1a's copy; see
+ * docs/plans/2026-08-27-apple-review-app-items.md.
  */
 export default function RaffleDoneScreen() {
   const adaptive = useAdaptive();
@@ -120,7 +128,7 @@ export default function RaffleDoneScreen() {
             응모번호 {entry.id}
             {balance != null ? ` · 남은 티켓 ${balance}장` : ''}
             {'\n'}
-            당첨 발표는 {formatDay(raffle.closesAt)}, 앱 알림으로 안내됩니다
+            당첨 발표는 {formatDay(raffle.closesAt)}, 가입 이메일로 안내됩니다
           </Txt>
         </Animated.View>
       </View>
