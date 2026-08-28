@@ -106,20 +106,30 @@ export function useAssistant() {
     async (question: string) => {
       const message = question.trim();
       if (!message || loading) return;
-      const history = messages.slice(-HISTORY_TURNS);
+      // Text only: the server reads the words, and a turn's map payload would
+      // just be the same coordinates travelling back to where they came from.
+      const history = messages.slice(-HISTORY_TURNS).map((m) => ({ role: m.role, text: m.text }));
       append({ role: 'user', text: message });
       setLoading(true);
+      // Cached from the permission the onboarding already asked for; null when it
+      // was refused, and the assistant answers without it rather than stopping.
+      const position = await readPosition();
       const result = await assistantRepository.ask({
         message,
         history,
         ...(artist != null && { artistId: artist.id }),
+        ...(position != null && { near: { lat: position.lat, lng: position.lng } }),
       });
       setLoading(false);
       if (!result.ok) {
         append({ role: 'assistant', text: failureMessage(result.failure) });
         return;
       }
-      append({ role: 'assistant', text: result.data.text });
+      append({
+        role: 'assistant',
+        text: result.data.text,
+        ...(result.data.map != null && { map: result.data.map }),
+      });
       if (result.data.courseId != null) setCourse(result.data.courseId);
     },
     [messages, loading, artist, append, setLoading, setCourse],

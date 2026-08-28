@@ -31,6 +31,9 @@ import { Failure, ResultHelper, type AppFailure, type Result } from '../api/type
 import { BLOCKED_USERS_MAX, DEFAULT_LOCALE, LOCALES } from '../domain';
 import type {
   Artist,
+  AssistantMap,
+  AssistantStop,
+  AssistantSuggestion,
   Course,
   FeedPage,
   GalleryPhoto,
@@ -135,6 +138,75 @@ function requireUid(): string {
 }
 
 // ── Document mappers ──
+
+/** A finite number, or nothing. Callable payloads are not documents — a bad row is skipped, not fatal. */
+function coord(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * The map an assistant answer draws, out of the callable's payload.
+ *
+ * Lenient on purpose. A document that fails to map is a seeding bug worth
+ * throwing on; an answer that carries one malformed pin is still an answer,
+ * and the thread should show the rest of it rather than fail the turn.
+ * Returns null when there is nothing to draw, and the bubble stands alone.
+ */
+function toAssistantMap(d: DocData): AssistantMap | null {
+  const stops = (Array.isArray(d.spots) ? d.spots : [])
+    .map((raw) => {
+      const s = raw as DocData;
+      const lat = coord(s?.lat);
+      const lng = coord(s?.lng);
+      if (lat == null || lng == null || typeof s?.placeId !== 'string') return null;
+      return {
+        placeId: s.placeId,
+        name: String(s.name ?? '촬영지'),
+        lat,
+        lng,
+        ...(typeof s.region === 'string' && { region: s.region }),
+      };
+    })
+    .filter((s): s is AssistantStop => s !== null);
+
+  const suggestions = (Array.isArray(d.suggestions) ? d.suggestions : [])
+    .map((raw) => {
+      const s = raw as DocData;
+      const lat = coord(s?.lat);
+      const lng = coord(s?.lng);
+      if (lat == null || lng == null || typeof s?.name !== 'string') return null;
+      return {
+        name: s.name,
+        category: String(s.category ?? '장소'),
+        address: String(s.address ?? ''),
+        lat,
+        lng,
+        ...(typeof s.placeUrl === 'string' && { placeUrl: s.placeUrl }),
+      };
+    })
+    .filter((s): s is AssistantSuggestion => s !== null);
+
+  const route = (d.route ?? null) as DocData | null;
+  const path = (Array.isArray(route?.path) ? route.path : [])
+    .map((raw) => {
+      const point = raw as DocData;
+      const lat = coord(point?.lat);
+      const lng = coord(point?.lng);
+      return lat == null || lng == null ? null : { lat, lng };
+    })
+    .filter((p): p is { lat: number; lng: number } => p !== null);
+
+  if (stops.length === 0 && suggestions.length === 0) return null;
+  return {
+    stops,
+    suggestions,
+    path,
+    ordered: d.ordered === true,
+    ...(coord(route?.distanceMeters) != null && { distanceMeters: Number(route?.distanceMeters) }),
+    ...(coord(route?.durationSeconds) != null && { durationSeconds: Number(route?.durationSeconds) }),
+  };
+}
 
 function toPlace(id: string, d: DocData): Place {
   const at = `places/${id}`;
@@ -332,21 +404,11 @@ export const firebaseRepositories: Repositories = {
         const call = httpsCallable(fns(), 'askAssistant');
         const res = await call(input);
         const data = res.data as DocData;
+        const map = toAssistantMap(data);
 
-        const text = String(data.reply ?? data.text ?? '').trim();
-
-        // `route` came back null on every answer observed, so its populated
-        // shape is unverified. Accept the two forms it can reasonably take —
-        // a bare `courses` id, or an object carrying one — rather than betting
-        // on either and drawing a card that opens nothing.
-        const route = data.route;
-        const fromRoute =
-          typeof route === 'string'
-            ? route
-            : route != null && typeof route === 'object'
-              ? (route as DocData).courseId
-              : undefined;
-        const courseId = typeof fromRoute === 'string' ? fromRoute : data.courseId;
+        // 계약서(backend-contract.md §askAssistant)의 이름은 `reply` 다. `text` 를
+        // 읽고 있어 답변이 늘 빈 문자열이었다.
+        const text = String(data.reply ?? '').trim();
 
         // An answer with no text is not an answer. Throwing puts it down the
         // same path a failed call takes, so the transcript says the assistant
@@ -356,7 +418,8 @@ export const firebaseRepositories: Repositories = {
 
         return {
           text,
-          ...(typeof courseId === 'string' && { courseId }),
+          ...(map != null && { map }),
+          ...(typeof data.courseId === 'string' && { courseId: data.courseId }),
         };
       }),
   },
@@ -418,6 +481,25 @@ export const firebaseRepositories: Repositories = {
           query(collection(db(), 'courses'), where('artistId', '==', artistId)),
         );
         return snap.docs.map((d_) => toCourse(d_.id, d_.data() as DocData));
+      }),
+
+    route: (placeIds, origin) =>
+      attempt(async () => {
+        const call = httpsCallable(fns(), 'getRoute');
+        const res = await call({ placeIds, ...(origin != null && { origin }) });
+        const data = res.data as DocData;
+        return {
+          path: (Array.isArray(data.path) ? data.path : [])
+            .map((raw) => {
+              const point = raw as DocData;
+              const lat = coord(point?.lat);
+              const lng = coord(point?.lng);
+              return lat == null || lng == null ? null : { lat, lng };
+            })
+            .filter((p_): p_ is { lat: number; lng: number } => p_ !== null),
+          distanceMeters: Number(data.distanceMeters) || 0,
+          durationSeconds: Number(data.durationSeconds) || 0,
+        };
       }),
   },
 

@@ -11,7 +11,7 @@
  * for the active locale. See `locale.ts`.
  */
 export type { Artist } from './artist';
-export type { Course } from './course';
+export type { Course, CourseRoute } from './course';
 export { DEFAULT_LOCALE, LOCALES } from './locale';
 export type { Locale } from './locale';
 export type { Place, PlaceWithDistance, PlaceWorkKind } from './place';
@@ -22,7 +22,14 @@ export { isEnterable } from './raffle';
 export type { Raffle, RaffleEntry, RaffleStatus } from './raffle';
 export type { Ticket, TicketVisibility } from './ticket';
 export type { GalleryPhoto, NewReview, Review } from './review';
-export type { AssistantAsk, AssistantMessage, AssistantReply } from './assistant';
+export type {
+  AssistantAsk,
+  AssistantMap,
+  AssistantMessage,
+  AssistantReply,
+  AssistantStop,
+  AssistantSuggestion,
+} from './assistant';
 export { BLOCKED_USERS_MAX, hideBlocked, tierFor } from './user';
 export type { ProfileVisibility, Session, Tier, User } from './user';
 export type {

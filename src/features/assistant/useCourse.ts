@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, Course, PlaceWithDistance } from '@/lib/domain';
-import { artistRepository, placeRepository } from '@/lib/repositories';
+import { artistRepository, courseRepository, placeRepository } from '@/lib/repositories';
 import {
   KOREA_CENTRE,
   readPosition,
@@ -16,6 +16,12 @@ export interface CourseData {
   artist: Artist | null;
   /** In the course's walk order. */
   stops: PlaceWithDistance[];
+  /**
+   * The line the map draws through the stops: 카카오모빌리티's road geometry
+   * when the server could route it, the straight segments between the stops
+   * when it could not (a stop with no road to it, the routing key rate-limited).
+   */
+  path: Position[];
   visitedPlaceIds: string[];
   origin: Position;
   hasPosition: boolean;
@@ -58,12 +64,28 @@ export function useCourse(courseId: string | undefined) {
     const byId = new Map(places.data.map((p) => [p.id, p]));
     const stops = course.placeIds.map((id) => byId.get(id)).filter((p): p is PlaceWithDistance => p != null);
 
+    // 실도로 경로는 서버가 그린다 — 촬영지 좌표와 길찾기 키가 거기 있다. 구간이 하나도
+    // 안 나오는 코스(출발지 없이 촬영지 한 곳)는 부를 것이 없으니 건너뛴다.
+    const legs = position != null ? stops.length : stops.length - 1;
+    const route =
+      legs > 0
+        ? await courseRepository.route(
+            stops.map((s) => s.id),
+            position ?? undefined,
+          )
+        : null;
+    const path =
+      route?.ok && route.data.path.length > 1
+        ? route.data.path
+        : stops.map((s) => ({ lat: s.lat, lng: s.lng }));
+
     setState({
       status: 'ready',
       data: {
         course,
         artist: artist.ok ? artist.data : null,
         stops,
+        path,
         visitedPlaceIds,
         origin,
         hasPosition: position != null,

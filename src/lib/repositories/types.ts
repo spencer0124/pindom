@@ -4,6 +4,7 @@ import type {
   AssistantAsk,
   AssistantReply,
   Course,
+  CourseRoute,
   FeedPage,
   GalleryPhoto,
   NewReview,
@@ -83,6 +84,14 @@ export interface ArtistRepository {
 export interface CourseRepository {
   /** 코스 shown on 홈, for the selected 최애. */
   listForArtist(artistId: string): Promise<Result<Course[]>>;
+  /**
+   * The drive through the stops, in the order given.
+   *
+   * The server holds the 촬영지 coordinates and the routing key, so it takes
+   * ids and returns geometry. `origin` is the user's position when they
+   * allowed it; without one the drive starts at the first stop.
+   */
+  route(placeIds: string[], origin?: { lat: number; lng: number }): Promise<Result<CourseRoute>>;
 }
 
 export interface PlaceRepository {

@@ -6,6 +6,8 @@ import { Shape } from '@/features/shared';
 const HEAD = 30;
 /** 추천 코스's numbered stop — 1a's 26px disc, centred in the head's slot. */
 const STOP = 26;
+/** A recommendation's dot. Smaller than a 촬영지 head: it is not a place you verify at. */
+const DOT = 12;
 /** Between the head and its caption chip. */
 const GAP = 3;
 /** The caption chip's inner padding. */
@@ -33,6 +35,12 @@ interface MapPinProps {
    * fill, the rest in the soft accent (fidelity A-15).
    */
   order?: number;
+  /**
+   * A café · 음식점 · 관광지 the assistant recommended, not a 촬영지. Drawn as a
+   * small hollow dot so a glance separates "티켓이 나오는 곳" from "가는 길에
+   * 들를 곳" — the two never carry the same weight on one map.
+   */
+  poi?: boolean;
 }
 
 /**
@@ -54,13 +62,22 @@ interface MapPinProps {
  * screen draws pins (fidelity decision 8). It is used twice: absolutely placed
  * on the stand-in canvas, and as the custom child of a tile marker.
  */
-export function MapPin({ visited, label, order }: MapPinProps) {
+export function MapPin({ visited, label, order, poi }: MapPinProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
 
   return (
     <View style={styles.pin} pointerEvents="none">
-      {order != null ? (
+      {poi ? (
+        <View style={styles.head}>
+          <View
+            style={[
+              styles.dot,
+              { backgroundColor: adaptive.background, borderColor: adaptive.grey600 },
+            ]}
+          />
+        </View>
+      ) : order != null ? (
         <View style={styles.head}>
           <View
             style={[
@@ -110,6 +127,12 @@ const styles = StyleSheet.create({
     height: HEAD,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dot: {
+    width: DOT,
+    height: DOT,
+    borderRadius: DOT / 2,
+    borderWidth: 2,
   },
   stop: {
     width: STOP,

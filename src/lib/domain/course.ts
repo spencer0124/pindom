@@ -13,3 +13,16 @@ export interface Course {
   placeIds: string[];
   placeCount: number;
 }
+
+/**
+ * The drive through a course's stops, as 카카오모빌리티 draws it.
+ *
+ * `path` is road geometry, not the straight segments between stops the client
+ * could derive itself — which is the whole reason it is a server call: the
+ * coastline a course follows is not the line between its ends.
+ */
+export interface CourseRoute {
+  path: { lat: number; lng: number }[];
+  distanceMeters: number;
+  durationSeconds: number;
+}
