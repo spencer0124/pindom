@@ -187,6 +187,33 @@ with the backend developer**; if it is weighted, the stronger sentence can come 
   fetching and pages off the raw cursor. A short page may not reach `onEndReached`. Acceptable
   while a blocklist holds a handful of people; the alternative skips posts.
 
+## What shipped, and the submission it replaced
+
+Build 4 was archived and uploaded on 2026-08-27 and is `VALID`. Attaching it was not a
+formality: **1.0.0 was already sitting in Apple's queue at `WAITING_FOR_REVIEW` with build 3**,
+submitted that morning — a build predating every item on this page. It would have been reviewed
+against 1.2, 5.1.1(v) and 5.3.2 with none of them implemented.
+
+App Store Connect locks the attached build while a submission is waiting, so the sequence was:
+cancel the submission (the version drops to `DEVELOPER_REJECTED`, then `PREPARE_FOR_SUBMISSION`
+once the cancel completes), attach build 4, resubmit. Done 2026-08-28.
+
+**The App Review notes were pointing reviewers at a coordinate that always fails.** They gave
+주문진 방파제 as `37.8931, 128.8289`; the seeded `place-jumunjin` is at
+`37.8796220881, 128.8335906768` with `radiusMeters: 50`, so the two are about 1.5 km apart. A
+reviewer following the notes would have watched every verification refuse, on a GPS app whose
+whole premise is that verification works —
+[the live Firebase verification](2026-08-26-live-firebase-verification.md) had already caught
+the same wrong figure in the runbook. The notes now carry the seeded coordinate, and only that
+one: 청계천's seeded position is not recorded anywhere in this repo, and one coordinate known to
+work beats two where one fails.
+
+The notes also now name where each guideline's feature lives — the ⋯ on posts, tips and gallery
+photos; 마이페이지 > 차단한 사용자; 마이페이지 > 회원 탈퇴; 마이페이지 > 응모 공식 규정 — and
+warn that deleting the demo account is expected to work and that the same email can re-register
+afterwards. A reviewer testing 5.1.1(v) properly will delete `pindomtest0826@gmail.com`, and
+without that line the next person to open the app finds the demo login gone.
+
 ## Related
 
 - [the backend's half of the same checklist][server] — what was deployed on the server, and the
