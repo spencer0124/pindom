@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-27
+last-updated: 2026-08-29
 audience: internal
 ---
 
@@ -38,6 +38,7 @@ about what a field is called.
 | 2026-08-21 | [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | The backend developer read this page and argued with it |
 | 2026-08-22 | [handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) | They built and deployed it; six things came back different |
 | 2026-08-26 | this page | TourAPI became the source of 촬영지 data, and four questions the app had asked the backend were answered |
+| 2026-08-29 | this page | `askAssistant`'s two descriptions (the pre-build proposal and the deployed section) disagreed after a rebase resurrected the older one; the deployed section now carries `spots`, `ordered` and the routed `route` shape, and the proposal points to it |
 
 ## App action items
 
@@ -77,9 +78,14 @@ code; it is at the [bottom](#open-questions).
 
 ## Proposal — Pindom AI
 
-The `chat` screen is built and renders a fixture. Nothing behind it exists yet: no function, no
-collection, no shapes. This section is what it would take, written down before either repo builds
-against a different assumption. **Nothing to do yet.**
+> [!NOTE]
+> **Deployed.** This section is the pre-build proposal, kept for the reasoning. The shipped
+> shape — what `askAssistant` actually returns — is documented at [`askAssistant`](#askassistant)
+> under Cloud Functions, not here; where the two disagree, that section wins.
+
+The `chat` screen was a fixture when this was written: no function, no collection, no shapes.
+This section is what it would take, written down before either repo built against a different
+assumption.
 
 ### What it does
 
@@ -742,44 +748,60 @@ No branch of `잔여 티켓 충족?` on 응모, so the app needs the code, not j
 
 ### `askAssistant`
 
-Deployed 2026-08-26. It is written down here **because it was not** — the client had recorded
-one spelling in the [Assistant checklist](../plans/2026-08-22-assistant-slice-checklist.md) and
-the function shipped another, and with nothing to referee them the mismatch surfaced as an empty
-chat bubble rather than as an error. The deployed shape below is the authoritative one.
+Deployed 2026-08-26, extended 2026-08-28 with tool-planned routes and 촬영지 pins. Written down
+here **because the deployment is the source of truth, not this page** — the client had recorded
+one spelling of the reply field in the
+[Assistant checklist](../plans/2026-08-22-assistant-slice-checklist.md) and the function shipped
+another (`reply`, not `text`), and with nothing to referee them the mismatch surfaced as an empty
+chat bubble rather than as an error. The shape below is `functions/src/index.ts`'s `askAssistant`
+and `functions/src/assistant.ts`'s `Suggestion`/`Route`, field for field.
 
 ```ts
 // request
 {
   message: string;
   history: { role: 'user' | 'assistant'; text: string }[];   // recent turns, oldest first
-  artistId?: string;                                         // the 최애 the conversation is keyed to
+  artistId?: string;             // the 최애 the conversation is keyed to
+  near?: { lat: number; lng: number };       // the user's position, when they allowed it
+  towardPlaceId?: string;        // set when the question is about getting to one 촬영지
 }
 
 // response — as deployed
 {
-  reply: string;              // plain text, no markdown — a list is lines starting with "· "
-  suggestions: string[];      // follow-up questions. Observed empty; no client consumer yet
-  route: null | string;       // a `courses` id when the answer drew a route, else null
+  reply: string;                 // plain text — the server strips markdown, do not rely on it staying that way
+  suggestions: Array<{           // cafés · 음식점 · 관광지 the answer recommended, not 촬영지
+    name: string; category: string; address: string;
+    lat: number; lng: number;
+    source: 'kakao'; sourceId: string;
+    distanceMeters?: number; placeUrl?: string; phone?: string;
+  }>;
+  route: null | {                // 카카오모빌리티's road geometry through `spots`, or null if no drive was planned
+    path: { lat: number; lng: number }[];
+    distanceMeters: number;
+    durationSeconds: number;
+  };
+  spots: Array<{                 // 촬영지 the answer named, looked up by find_filming_spots / plan_route
+    placeId: string; name: string; lat: number; lng: number; region?: string;
+  }>;
+  ordered: boolean;              // `spots` is in driving order (plan_route ran) — pins get numbers
 }
 ```
 
 > [!WARNING]
 > **A wrong key here fails silently, exactly as a Firestore one does.** The call resolves, so
-> nothing throws and nothing is logged — the screen simply renders an empty answer. The app
-> reads `reply` with `text` as a fallback and treats an empty result as a failure, so the
-> transcript says the assistant could not answer instead of drawing a blank bubble. Remove that
-> tolerance once this page and the deployment are known to agree.
+> nothing throws and nothing is logged — the screen simply renders an empty answer. The app reads
+> `reply` — the `text` fallback was removed once this page and the deployment were confirmed to
+> agree — and treats an empty result as a failure, so the transcript says the assistant could not
+> answer instead of drawing a blank bubble.
 
 > [!NOTE]
-> **`route`'s populated shape is unverified.** Every answer observed so far returned `null`, so
-> the client accepts either a bare `courses` id or an object carrying one, and draws the
-> 지도에서 코스 보기 card only when it can resolve an id. Confirm the real shape and this note
-> can go.
-
-A route answer that produces a course should write it as a `courses` document for the artist, so
-홈's 지역 코스 block and 추천 코스 read the same thing. The legs the prototype annotates — travel
-time, shooting window, nearby food — are the route and local APIs' figures; if they are to be
-shown they belong on that document, not on the reply.
+> **`askAssistant` never writes a `courses` document.** `courseId` is typed on the client's
+> `AssistantReply` and read from the response, but nothing in `askAssistant` sends it — the
+> field stays `undefined` on every answer today. A route answer that should produce a course
+> would write it as a `courses` document for the artist, so 홈's 지역 코스 block and 추천 코스
+> read the same thing; that is not built. The legs the prototype annotates — travel time,
+> shooting window, nearby food — are the route and local APIs' figures and would belong on that
+> document, not on the reply.
 
 ### `deleteAccount`
 
