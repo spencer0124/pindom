@@ -50,6 +50,17 @@ export function AnswerMap({ map }: { map: AssistantMap }) {
       ? `${readableDuration(map.durationSeconds)} · ${Math.round(map.distanceMeters / 100) / 10}km`
       : null;
 
+  // The caption names only what the answer produced. A café recommendation
+  // carries no 촬영지, and a leading `촬영지 0곳` on it reads as something
+  // missing rather than something never asked for — so each half appears only
+  // when its count is non-zero, mirroring the `추천` half's own guard.
+  const counts = [
+    map.stops.length > 0 ? `촬영지 ${map.stops.length}곳` : null,
+    map.suggestions.length > 0 ? `추천 ${map.suggestions.length}곳` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <View style={[styles.card, { borderColor: adaptive.grey200 }]}>
       <View style={styles.canvas}>
@@ -66,8 +77,7 @@ export function AnswerMap({ map }: { map: AssistantMap }) {
       </View>
       <View style={[styles.summary, { borderTopColor: adaptive.grey200 }]}>
         <Txt typography="st13" fontWeight="semibold" color={adaptive.grey900}>
-          촬영지 {map.stops.length}곳
-          {map.suggestions.length > 0 ? ` · 추천 ${map.suggestions.length}곳` : ''}
+          {counts}
         </Txt>
         {legs != null && (
           <Txt typography="st13" color={token.accent.fillColor}>
