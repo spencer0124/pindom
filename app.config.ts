@@ -66,10 +66,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // 2026-08-25, build 2 on 2026-08-26. Build 3 carries the real app icon —
     // 1 and 2 shipped the Expo template placeholder. Build 4 (2026-08-27)
     // carries the App Store review items: 신고, 차단, 회원 탈퇴 and the 응모
-    // 공식 규정 screen. It lives here rather than in Info.plist because `ios/`
-    // is gitignored — a number kept only there is lost at the next prebuild,
-    // and the next uploader finds out from a rejected upload.
-    buildNumber: '4',
+    // 공식 규정 screen. Build 5 (2026-08-30) brings the assistant map into the
+    // chat thread and the real-road course line (PR #1). It lives here rather
+    // than in Info.plist because `ios/` is gitignored — a number kept only
+    // there is lost at the next prebuild, and the next uploader finds out from
+    // a rejected upload.
+    buildNumber: '5',
     ...(firebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
