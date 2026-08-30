@@ -1,5 +1,5 @@
 export { ConditionsNote } from './ConditionsNote';
-export { MapCanvas } from './MapCanvas';
+export { MapCanvas, type MapPlace, type MapPoi } from './MapCanvas';
 export { MapFilters } from './MapFilters';
 export { NearbyPanel } from './NearbyPanel';
 export { PlaceGallery } from './PlaceGallery';

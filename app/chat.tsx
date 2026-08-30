@@ -15,7 +15,7 @@ import {
   useTheme,
   useTypographyTheme,
 } from '@/design-system';
-import { ThinkingRow, useAssistant } from '@/features/assistant';
+import { AnswerMap, ThinkingRow, useAssistant } from '@/features/assistant';
 import { Shape } from '@/features/shared';
 import { wordmark } from '@/features/shared/shape';
 
@@ -169,6 +169,10 @@ export default function ChatScreen() {
                     {message.text}
                   </Txt>
                 </View>
+                {/* An answer that named places draws them, under the words that
+                    describe them — full width, because a map in a bubble is a
+                    postage stamp. */}
+                {message.map != null && <AnswerMap map={message.map} />}
               </View>
             );
           })}
@@ -303,11 +307,14 @@ const styles = StyleSheet.create({
     paddingVertical: QUESTION_PAD_Y,
     alignItems: 'flex-start',
   },
+  // A column, not a row: an answer can carry a map under its bubble, and the
+  // two stack. `alignItems` is what still pushes the user's bubble right.
   bubbleRow: {
-    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
   },
   bubbleRowMine: {
-    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
   },
   bubble: {
     maxWidth: '84%',

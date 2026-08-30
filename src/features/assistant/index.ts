@@ -1,3 +1,4 @@
+export { AnswerMap } from './AnswerMap';
 export { ASSISTANT_FAB_CLEARANCE, AssistantFab } from './AssistantFab';
 export { findCourse } from './findCourse';
 export { useAssistantStore } from './state';

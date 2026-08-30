@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-27
+last-updated: 2026-08-29
 audience: internal
 ---
 
@@ -21,29 +21,203 @@ like a UI problem. A REST server would have returned a 400 and named the field.
 makes it the first thing to change when a shape changes, and the last word in an argument
 about what a field is called.
 
+> [!IMPORTANT]
+> **This page is the channel between the two repos.** The backend developer and the app
+> developer coordinate here, not in chat: anything one side needs the other to do is written into
+> [App action items](#app-action-items) with a status, and the answer is written back into the
+> same row. A decision that exists only in a message thread does not exist.
+
 > [!WARNING]
-> **This page describes a system that is running.** It began as a prediction — field names read
-> off what the prototype displays, see [`design/README.md`](../../design/README.md) — but the
-> backend has since been built and deployed against it, and every divergence found in the process
-> has been folded back in. Where this page and `pindom-1234` disagree now, assume this page is
-> stale and say so, rather than working around it in one codebase.
->
-> Two questions remain open; they are at the [bottom](#open-questions) and neither blocks the app.
+> **This describes a system that is running**, deployed on `pindom-1234`. It began as a
+> prediction read off the prototype, but the backend has been built against it and every
+> divergence found since has been folded back in. Where this page and the deployed backend
+> disagree, assume this page is stale and say so — do not work around it in one codebase.
+
+| Round | Changelog | What it was |
+| --- | --- | --- |
+| 2026-08-21 | [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | The backend developer read this page and argued with it |
+| 2026-08-22 | [handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) | They built and deployed it; six things came back different |
+| 2026-08-26 | this page | TourAPI became the source of 촬영지 data, and four questions the app had asked the backend were answered |
+| 2026-08-29 | this page | `askAssistant`'s two descriptions (the pre-build proposal and the deployed section) disagreed after a rebase resurrected the older one; the deployed section now carries `spots`, `ordered` and the routed `route` shape, and the proposal points to it |
+
+## App action items
+
+Everything the app owes, in one table. **A row leaves this table only when it is done or
+withdrawn** — do not delete a row to make the list shorter.
+
+| # | What the app has to do | Where | Status |
+| --- | --- | --- | --- |
+| 1 | Type the five new `places` fields — `contentId`, `contentIdEn`, `overview`, `openHours`, `closedDays`. All optional; a place may carry none of them | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 1b | **Render `overview` behind a 더 자세한 설명 보기 disclosure on 장소/상세, not as the summary.** `description` stays the visible line. They are different voices on purpose — one tells a fan where to stand, the other is tourist-board copy about the site | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 2 | ~~Credit 한국관광공사 wherever `coverImageLicense` is present~~ | — | **Withdrawn 08-26** — TourAPI photos are not used, so the field and the crediting requirement are both gone. 공공누리 `Type3` forbids altering the image, which a cover crop counts as; carrying that obligation for a photo we would replace anyway bought nothing |
+| 3 | Render `openHours` / `closedDays` on 장소/상세. Free prose, not a schedule — print it, do not parse it | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 4 | **Do not call TourAPI from the app.** 촬영지 data reaches the client only through `places`. The debounce-and-cache rows that assumed a client-side call were deleted from [`external-apis.md`](external-apis.md) §8 | [`places`](#placesplaceid--촬영지) | **New 08-26** |
+| 5 | Stop discarding what the callables return — `issueTicket` sends `tier`, `enterRaffle` sends `ticketBalance`, and both are re-read from `users` today | [`issueTicket`](#issueticket) · [`enterRaffle`](#enterraffle) | Carried from 08-22 |
+| 6 | Give GPS인증 a loading state that survives a **2–4 s cold start** on the first call of a session | [Cloud Functions](#cloud-functions) | Carried from 08-22 |
+| 7 | Handle `invalid-argument` from `verifyLocation` distinctly — it is a skewed device clock, not a failed verification, and 인증 실패 has no distance table to render for it | [`verifyLocation`](#verifylocation) | Carried from 08-22 |
+| 8 | Re-encode before upload on both photo paths — that is what strips EXIF and what keeps the file under the 10 MB cap | [Cloud Storage](#cloud-storage) | Carried from 08-22 |
+| 9 | Decide whether 리뷰 needs the visit requirement. If yes, write the review at document id `ticketId` and send `ticketId` as a field; the rule is stubbed and waiting. If no, delete the proposal rather than leaving it as an unfulfilled intention | [리뷰](#placesplaceidreviewsreviewid--리뷰) | Carried from 08-22 |
+| 10 | Drop `places.reviewCount` from the app's types when the backend drops it from the seed. Nothing writes it | [`places`](#placesplaceid--촬영지) | Carried from 08-22 |
+| 12 | **Pindom AI.** The `chat` screen runs on a fixture and nothing behind it exists. Six decisions are open, and one of them — the per-user rate limit — has to land before launch, because this is the first function that spends money per call | [Proposal](#proposal--pindom-ai) | **Proposal 08-26** — no work yet |
+| 11 | **Do not build an in-app admin screen for adding 촬영지.** The proposal is a small admin web page on Firebase Hosting, owned by the backend; agree or object here before either repo builds toward it | [Proposal](#proposal--a-small-admin-web-page-for-촬영지) | **Proposal 08-26** — no work yet |
+
+## Backend answers
+
+Four questions this repo put to the backend on 2026-08-22, answered on 2026-08-26 by reading the
+deployed code rather than by recollection.
+
+| Question | Answer |
+| --- | --- |
+| **Which seeded fields became `{ ko, en }` maps?** | **No mismatch.** `places.address`, `places.roman`, `raffles.title` and `raffles.prizeDescription` are plain strings in the seed, exactly as this page types them. The maps are `name`, `description`, `region`, `workTitle` on `places`, `name`/`description` on `courses`, and `name` on `artists` — all already typed as maps here |
+| **Which locale does `issueTicket` copy into `tickets.placeName`?** | **`ko`.** `issueTicket` reads `places.name.ko`. `tickets.placeName` stays a plain `string` and is Korean regardless of the user's `locale`. An English UI showing a Korean place name on 티켓 발행 is the deployed behaviour, not a bug — say so if that needs to change |
+| **Is the `tickets` read rule own-or-public, or own-only?** | **Both, on different operations, as this page says.** `get` succeeds for own tickets *or* any ticket with `visibility == 'public'`; `list` requires the query itself to carry `userId == request.auth.uid`. The handoff summary that said own-only was describing the `list` case |
+| **Does the last-ticket speed check key off the first *measurement* or the first *accepted* one?** | **The app was right, and it is now fixed.** It keyed off an empty `readings` array, which a deliberate rejection could fill. It now keys off the call that creates the session and runs ahead of every gate, and is deployed. See [What the function adjudicates](#what-the-function-adjudicates) |
+
+The remaining open item, `clubGo` at 30, is a product decision rather than a question about the
+code; it is at the [bottom](#open-questions).
+
+## Proposal — Pindom AI
 
 > [!NOTE]
-> **Two rounds have been folded in.** Each has its own changelog:
->
-> | Round | Changelog | What it was |
-> | --- | --- | --- |
-> | 2026-08-21 | [review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) | The backend developer read this page and argued with it |
-> | 2026-08-22 | [handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) | They **built and deployed it**, and six things came back different |
->
-> The second round matters more, because it is no longer a proposal: rules, three functions and
-> seed data are live on `pindom-1234`. Where this page and the deployed backend disagreed, this
-> page has been corrected — the running system is the evidence. Re-read `verifyLocation`
-> (`capturedAt` is now gated), `issueTicket` and `enterRaffle` (both return more than they used
-> to), the `users` and `posts` write-ownership rows, and 리뷰, which lost its one-per-place
-> guarantee.
+> **Deployed.** This section is the pre-build proposal, kept for the reasoning. The shipped
+> shape — what `askAssistant` actually returns — is documented at [`askAssistant`](#askassistant)
+> under Cloud Functions, not here; where the two disagree, that section wins.
+
+The `chat` screen was a fixture when this was written: no function, no collection, no shapes.
+This section is what it would take, written down before either repo built against a different
+assumption.
+
+### What it does
+
+1. **Answers questions about the service** — how a ticket is issued, what 등급 means, when a 응모
+   closes. The model needs PINDOM's own rules in its system prompt; none of that is public
+   knowledge.
+2. **Recommends places near somewhere** — "여기 근처 갈 만한 곳".
+3. **Recommends stops on the way to a 촬영지** — "이 인증 장소 가면서 들를 만한 곳".
+
+A recommendation comes back as pins on a map. Tapping one opens its detail. **내 지도에 추가하기**
+puts it on the user's own map, where it stays.
+
+### The one rule that shapes everything else
+
+**A recommendation is not a 촬영지, and must never land in `places`.** `places` holds the
+authoritative coordinate `verifyLocation` adjudicates against; a café in that collection is a
+place a fan could try to verify at. Recommendations get their own collection, carry no
+`radiusMeters`, and no code path moves a row from one to the other.
+
+### `users/{uid}/savedPlaces/{savedPlaceId}` — 내 지도
+
+A subcollection, because a saved place is only ever read by the person who saved it.
+**Client-writable** — it is a bookmark with nothing of value attached, so a callable would be
+ceremony. Rules: own document only, read and write.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `string` | As the source names it. Not a `LocalizedString` — the POI source returns one language |
+| `category` | `string` | 카페 · 음식점 · 관광지. Drives the pin icon |
+| `location` | `GeoPoint` | Display only. **Never a verification anchor** |
+| `address` | `string` | |
+| `source` | `'kakao' \| 'tourapi'` | Which API produced it. Needed to re-fetch a detail view |
+| `sourceId` | `string` | That API's own id |
+| `savedFrom` | `string?` | The `placeId` the recommendation was anchored to, when it came from a 가는 길 answer |
+| `createdAt` | `Timestamp` | `serverTimestamp()`, as everywhere else |
+
+### `askAssistant` — the callable
+
+```ts
+// request
+{
+  message: string;
+  sessionId?: string;          // omitted on the first turn
+  near?: { lat: number; lng: number };   // the user's position, when they allowed it
+  towardPlaceId?: string;      // set when the question is about getting to a 촬영지
+}
+
+// response
+{
+  sessionId: string;
+  reply: string;
+  suggestions: Array<{
+    name: string; category: string; address: string;
+    lat: number; lng: number;
+    source: 'kakao' | 'tourapi'; sourceId: string;
+    distanceMeters?: number;
+  }>;
+}
+```
+
+`suggestions` is what the map draws. An answer with no recommendation returns it empty, and the
+screen shows text only.
+
+The model runs server-side and the app holds no key and builds no prompt — the same boundary
+[ADR 0005](../decisions/0005-keep-firebase-behind-a-repository-boundary.md) draws around
+Firebase, and what [`external-apis.md`](external-apis.md) §6 already requires.
+
+### Open decisions
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| 1 | **Model.** `external-apis.md` §6 names Claude Messages API | The backend is going with **`gpt-4o-mini`**. Recorded here because the app dev would otherwise still read Claude. Provider choice is the backend's and nothing on the client changes |
+| 2 | **Does chat history persist?** | Start without it. The screen is one conversation at a time; `sessionId` keeps a turn's context in the function's own store. Add a collection when someone asks to reopen an old thread |
+| 3 | **Where do POIs come from?** | **카카오 로컬.** TourAPI only carries registered tourism businesses — its own manual's 한계 표 says so — and 갈 만한 카페 is exactly what it lacks. Needs a Kakao REST key, backend-side |
+| 4 | **How is "가면서 들를 만한 곳" computed?** | Sample two or three points on the straight line between the user and the 촬영지 and search around each. A real route needs 카카오모빌리티 and a second key; the straight line is wrong on a coastline and fine everywhere else. Upgrade when it visibly misleads |
+| 5 | **Rate limit** | Required before launch, not after — see the warning below |
+| 6 | **답변 신고하기** | Undesigned. The app doc names it as the backend's and stops there |
+
+> [!WARNING]
+> **This function spends money per call, which no existing function does.** The callable URL is
+> public and App Check is not in the initial release, so a script can invoke it directly.
+> `maxInstances: 10` caps concurrency, not spend: `verifyLocation` under attack costs a few
+> Firestore reads, while `askAssistant` under attack costs an OpenAI bill that does not stop at a
+> quota — it just keeps billing. A per-user daily cap, checked inside the function against a
+> counter on `users/{uid}`, is the minimum. Tool calls multiply it: one question can fan out into
+> several model turns plus a Kakao query.
+
+## Proposal — a small admin web page for 촬영지
+
+Recorded here so neither repo builds against a different assumption. **Nothing to do yet.**
+
+**Where 촬영지 come from today.** The backend developer writes the place into a JSON file, runs a
+script that fills the descriptive fields from TourAPI, eyeballs the `git diff`, and seeds. It
+works at five places and it does not scale: one person, one laptop, and nobody else can add a
+location at all.
+
+**The proposal is a small web page, not a screen in the fan app and not a second app.** One
+static page on Firebase Hosting — same project, same Auth, no store review, no install, no
+release cycle. Adding a location should not wait on a build.
+
+Two reasons it is not a screen inside the fan app. The real defence is server-side either way —
+`places` stays `write: false` and a fourth callable checks an admin custom claim, so an exposed
+screen could not write anything — but shipping the admin surface to every fan's phone publishes
+what it is and where it is, for no gain. And an admin tool wants to change the day it is wrong,
+which a page reload gives and an app release does not.
+
+**The coordinate would come from dragging a map, not from TourAPI.** This is the part worth
+agreeing on early, because it changes what `places.location` means. TourAPI's coordinate is the
+*tourist site's* representative point, not the spot the frame was shot from — 주문진 방파제 came
+back 2 km from where the seed had it, and the verification radius is 50 m. A human dropping the
+pin is the only thing that can tell those apart.
+
+That splits the collection cleanly, and the split already exists in how the import script is
+written:
+
+| Field | Comes from |
+| --- | --- |
+| `location` · `radiusMeters` · `artistIds` · `workTitle` · `workKind` · `region` · `roman` · `coverImageUrl` | **A person**, on the admin page |
+| `description` — the fan-facing line | **A person.** TourAPI has no idea where the shot is framed from |
+| `overview` · `address` · `openHours` · `closedDays` | **TourAPI**, fetched server-side from `contentId` / `contentIdEn` |
+| `name` | **Either** — a hand-written name wins, TourAPI fills the locales left empty |
+
+**What it costs on the backend:** one more callable, an admin custom claim, a Hosting target, and
+moving the TourAPI service key into Secret Manager. The page itself is one HTML file, the Firebase
+web SDK and 네이버 지도 JS SDK — no framework and no build step; a tool with one user does not
+need either. No change to this contract's shapes.
+
+**When.** Not now — five places, two commands. The trigger is either 촬영지 being added weekly, or
+someone other than the backend developer needing to add one.
+
+**What the app owes:** nothing, beyond not building an in-app admin screen on the assumption that
+this lands there.
 
 ## Conventions
 
@@ -69,9 +243,11 @@ authoritative coordinate must come from here, never from the client.
 | Field | Type | Notes |
 | --- | --- | --- |
 | `contentId` | `string` | TourAPI `contentid`. The dedupe key when the backend re-imports — same `contentId`, same document. Omitted for places registered by hand that TourAPI does not carry |
-| `name` | `LocalizedString` | 주문진 방파제 / Jumunjin Breakwater / 注文津防波堤 |
+| `contentIdEn` | `string` | The same place's id in TourAPI's **English** service, which numbers its content separately — 남산서울타워 is `126535` in Korean and `264550` in English. Present only when the backend found the English pair; without it the place carries no `en` copy from TourAPI |
+| `name` | `LocalizedString` | 주문진 방파제 / Jumunjin Breakwater. **A hand-written name wins**; the import fills only the locales that are missing. The filming spot is `N서울타워 전망대` where TourAPI registers `남산서울타워`, and ours is the more precise one |
 | `roman` | `string` | Latin caption shown under the Korean name — `Jumunjin Breakwater` |
-| `description` | `LocalizedString` | Shown on 장소/상세 |
+| `description` | `LocalizedString` | **Ours, never TourAPI's.** The line a fan needs before going — 자물쇠 벽 앞이 인증샷 포인트, 해질녘 30분이 가장 붐빕니다. Written by hand; the import never overwrites it |
+| `overview` | `LocalizedString` | TourAPI's own 개요 — a tourist-board description of the site, not of the shot. Long. Rendered behind 더 자세한 설명 보기 on 장소/상세, never as the summary. Absent for places TourAPI does not carry |
 | `address` | `string` | |
 | `region` | `LocalizedString` | 강원 강릉 — rendered beside the work title |
 | `workTitle` | `LocalizedString` | The drama or music video it appeared in |
@@ -82,8 +258,10 @@ authoritative coordinate must come from here, never from the client.
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |
 | `radiusMeters` | `number` | Verification radius. Defaults to 50; per-place so it stays tunable without a deploy |
-| `coverImageUrl` | `string` | |
+| `coverImageUrl` | `string` | **Ours.** TourAPI's `firstimage` is not imported — see the withdrawn row 2 in [App action items](#app-action-items) |
 | `ticketCount` | `number` | **Function-only.** How many tickets have been minted here. Feeds 홈 recommendations |
+| `openHours` | `LocalizedString` | TourAPI `usetime`. Free prose — 상시 개방, not a parseable schedule. Rendered on 장소/상세 so a visitor does not travel to a closed gate and lose the ticket. Absent for places with no opening hours (an outdoor breakwater) |
+| `closedDays` | `LocalizedString` | TourAPI `restdate` — 연중무휴 and the like. Same rules as `openHours` |
 | `createdAt` | `Timestamp` | |
 
 ### `users/{uid}` — 마이페이지
@@ -193,7 +371,7 @@ of an accepted verification — see the
 | --- | --- | --- |
 | `userId` | `string` | |
 | `placeId` | `string` | |
-| `placeName` | `string` | Denormalised — 티켓 발행 and 컬렉션 render it without a second read |
+| `placeName` | `string` | Denormalised — 티켓 발행 and 컬렉션 render it without a second read. **Always `places.name.ko`**, whatever the reader's `locale`: it is a plain string, so there is no English copy to fall back to |
 | `photoUrl` | `string` | Download URL for the uploaded photo |
 | `serial` | `string` | `PD-XXXX-XXXX-XXXX`, Crockford Base32 — uppercase and digits without `I`, `L`, `O`, `U`. 8 random bytes, minted server-side, no collision check. Rendered as a **Code128** barcode on 티켓 발행 |
 | `visibility` | `'public' \| 'private'` | Set on 공개설정. `private` puts it in 보관함 rather than the public collection |
@@ -444,6 +622,15 @@ a short interval, so only pairs that moved far enough are evaluated:
 | Between two readings in a session | Evaluated only when they are **200 m or more** apart. Reject above **150 km/h** |
 | Against the user's last issued ticket | Reject above **300 km/h** — covers KTX and domestic flights. Evaluated on the **first measurement of a session only**: arriving implausibly fast is a property of the arrival, and every measurement after it is covered by the in-session pairs above. Running it every ping costs two extra document reads for the same verdict |
 
+> [!NOTE]
+> **The arrival check runs on the first call of a session, before every rejection.** It used to be
+> gated on the session having no readings yet, which was skippable: `mock_location` and
+> `out_of_radius` rejections are appended to `readings`, so one deliberate bad ping at the start of
+> a session consumed the gate and the rest of it went unjudged. Fixed 2026-08-26 — the check is
+> now keyed to the call that creates the session and sits ahead of all four gates. A first ping
+> that is both out of radius and impossibly fast therefore reports `implausible_speed` rather than
+> `out_of_radius`. Deployed to `pindom-1234` on 2026-08-26. Nothing on the client changes.
+
 Distance is computed after subtracting the reported accuracy radius. A time-based trigger was
 rejected during review: "skip the check when the readings are under 30 seconds apart" is evaded
 permanently by moving the coordinate every 28 seconds, so the condition itself was the hole.
@@ -561,44 +748,60 @@ No branch of `잔여 티켓 충족?` on 응모, so the app needs the code, not j
 
 ### `askAssistant`
 
-Deployed 2026-08-26. It is written down here **because it was not** — the client had recorded
-one spelling in the [Assistant checklist](../plans/2026-08-22-assistant-slice-checklist.md) and
-the function shipped another, and with nothing to referee them the mismatch surfaced as an empty
-chat bubble rather than as an error. The deployed shape below is the authoritative one.
+Deployed 2026-08-26, extended 2026-08-28 with tool-planned routes and 촬영지 pins. Written down
+here **because the deployment is the source of truth, not this page** — the client had recorded
+one spelling of the reply field in the
+[Assistant checklist](../plans/2026-08-22-assistant-slice-checklist.md) and the function shipped
+another (`reply`, not `text`), and with nothing to referee them the mismatch surfaced as an empty
+chat bubble rather than as an error. The shape below is `functions/src/index.ts`'s `askAssistant`
+and `functions/src/assistant.ts`'s `Suggestion`/`Route`, field for field.
 
 ```ts
 // request
 {
   message: string;
   history: { role: 'user' | 'assistant'; text: string }[];   // recent turns, oldest first
-  artistId?: string;                                         // the 최애 the conversation is keyed to
+  artistId?: string;             // the 최애 the conversation is keyed to
+  near?: { lat: number; lng: number };       // the user's position, when they allowed it
+  towardPlaceId?: string;        // set when the question is about getting to one 촬영지
 }
 
 // response — as deployed
 {
-  reply: string;              // plain text, no markdown — a list is lines starting with "· "
-  suggestions: string[];      // follow-up questions. Observed empty; no client consumer yet
-  route: null | string;       // a `courses` id when the answer drew a route, else null
+  reply: string;                 // plain text — the server strips markdown, do not rely on it staying that way
+  suggestions: Array<{           // cafés · 음식점 · 관광지 the answer recommended, not 촬영지
+    name: string; category: string; address: string;
+    lat: number; lng: number;
+    source: 'kakao'; sourceId: string;
+    distanceMeters?: number; placeUrl?: string; phone?: string;
+  }>;
+  route: null | {                // 카카오모빌리티's road geometry through `spots`, or null if no drive was planned
+    path: { lat: number; lng: number }[];
+    distanceMeters: number;
+    durationSeconds: number;
+  };
+  spots: Array<{                 // 촬영지 the answer named, looked up by find_filming_spots / plan_route
+    placeId: string; name: string; lat: number; lng: number; region?: string;
+  }>;
+  ordered: boolean;              // `spots` is in driving order (plan_route ran) — pins get numbers
 }
 ```
 
 > [!WARNING]
 > **A wrong key here fails silently, exactly as a Firestore one does.** The call resolves, so
-> nothing throws and nothing is logged — the screen simply renders an empty answer. The app
-> reads `reply` with `text` as a fallback and treats an empty result as a failure, so the
-> transcript says the assistant could not answer instead of drawing a blank bubble. Remove that
-> tolerance once this page and the deployment are known to agree.
+> nothing throws and nothing is logged — the screen simply renders an empty answer. The app reads
+> `reply` — the `text` fallback was removed once this page and the deployment were confirmed to
+> agree — and treats an empty result as a failure, so the transcript says the assistant could not
+> answer instead of drawing a blank bubble.
 
 > [!NOTE]
-> **`route`'s populated shape is unverified.** Every answer observed so far returned `null`, so
-> the client accepts either a bare `courses` id or an object carrying one, and draws the
-> 지도에서 코스 보기 card only when it can resolve an id. Confirm the real shape and this note
-> can go.
-
-A route answer that produces a course should write it as a `courses` document for the artist, so
-홈's 지역 코스 block and 추천 코스 read the same thing. The legs the prototype annotates — travel
-time, shooting window, nearby food — are the route and local APIs' figures; if they are to be
-shown they belong on that document, not on the reply.
+> **`askAssistant` never writes a `courses` document.** `courseId` is typed on the client's
+> `AssistantReply` and read from the response, but nothing in `askAssistant` sends it — the
+> field stays `undefined` on every answer today. A route answer that should produce a course
+> would write it as a `courses` document for the artist, so 홈's 지역 코스 block and 추천 코스
+> read the same thing; that is not built. The legs the prototype annotates — travel time,
+> shooting window, nearby food — are the route and local APIs' figures and would belong on that
+> document, not on the reply.
 
 ### `deleteAccount`
 
@@ -742,7 +945,9 @@ answers are already written into the sections above:
 
 ## Related
 
-- [2026-08-22 handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) — what the deployed backend does differently from what this page said, and what the app still owes. **The most recent changelog behind this page**
+- [`tourapi-usage.md`](https://github.com/spencer0124/pindom-server/blob/main/docs/tourapi-usage.md) (backend repo) — which TourAPI operation fills which `places` field, and why its photos are not imported
+- [`external-apis.md`](external-apis.md) — the third-party services this product calls. §8 no longer describes a client-side TourAPI call
+- [2026-08-22 handoff reconciliation](../plans/2026-08-22-backend-handoff-reconciliation.md) — what the deployed backend did differently from what this page said. Its "Still owed" list now lives in [App action items](#app-action-items); read it for the reasoning, not the status
 - [2026-08-21 review resolutions](../plans/2026-08-21-backend-contract-review-resolutions.md) — every finding from the backend developer's review and the decision taken on it. The round before that
 - [`design/README.md`](../../design/README.md) — the prototype these shapes are read from
 - [ADR 0006](../decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md) — why this document grew

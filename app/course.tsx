@@ -19,10 +19,10 @@ const MAP_HEIGHT = 262;
  * A `courses` document is an ordered list of 촬영지 and a description. The legs
  * 1a annotates — 자동차 n분 이동, 촬영 추천 07:00–08:30, 근처 해장국·카페 3곳 — are
  * the route and local APIs' figures, which the backend calls; they are not on
- * the document and are not made up here. 길안내 needs the same API and is not
- * drawn. The map is 지도's own canvas with the course's stops as its pins —
+ * the document and are not made up here. The map is 지도's own canvas with the course's stops as its pins —
  * numbered in walk order, the first in the accent, with 1a's dashed route
- * through them (fidelity A-14, A-15) — inset by the page gutter as 1a's is.
+ * through them (fidelity A-14, A-15) — the road geometry `getRoute` draws, not
+ * the straight segments between the stops — inset by the page gutter as 1a's is.
  * The description is the document's own field, kept above the legs (A-17).
  */
 export default function CourseScreen() {
@@ -46,7 +46,7 @@ export default function CourseScreen() {
     );
   }
 
-  const { course, artist, stops, visitedPlaceIds, origin, hasPosition } = state.data;
+  const { course, artist, stops, path, visitedPlaceIds, origin, hasPosition } = state.data;
   const title = artist != null ? `${artist.name} 성지순례 코스` : course.name;
 
   return (
@@ -73,7 +73,7 @@ export default function CourseScreen() {
           visitedPlaceIds={visitedPlaceIds}
           origin={origin}
           hasPosition={hasPosition}
-          path={stops}
+          path={path}
           ordered
           onSelect={(placeId) => router.push(`/place/${placeId}` as never)}
         />

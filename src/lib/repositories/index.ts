@@ -53,6 +53,7 @@ export const artistRepository: ArtistRepository = {
 
 export const courseRepository: CourseRepository = {
   listForArtist: async (artistId) => (await impl()).courses.listForArtist(artistId),
+  route: async (placeIds, origin) => (await impl()).courses.route(placeIds, origin),
 };
 
 export const assistantRepository: AssistantRepository = {

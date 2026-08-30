@@ -1,3 +1,4 @@
+import type { Region } from '@mj-studio/react-native-naver-map';
 import {
   NaverMapMarkerOverlay,
   NaverMapPathOverlay,
@@ -9,7 +10,6 @@ import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-nativ
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import Svg, { Polyline } from 'react-native-svg';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
-import type { PlaceWithDistance } from '@/lib/domain';
 import { AppConfig } from '@/lib/config';
 import { Shape } from '@/features/shared';
 import { MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MapPin } from './MapPin';
@@ -39,6 +39,10 @@ const REGION_BREATH = 8;
 const MAX_ROOM = 0.4;
 /** The span a single place gets, in degrees — roughly a city. */
 const SINGLE_PLACE_SPAN = 0.08;
+/** Room `fit` leaves around what it frames, as a share of the span on each side. */
+const FRAME_MARGIN = 0.25;
+/** Degrees. A lone pin gets roughly a neighbourhood rather than the whole globe. */
+const FRAME_MIN_SPAN = 0.01;
 /** 1a's `pinDrop .5s` — every pin drops at once, no stagger. */
 const DROP_MS = 500;
 /** How far the stand-in keeps its pins from the edge of the field, as a share of it. */
@@ -84,8 +88,23 @@ export interface MapInset {
   right?: number;
 }
 
+/**
+ * What the canvas needs of a 촬영지: an id to tap, a caption, a coordinate.
+ *
+ * `PlaceWithDistance` satisfies it, and so does an assistant answer's stop —
+ * which carries no `radiusMeters` or `coverImageUrl` and never will, being a
+ * lookup the server did rather than a document the client read.
+ */
+export interface MapPlace {
+  id: string;
+  name: string;
+  region: string;
+  lat: number;
+  lng: number;
+}
+
 interface MapCanvasProps {
-  places: PlaceWithDistance[];
+  places: MapPlace[];
   visitedPlaceIds: string[];
   /**
    * Retained for 추천 코스's call site. The camera opens on the country frame
@@ -114,7 +133,54 @@ interface MapCanvasProps {
    * pins captioned with the region.
    */
   ordered?: boolean;
+  /**
+   * Recommendations that are not 촬영지 — the cafés and 관광지 an assistant
+   * answer named. Drawn as hollow dots, and they take no taps: there is no
+   * screen behind them, the answer's own text is the detail.
+   */
+  pois?: MapPoi[];
+  /**
+   * Frame the camera on what is drawn instead of the country.
+   *
+   * 지도 and 추천 코스 open on the whole country by design (fidelity decision
+   * 12). A map inside a chat answer is the opposite case — it is a picture of
+   * one route, in a card a few hundred points tall, and the country frame
+   * would show it as three specks.
+   */
+  fit?: boolean;
   onSelect: (placeId: string) => void;
+}
+
+/** A recommended place on the canvas. Only what a dot and its caption need. */
+export interface MapPoi {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+/**
+ * The camera box around everything drawn, with room to breathe.
+ *
+ * `latitudeDelta`/`longitudeDelta` are the span from the south-west corner, so
+ * this is the bounds padded by `FRAME_MARGIN` on each side. The floor keeps a
+ * single point — one 촬영지, no route — from asking for infinite zoom.
+ */
+function frameOf(points: Position[]): Region | undefined {
+  if (points.length === 0) return undefined;
+  const lats = points.map((p) => p.lat);
+  const lngs = points.map((p) => p.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latSpan = Math.max(maxLat - minLat, FRAME_MIN_SPAN);
+  const lngSpan = Math.max(maxLng - minLng, FRAME_MIN_SPAN);
+  return {
+    latitude: minLat - latSpan * FRAME_MARGIN,
+    longitude: minLng - lngSpan * FRAME_MARGIN,
+    latitudeDelta: latSpan * (1 + FRAME_MARGIN * 2),
+    longitudeDelta: lngSpan * (1 + FRAME_MARGIN * 2),
+  };
 }
 
 /**
@@ -139,6 +205,8 @@ export function MapCanvas({
   inset,
   path,
   ordered,
+  pois,
+  fit,
   onSelect,
 }: MapCanvasProps) {
   if (!AppConfig.naverMapConfigured) {
@@ -150,6 +218,8 @@ export function MapCanvas({
         inset={inset}
         path={path}
         ordered={ordered}
+        pois={pois}
+        fit={fit}
         onSelect={onSelect}
       />
     );
@@ -164,6 +234,8 @@ export function MapCanvas({
       inset={inset}
       path={path}
       ordered={ordered}
+      pois={pois}
+      fit={fit}
       onSelect={onSelect}
     />
   );
@@ -171,7 +243,7 @@ export function MapCanvas({
 
 /** What a pin reads for a place: its number and caption under `ordered`, 지도's region otherwise. */
 function pinProps(
-  place: PlaceWithDistance,
+  place: MapPlace,
   index: number,
   ordered: boolean | undefined,
 ): { order?: number; label: string } {
@@ -238,7 +310,18 @@ function regionOf(places: Position[], field: Field | null, inset: MapInset = {})
   };
 }
 
-function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ordered, onSelect }: TilesProps) {
+function Tiles({
+  places,
+  visitedPlaceIds,
+  hasPosition,
+  dropKey,
+  inset,
+  path,
+  ordered,
+  pois,
+  fit,
+  onSelect,
+}: TilesProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   // Hidden until the drop's duration has passed, then shown together — the
@@ -254,6 +337,13 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ord
     () => (path ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
     [path],
   );
+  // `fit`: a fixed frame around everything drawn, for a card that never pans
+  // (AnswerMap). Not `fit`: the reactive `region` below, refitted as the
+  // selected 최애's places change.
+  const frame = useMemo(
+    () => (fit ? frameOf([...places, ...(pois ?? []), ...(path ?? [])]) : undefined),
+    [fit, places, pois, path],
+  );
 
   // The canvas, so the fit can turn the pins' points into degrees.
   const [field, setField] = useState<Field | null>(null);
@@ -262,21 +352,26 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ord
     setField((f) => (f?.width === width && f?.height === height ? f : { width, height }));
   };
   // Re-fitted when the 최애 changes, which is when the set of places changes.
-  const region = useMemo(() => regionOf(places, field, inset), [places, field, inset]);
+  const region = useMemo(
+    () => (fit ? undefined : regionOf(places, field, inset)),
+    [fit, places, field, inset],
+  );
 
   return (
     <NaverMapView
       style={StyleSheet.absoluteFill}
       onLayout={onLayout}
-      {...(region != null
-        ? { region }
-        : {
-            initialCamera: {
-              latitude: KOREA_CENTRE.lat,
-              longitude: KOREA_CENTRE.lng,
-              zoom: COUNTRY_ZOOM,
-            },
-          })}
+      {...(frame != null
+        ? { initialRegion: frame }
+        : region != null
+          ? { region }
+          : {
+              initialCamera: {
+                latitude: KOREA_CENTRE.lat,
+                longitude: KOREA_CENTRE.lng,
+                zoom: COUNTRY_ZOOM,
+              },
+            })}
       mapPadding={inset}
       isShowLocationButton={hasPosition}
       // 1a's map carries no chrome of the SDK's own: the pins and their
@@ -312,6 +407,20 @@ function Tiles({ places, visitedPlaceIds, hasPosition, dropKey, inset, path, ord
           </NaverMapMarkerOverlay>
         );
       })}
+      {(pois ?? []).map((poi) => (
+        <NaverMapMarkerOverlay
+          key={`poi/${poi.name}/${poi.lat},${poi.lng}`}
+          latitude={poi.lat}
+          longitude={poi.lng}
+          width={MAP_PIN_WIDTH}
+          height={MAP_PIN_HEIGHT}
+          isHidden={!revealed}
+        >
+          <View key={poi.name} collapsable={false} style={styles.markerChild}>
+            <MapPin visited={false} poi label={poi.name} />
+          </View>
+        </NaverMapMarkerOverlay>
+      ))}
       {/* The route: a path overlay as the halo, a dashed polyline over it.
           The SDK's `pattern` is declared on the polyline but not forwarded
           to the native view in the pinned version, so on tiles the line is
@@ -403,7 +512,17 @@ type StandInProps = Omit<MapCanvasProps, 'origin' | 'hasPosition'>;
  * 최애 switch exactly as 1a does. The one line at the foot says why there are
  * no tiles under them.
  */
-function StandIn({ places, visitedPlaceIds, dropKey, inset, path, ordered, onSelect }: StandInProps) {
+function StandIn({
+  places,
+  visitedPlaceIds,
+  dropKey,
+  inset,
+  path,
+  ordered,
+  pois,
+  fit,
+  onSelect,
+}: StandInProps) {
   const adaptive = useAdaptive();
   const [field, setField] = useState<Field | null>(null);
 
@@ -412,9 +531,16 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, ordered, onSel
     setField({ width, height });
   };
 
+  // Under `fit` the recommendations and the road line are part of the picture,
+  // so they are part of what the box is fitted to — otherwise a café two towns
+  // over would sit outside the field it is supposed to be drawn in.
+  const bounds = useMemo(
+    () => (fit ? [...places, ...(pois ?? []), ...(path ?? [])] : places),
+    [fit, places, pois, path],
+  );
   const project = useMemo(
-    () => (field != null && places.length > 0 ? projector(places, field, inset) : null),
-    [places, field, inset],
+    () => (field != null && bounds.length > 0 ? projector(bounds, field, inset) : null),
+    [bounds, field, inset],
   );
   const route = useMemo(
     () => (project != null && path != null ? path.map(project) : []),
@@ -450,6 +576,20 @@ function StandIn({ places, visitedPlaceIds, dropKey, inset, path, ordered, onSel
                 >
                   <MapPin visited={visitedPlaceIds.includes(place.id)} {...pinProps(place, index, ordered)} />
                 </Pressable>
+              </Animated.View>
+            );
+          })}
+        {project != null &&
+          (pois ?? []).map((poi) => {
+            const { x, y } = project(poi);
+            return (
+              <Animated.View
+                key={`poi/${poi.name}/${poi.lat},${poi.lng}`}
+                entering={pinDrop}
+                pointerEvents="none"
+                style={[styles.pinSlot, { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT }]}
+              >
+                <MapPin visited={false} poi label={poi.name} />
               </Animated.View>
             );
           })}

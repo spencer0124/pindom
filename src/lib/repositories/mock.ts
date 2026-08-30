@@ -182,6 +182,19 @@ export const mockRepositories: Repositories = {
       const hits = mockCourses.filter((c) => c.artistId === artistId);
       return mockDelay(ResultHelper.ok(hits));
     },
+
+    // Straight segments between the stops. Road geometry is 카카오모빌리티's and
+    // there is no network here — the fixture only has to draw a line at all.
+    async route(placeIds, origin) {
+      const stops = placeIds
+        .map((id) => mockPlaces.find((p) => p.id === id))
+        .filter((p): p is (typeof mockPlaces)[number] => p != null)
+        .map((p) => ({ lat: p.lat, lng: p.lng }));
+      const path = origin != null ? [origin, ...stops] : stops;
+      return mockDelay(
+        ResultHelper.ok({ path, distanceMeters: 120_000, durationSeconds: 6_600 }),
+      );
+    },
   },
 
   auth: {
