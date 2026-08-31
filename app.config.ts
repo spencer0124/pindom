@@ -2,8 +2,14 @@ import { existsSync } from 'fs';
 
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
-const ANDROID_FIREBASE_CONFIG = './google-services.json';
-const IOS_FIREBASE_CONFIG = './GoogleService-Info.plist';
+// EAS Build clones from git, and both Firebase files are gitignored, so on the
+// build server they arrive as file-type environment variables instead — these
+// hold the path EAS unpacked them to. Locally the variables are unset and the
+// repo-root copies win. Without this an EAS build finds neither file, quietly
+// drops Firebase, and ships fixtures to the store.
+const ANDROID_FIREBASE_CONFIG = process.env.GOOGLE_SERVICES_JSON ?? './google-services.json';
+const IOS_FIREBASE_CONFIG =
+  process.env.GOOGLE_SERVICE_INFO_PLIST ?? './GoogleService-Info.plist';
 
 // The @react-native-firebase/app config plugin aborts `expo prebuild` outright
 // when `googleServicesFile` points at a file that is not there. Both files come
@@ -11,9 +17,15 @@ const IOS_FIREBASE_CONFIG = './GoogleService-Info.plist';
 // them — gating the whole Firebase block on their presence keeps the native
 // build working before that handoff has happened.
 //
+// Gated per platform, because a cloud build only ever carries the file for the
+// platform it is building: an Android build on EAS has google-services.json and
+// no plist. Requiring both — as this did until the Play submission — is what
+// turned a release build into a fixture build without failing.
+//
 // See docs/how-to/connect-the-app-to-firebase.md.
-const firebaseConfigured =
-  existsSync(ANDROID_FIREBASE_CONFIG) && existsSync(IOS_FIREBASE_CONFIG);
+const androidFirebaseConfigured = existsSync(ANDROID_FIREBASE_CONFIG);
+const iosFirebaseConfigured = existsSync(IOS_FIREBASE_CONFIG);
+const firebaseConfigured = androidFirebaseConfigured || iosFirebaseConfigured;
 
 // An explicit EXPO_PUBLIC_USE_MOCKS always wins. Otherwise fixtures are on
 // exactly when Firebase is unreachable, which is the only setting that works.
@@ -25,7 +37,7 @@ if (!firebaseConfigured) {
   // Loud, because the alternative is a silent fixture build that looks real.
   console.warn(
     '[pindom] Firebase config files not found — building without Firebase.\n' +
-      `         Expected ${ANDROID_FIREBASE_CONFIG} and ${IOS_FIREBASE_CONFIG}.\n` +
+      `         Expected ${ANDROID_FIREBASE_CONFIG} or ${IOS_FIREBASE_CONFIG}.\n` +
       '         Screens will read fixtures from src/mocks/.\n' +
       '         See docs/how-to/connect-the-app-to-firebase.md',
   );
@@ -35,6 +47,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'PINDOM',
   slug: 'pindom',
+  // The EAS account the project belongs to. `slug` and `owner` together resolve
+  // to @seungyongcho/pindom, which is what `eas build` uploads against.
+  owner: 'seungyongcho',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -46,6 +61,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // src/lib/config.ts is the only consumer — everything else reads through
   // AppConfig rather than touching `extra` directly.
   extra: {
+    // Written by hand because `eas init` cannot edit a dynamic config. Losing it
+    // makes every `eas build` create a second project rather than fail.
+    eas: { projectId: 'd5addc3b-2d13-40ba-ac49-54a09e73d50f' },
     env: process.env.EXPO_PUBLIC_ENV,
     useMocks,
     firebaseConfigured,
@@ -72,7 +90,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // there is lost at the next prebuild, and the next uploader finds out from
     // a rejected upload.
     buildNumber: '5',
-    ...(firebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
+    ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       // GPS verification: PINDOM only ever checks location while the user is
@@ -87,7 +105,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   android: {
     package: 'com.zoyoong.pindom',
-    ...(firebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
+    // Google Play refuses a versionCode it has already accepted, so this has to
+    // move every upload — the Android counterpart to `ios.buildNumber` above.
+    // Version 1 of 1.0.0 is the first Play submission (2026-08-31). It lives
+    // here rather than in android/app/build.gradle because `android/` is
+    // gitignored: a number kept only there is reset to 1 by the next prebuild,
+    // and the next uploader finds out from a rejected upload.
+    versionCode: 1,
+    ...(androidFirebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
       // The ground the icon is drawn on. `#6541F2` here was the violet brand
       // the prototype superseded — see docs/reference/design-tokens.md.
