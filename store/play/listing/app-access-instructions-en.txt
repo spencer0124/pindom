@@ -1,0 +1,10 @@
+PINDOM unlocks the camera and ticket issuing only inside a 50 m radius of a filming location.
+
+Set the device location to Jumunjin Breakwater: 37.8796220881, 128.8335906768 (use exactly; outside 50 m, verification is refused by design).
+
+1. Sign in with the account above.
+2. Map tab, select 주문진 방파제.
+3. Tap GPS 인증하기 to see the distance to the radius.
+4. Verify inside the radius: the camera opens and a ticket is issued.
+
+Radius, speed and mock-location checks all run server-side.

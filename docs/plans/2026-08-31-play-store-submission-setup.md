@@ -34,11 +34,19 @@ way to be sure the Korean is byte-identical:
 | 앱 이름 | the App Store `name` |
 | 자세한 설명 | the version localization `description`, verbatim |
 | 개인정보처리방침 · 웹사이트 | the same published Notion pages the app links from `src/lib/links.ts` |
-| 앱 액세스 | the App Store review notes, minus Apple's guideline numbers |
+| 로그인 세부정보 | the App Store review notes — but rewritten, see below |
 
 The saved copies are in `store/play/listing/`. They are plain `.txt` rather than Markdown on
 purpose: a store listing is bytes to be pasted, and a Markdown wrapper invites a linter to
 reflow copy that must not be reflowed.
+
+**로그인 세부정보 could not be reused as-is.** Play states the information must be provided in
+**English** and caps the free-text box at **500 characters**; Apple imposed neither. The Korean
+심사 메모 is about twice that and would have been the wrong language, so it was rewritten to 482
+characters in `store/play/listing/app-access-instructions-en.txt`, keeping what a reviewer cannot
+proceed without: the exact 주문진 coordinate, the 50 m radius, and the four steps. The
+guideline-location list that Apple needed did not survive the cut, which is the right trade —
+Play's reviewer needs to reach the flow, not a map of guideline references.
 
 Two fields had to be written new. Play's 짧은 설명 caps at 80 characters, which is too long for
 Apple's subtitle to fill and too short for its promotional text; the opening sentence of the
