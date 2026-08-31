@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import type { AssistantMap } from '@/lib/domain';
 import { MapCanvas } from '@/features/discovery';
@@ -20,6 +20,59 @@ function readableDuration(seconds: number): string {
   return rest === 0 ? `${hours}시간` : `${hours}시간 ${rest}분`;
 }
 
+/** Numbered rows, "이곳 다음 이곳" — the driving order as a list, not just pins. */
+function StopSteps({ stops }: { stops: { id: string; name: string; region: string }[] }) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+
+  return (
+    <View style={[styles.list, { borderTopColor: adaptive.grey200 }]}>
+      {stops.map((stop, i) => (
+        <Pressable
+          key={stop.id}
+          style={styles.row}
+          onPress={() => router.push(`/place/${stop.id}` as never)}
+        >
+          <View style={[styles.badge, { backgroundColor: token.accent.fillColor }]}>
+            <Txt typography="st12" fontWeight="semibold" color={token.accent.onFillColor}>
+              {i + 1}
+            </Txt>
+          </View>
+          <Txt typography="st13" color={adaptive.grey900} style={styles.rowText}>
+            {stop.name}
+            {stop.region ? ` · ${stop.region}` : ''}
+          </Txt>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** Cards for the cafés/관광지 the answer recommended, each opening its 카카오맵 상세. */
+function SuggestionRows({ suggestions }: { suggestions: AssistantMap['suggestions'] }) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+
+  return (
+    <View style={[styles.list, { borderTopColor: adaptive.grey200 }]}>
+      {suggestions.map((s) => (
+        <View key={`${s.name}/${s.lat},${s.lng}`} style={styles.row}>
+          <Txt typography="st13" color={adaptive.grey900} style={styles.rowText}>
+            {s.name}
+          </Txt>
+          {s.placeUrl != null && (
+            <Pressable onPress={() => void Linking.openURL(s.placeUrl as string).catch(() => {})}>
+              <Txt typography="st13" color={token.accent.fillColor}>
+                자세히 보기
+              </Txt>
+            </Pressable>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 /**
  * The map an answer draws, in the thread, under the words that describe it.
  *
@@ -29,9 +82,9 @@ function readableDuration(seconds: number): string {
  * as the line — not the straight segments 추천 코스 draws between stops — and
  * the cafés it recommended as hollow dots beside them.
  *
- * Tapping a stop opens 장소/상세, which is where a 촬영지 is acted on. The
- * recommendations take no taps: there is no screen behind a café, and the
- * answer's own text already says why it is on the map.
+ * The map itself takes no taps on a poi — there is no screen behind a café.
+ * `StopSteps`/`SuggestionRows` below the map are where the answer becomes
+ * tappable: a stop opens 장소/상세, a recommendation opens its 카카오맵 상세.
  */
 export function AnswerMap({ map }: { map: AssistantMap }) {
   const adaptive = useAdaptive();
@@ -85,6 +138,8 @@ export function AnswerMap({ map }: { map: AssistantMap }) {
           </Txt>
         )}
       </View>
+      {map.ordered && stops.length > 1 && <StopSteps stops={stops} />}
+      {map.suggestions.length > 0 && <SuggestionRows suggestions={map.suggestions} />}
     </View>
   );
 }
@@ -107,5 +162,27 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9,
+  },
+  list: {
+    borderTopWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    gap: 8,
+  },
+  badge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowText: {
+    flex: 1,
   },
 });
