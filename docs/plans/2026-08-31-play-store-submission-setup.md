@@ -69,11 +69,21 @@ This is the same class of mistake as the iOS icon, and it has the same remedy �
 the artifact before paying attention to the build log**:
 
 ```bash
-unzip -p <build>.aab base/assets/EXConstants.bundle/app.config | python3 -m json.tool
+unzip -p <build>.aab base/assets/app.config | python3 -m json.tool
 ```
 
 `extra.useMocks` must be `false` and `extra.naverMapConfigured` must be `true`. If either is
-wrong the environment variables did not apply, and the AAB must not be uploaded.
+wrong the environment variables did not apply, and the AAB must not be uploaded. Note the path:
+an AAB keeps it at `base/assets/app.config`, not under the `EXConstants.bundle/` directory the
+iOS habit suggests.
+
+For the first build this was checked further, because the whole point was proving the file
+environment variable arrived. `extra.firebaseConfigured` came back `true`, and on the builder
+only `google-services.json` can exist — so that flag alone proves it. The values are in the
+native artifact too: `com.naver.maps.map.CLIENT_ID` carries the real key in
+`base/manifest/AndroidManifest.xml`, and the Firebase project id resolves in
+`base/resources.pb`. Both files must be **extracted first** — an AAB is a zip, so grepping the
+`.aab` itself finds nothing.
 
 `android.versionCode` moved into `app.config.ts` for the reason `ios.buildNumber` is already
 there: `android/` is gitignored, so a number kept only in `build.gradle` is reset to 1 by the
