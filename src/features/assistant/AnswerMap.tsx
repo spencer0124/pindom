@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import type { AssistantMap } from '@/lib/domain';
 import { MapCanvas } from '@/features/discovery';
@@ -33,6 +33,59 @@ function readableDuration(seconds: number): string {
  * recommendations take no taps: there is no screen behind a café, and the
  * answer's own text already says why it is on the map.
  */
+/** Numbered rows, "이곳 다음 이곳" — the driving order as a list, not just pins. */
+function StopSteps({ stops }: { stops: { id: string; name: string; region: string }[] }) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+
+  return (
+    <View style={[styles.list, { borderTopColor: adaptive.grey200 }]}>
+      {stops.map((stop, i) => (
+        <Pressable
+          key={stop.id}
+          style={styles.row}
+          onPress={() => router.push(`/place/${stop.id}` as never)}
+        >
+          <View style={[styles.badge, { backgroundColor: token.accent.fillColor }]}>
+            <Txt typography="st12" fontWeight="semibold" color={token.accent.onFillColor}>
+              {i + 1}
+            </Txt>
+          </View>
+          <Txt typography="st13" color={adaptive.grey900} style={styles.rowText}>
+            {stop.name}
+            {stop.region ? ` · ${stop.region}` : ''}
+          </Txt>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** Cards for the cafés/관광지 the answer recommended, each opening its 카카오맵 상세. */
+function SuggestionRows({ suggestions }: { suggestions: AssistantMap['suggestions'] }) {
+  const adaptive = useAdaptive();
+  const { token } = useTheme();
+
+  return (
+    <View style={[styles.list, { borderTopColor: adaptive.grey200 }]}>
+      {suggestions.map((s) => (
+        <View key={`${s.name}/${s.lat},${s.lng}`} style={styles.row}>
+          <Txt typography="st13" color={adaptive.grey900} style={styles.rowText}>
+            {s.name}
+          </Txt>
+          {s.placeUrl != null && (
+            <Pressable onPress={() => Linking.openURL(s.placeUrl as string)}>
+              <Txt typography="st13" color={token.accent.fillColor}>
+                자세히 보기
+              </Txt>
+            </Pressable>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function AnswerMap({ map }: { map: AssistantMap }) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -75,6 +128,8 @@ export function AnswerMap({ map }: { map: AssistantMap }) {
           </Txt>
         )}
       </View>
+      {map.ordered && stops.length > 1 && <StopSteps stops={stops} />}
+      {map.suggestions.length > 0 && <SuggestionRows suggestions={map.suggestions} />}
     </View>
   );
 }
@@ -97,5 +152,27 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9,
+  },
+  list: {
+    borderTopWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    gap: 8,
+  },
+  badge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowText: {
+    flex: 1,
   },
 });
