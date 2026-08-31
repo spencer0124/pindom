@@ -95,6 +95,8 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-26-live-firebase-verification.md](plans/2026-08-26-live-firebase-verification.md) | The app driven end to end against the deployed project with fixtures off, every write checked back over REST and the console read directly: what passed, what was blocked, the findings that came out of it, and the remediation worked from them. **Start here to know what live Firebase actually does** |
 | [2026-08-27-apple-review-app-items.md](plans/2026-08-27-apple-review-app-items.md) | The app's half of the App Store review checklist — 신고, 차단, 회원 탈퇴, 응모 공식 규정 and the support page: what landed, the two judgment calls, and the sentences the review notes must and must not say. **Start here for App Review work** |
 | [2026-08-26-backend-fix-requests.md](plans/2026-08-26-backend-fix-requests.md) | The one page to hand the backend developer: what is still broken in the deployed project, how to reproduce each, and what would close it — ordered by what it costs a user. **Start here if you are picking up backend work** |
+| [2026-08-26-app-store-submission-setup.md](plans/2026-08-26-app-store-submission-setup.md) | Everything App Store Connect required before 1.0.0 could be submitted, where each value came from, the two judgment calls, and what the API cannot do. **Start here for App Store Connect work** |
+| [2026-08-31-play-store-submission-setup.md](plans/2026-08-31-play-store-submission-setup.md) | The same submission taken to Google Play: what ported across unchanged, the gitignored-config trap that would have shipped a fixture build, Play's screenshot ratio rule, and why there is no closed test. **Start here for Play Console work** |
 
 ## Outside this folder
 
