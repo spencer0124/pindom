@@ -58,8 +58,11 @@ ui-debug.log
 .DS_Store
 Thumbs.db
 
-# Claude Code local state (per-machine)
-.claude/
+# Claude Code local state (per-machine) — but skills are project workflow, not
+# machine state, so they travel with the repo. `.claude/*` rather than `.claude/`
+# because git will not descend into an excluded directory to honour a negation.
+.claude/*
+!.claude/skills/
 
 # explain-diff plugin output — generated HTML walkthroughs, regenerable
 explain-diff/
