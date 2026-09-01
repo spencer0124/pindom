@@ -19,8 +19,15 @@ export interface ModerationTarget {
   type: ReportTargetType;
   /** Document id of the reported thing — the post, the tip, the photo. */
   id: string;
-  /** Who made it. 차단 acts on this, never on `id`. */
-  authorId: string;
+  /**
+   * Who made it. 차단 acts on this, never on `id`.
+   *
+   * Absent when the thing has no author a user could block — Pindom AI's 답변 is
+   * reportable and belongs to nobody. Without an author the sheet opens straight
+   * at the 신고 form: a menu whose only row is 신고하기 asks the question the
+   * caller already answered.
+   */
+  authorId?: string;
   /**
    * Optional because the 갤러리 has none: `GalleryPhoto` carries `authorId` and
    * no nickname, and the contract does not denormalise one onto it — the grid
@@ -92,12 +99,12 @@ export function ModerationSheet({ open, target, onClose, onBlocked }: Moderation
       // Not `goTo` — that is declared below the `if (!open) return null` guard,
       // so it does not exist on a render where the sheet is closed. This effect
       // already clears `error` two lines down anyway.
-      setStage('menu');
+      setStage(target.authorId == null ? 'report' : 'menu');
       setReason(REPORT_REASONS[0]);
       setDetail('');
       setError(null);
     }
-  }, [open, target.id]);
+  }, [open, target.id, target.authorId]);
 
   if (!open) return null;
 
@@ -137,13 +144,14 @@ export function ModerationSheet({ open, target, onClose, onBlocked }: Moderation
   };
 
   const submitBlock = async () => {
-    if (busy) return;
+    if (busy || target.authorId == null) return;
+    const authorId = target.authorId;
     setBusy(true);
     setError(null);
-    const message = await block(target.authorId, target.authorNickname);
+    const message = await block(authorId, target.authorNickname);
     setBusy(false);
     if (message != null) return setError(message);
-    onBlocked?.(target.authorId);
+    onBlocked?.(authorId);
     onClose();
   };
 
@@ -264,9 +272,9 @@ export function ModerationSheet({ open, target, onClose, onBlocked }: Moderation
                   style="weak"
                   display="block"
                   disabled={busy}
-                  onPress={() => goTo('menu')}
+                  onPress={() => (target.authorId == null ? onClose() : goTo('menu'))}
                 >
-                  뒤로
+                  {target.authorId == null ? '닫기' : '뒤로'}
                 </Button>
                 <Button
                   size="large"
@@ -327,13 +335,16 @@ export function ModerationSheet({ open, target, onClose, onBlocked }: Moderation
                 신고가 접수되었어요
               </Txt>
               <Txt typography="t7" color={adaptive.grey600}>
-                운영자가 확인한 뒤 조치할게요. 이 사용자의 글을 더 보고 싶지 않다면 차단도 함께 할
-                수 있어요.
+                {target.authorId == null
+                  ? '운영자가 확인한 뒤 조치할게요.'
+                  : '운영자가 확인한 뒤 조치할게요. 이 사용자의 글을 더 보고 싶지 않다면 차단도 함께 할 수 있어요.'}
               </Txt>
               <View style={styles.actions}>
-                <Button size="large" style="weak" display="block" onPress={() => goTo('block')}>
-                  차단도 하기
-                </Button>
+                {target.authorId != null && (
+                  <Button size="large" style="weak" display="block" onPress={() => goTo('block')}>
+                    차단도 하기
+                  </Button>
+                )}
                 <Button size="large" type="primary" display="block" onPress={onClose}>
                   확인
                 </Button>

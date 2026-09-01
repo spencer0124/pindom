@@ -45,7 +45,8 @@ export function chipsFor(artistName: string, placeName: string): AssistantChip[]
  * The client sends the message and the recent turns; the answer, the route
  * behind 지도에서 코스 보기 and everything about the model are the backend's.
  * A failed ask is rendered as an answer the assistant could not get, in the
- * transcript, so the conversation stays readable.
+ * transcript, so the conversation stays readable, and `canRetry` lets the screen
+ * offer 다시 시도 rather than making the user type the question out again.
  *
  * Once an answer carries a `courseId`, the course document is read so the
  * 지도에서 코스 보기 card can print `n곳 · {course name}` — the same line 추천
@@ -63,6 +64,8 @@ export function useAssistant() {
   const append = useAssistantStore((s) => s.append);
   const setCourse = useAssistantStore((s) => s.setCourse);
   const setLoading = useAssistantStore((s) => s.setLoading);
+  const failedQuestion = useAssistantStore((s) => s.failedQuestion);
+  const setFailedQuestion = useAssistantStore((s) => s.setFailedQuestion);
   const clear = useAssistantStore((s) => s.clear);
 
   useEffect(() => {
@@ -111,6 +114,7 @@ export function useAssistant() {
       const history = messages.slice(-HISTORY_TURNS).map((m) => ({ role: m.role, text: m.text }));
       append({ role: 'user', text: message });
       setLoading(true);
+      setFailedQuestion(null);
       // Cached from the permission the onboarding already asked for; null when it
       // was refused, and the assistant answers without it rather than stopping.
       const position = await readPosition();
@@ -123,6 +127,9 @@ export function useAssistant() {
       setLoading(false);
       if (!result.ok) {
         append({ role: 'assistant', text: failureMessage(result.failure) });
+        // Kept so the thread can offer 다시 시도: the question is otherwise only
+        // in a bubble the composer cannot read back.
+        setFailedQuestion(message);
         return;
       }
       append({
@@ -132,10 +139,32 @@ export function useAssistant() {
       });
       if (result.data.courseId != null) setCourse(result.data.courseId);
     },
-    [messages, loading, artist, append, setLoading, setCourse],
+    [messages, loading, artist, append, setLoading, setCourse, setFailedQuestion],
   );
+
+  /**
+   * Ask the failed question again.
+   *
+   * The failed turn stays in the transcript rather than being rewound — the
+   * user asked it, and a thread that silently deletes what it showed reads as a
+   * bug. So a retry appends the question a second time, above its answer.
+   */
+  const retry = useCallback(() => {
+    if (failedQuestion != null) void ask(failedQuestion);
+  }, [failedQuestion, ask]);
 
   const chips = chipsFor(artist?.name ?? '최애', nearest?.name ?? '촬영지');
 
-  return { artist, messages, courseId, course, loading, chips, ask, clear };
+  return {
+    artist,
+    messages,
+    courseId,
+    course,
+    loading,
+    chips,
+    ask,
+    retry,
+    canRetry: failedQuestion != null && !loading,
+    clear,
+  };
 }

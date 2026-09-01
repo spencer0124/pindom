@@ -110,9 +110,9 @@ export default function MyScreen() {
 
   const menu: { label: string; value?: string; go: () => void }[] = [
     { label: '프로필 설정', value: user.nickname, go: () => router.push('/profile' as never) },
-    { label: '응모 내역 / 당첨 확인', go: () => router.navigate('/tickets' as never) },
+    { label: '응모 내역 / 당첨 확인', go: () => router.push('/raffle/history' as never) },
     { label: '비공개 보관함', value: `${vaultCount}장`, go: () => router.push('/vault' as never) },
-    { label: '내 커뮤니티 글', go: () => router.navigate('/community' as never) },
+    { label: '내 커뮤니티 글', go: () => router.push('/my-posts' as never) },
     {
       label: '차단한 사용자',
       value: blockedUserIds.length > 0 ? `${blockedUserIds.length}명` : undefined,

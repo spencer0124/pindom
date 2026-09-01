@@ -13,6 +13,7 @@ export const targetLabel: Record<ReportTargetType, string> = {
   review: '촬영 팁',
   photo: '사진',
   user: '사용자',
+  assistant: 'AI 답변',
 };
 
 /**

@@ -9,7 +9,7 @@ import { MapCanvas } from '@/features/discovery';
  * to read as a line rather than a smudge, short enough that the answer's text
  * and the composer are both still on screen.
  */
-const MAP_HEIGHT = 220;
+const MAP_HEIGHT = 260;
 
 /** Minutes, as the summary line says them: `1시간 40분`, `25분`. */
 function readableDuration(seconds: number): string {
@@ -41,6 +41,9 @@ function StopSteps({ stops }: { stops: { id: string; name: string; region: strin
           <Txt typography="st13" color={adaptive.grey900} style={styles.rowText}>
             {stop.name}
             {stop.region ? ` · ${stop.region}` : ''}
+          </Txt>
+          <Txt typography="st13" color={token.accent.fillColor}>
+            자세히 보기
           </Txt>
         </Pressable>
       ))}
@@ -138,7 +141,7 @@ export function AnswerMap({ map }: { map: AssistantMap }) {
           </Txt>
         )}
       </View>
-      {map.ordered && stops.length > 1 && <StopSteps stops={stops} />}
+      {stops.length > 0 && <StopSteps stops={stops} />}
       {map.suggestions.length > 0 && <SuggestionRows suggestions={map.suggestions} />}
     </View>
   );

@@ -11,10 +11,12 @@
  * for the active locale. See `locale.ts`.
  */
 export type { Artist } from './artist';
+export type { Board } from './board';
 export type { Course, CourseRoute } from './course';
 export { DEFAULT_LOCALE, LOCALES } from './locale';
 export type { Locale } from './locale';
 export type { Place, PlaceWithDistance, PlaceWorkKind } from './place';
+export type { PublicProfile } from './public-profile';
 export type { Post, NewPost, FeedPage } from './post';
 export { REPORT_REASON_MAX, REPORT_TARGET_ID_MAX } from './report';
 export type { NewReport, ReportTargetType } from './report';

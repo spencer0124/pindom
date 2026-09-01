@@ -16,8 +16,10 @@ import {
   useTypographyTheme,
 } from '@/design-system';
 import { AnswerMap, ThinkingRow, useAssistant } from '@/features/assistant';
+import { ModerationSheet } from '@/features/moderation';
 import { Shape } from '@/features/shared';
 import { wordmark } from '@/features/shared/shape';
+import { REPORT_TARGET_ID_MAX } from '@/lib/domain';
 
 /** 1a's header glyphs: 19px strokes in a 28px box. */
 const HEADER_GLYPH = 19;
@@ -32,6 +34,8 @@ const QUESTION_PAD_Y = 14;
 const MENU_ROW_PAD_Y = 15;
 const MENU_ROW_PAD_X = 14;
 const CANCEL_TOP = 6;
+/** The 다시 시도 row sits closer than a question row: it belongs to the answer above it. */
+const RETRY_PAD_Y = 6;
 /** Rows dim to this while pressed — the app-wide mapping of 1a's hover (fidelity decision 28). */
 const PRESSED_OPACITY = 0.6;
 
@@ -63,14 +67,19 @@ export default function ChatScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const { typography } = useTypographyTheme();
-  const { messages, courseId, course, loading, chips, ask, clear } = useAssistant();
+  const { messages, courseId, course, loading, chips, ask, retry, canRetry, clear } = useAssistant();
   const [draft, setDraft] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const list = useRef<ScrollView>(null);
 
   useEffect(() => {
     list.current?.scrollToEnd({ animated: true });
   }, [messages.length, loading]);
+
+  // 답변 신고하기 reports the answer on screen, which is the last one — the ⋯ is
+  // in the header, not on a bubble, so there is nothing else it could mean.
+  const lastAnswer = messages.filter((m) => m.role === 'assistant').at(-1) ?? null;
 
   const canSend = draft.trim().length > 0 && !loading;
   const send = () => {
@@ -99,10 +108,24 @@ export default function ChatScreen() {
         router.push('/language' as never);
       },
     },
-    // 답변 신고하기 is the backend's flow (external-apis.md); 1a's row closes
-    // the menu and so does this one, until it exists. It wears the alert
-    // colour, as 1a's does (fidelity A-05).
-    { label: '답변 신고하기', desc: '틀린 정보나 부적절한 답변', color: colorSeeds.warning, act: () => setMenuOpen(false) },
+    // 답변 신고하기 opens the same 신고 sheet the rest of the app uses, aimed at
+    // the answer itself: an answer has no document id, so its text is what the
+    // report carries and what the console reader sees. Omitted rather than
+    // disabled while the thread is empty — a row for reporting nothing is not a
+    // row. It wears the alert colour, as 1a's does (fidelity A-05).
+    ...(lastAnswer != null
+      ? [
+          {
+            label: '답변 신고하기',
+            desc: '틀린 정보나 부적절한 답변',
+            color: colorSeeds.warning,
+            act: () => {
+              setMenuOpen(false);
+              setReportOpen(true);
+            },
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -206,6 +229,18 @@ export default function ChatScreen() {
             </Pressable>
           )}
 
+          {canRetry && (
+            <Pressable
+              onPress={retry}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.retry, { opacity: pressed ? PRESSED_OPACITY : 1 }]}
+            >
+              <Txt typography="st10" fontWeight="medium" color={token.accent.fillColor}>
+                다시 시도
+              </Txt>
+            </Pressable>
+          )}
+
           {loading && <ThinkingRow />}
         </ScrollView>
 
@@ -267,6 +302,13 @@ export default function ChatScreen() {
           </Animated.View>
         </View>
       )}
+      {reportOpen && lastAnswer != null && (
+        <ModerationSheet
+          open
+          target={{ type: 'assistant', id: lastAnswer.text.slice(0, REPORT_TARGET_ID_MAX) }}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -306,6 +348,10 @@ const styles = StyleSheet.create({
   question: {
     paddingVertical: QUESTION_PAD_Y,
     alignItems: 'flex-start',
+  },
+  retry: {
+    paddingVertical: RETRY_PAD_Y,
+    alignSelf: 'flex-start',
   },
   // A column, not a row: an answer can carry a map under its bubble, and the
   // two stack. `alignItems` is what still pushes the user's bubble right.

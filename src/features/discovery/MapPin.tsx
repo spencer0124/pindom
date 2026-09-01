@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { Shape } from '@/features/shared';
 
-/** 1a's pin head — a 30px mark. Square here: 2b's radius is chips only. */
+/** 1a's pin head — a 30px teardrop. */
 const HEAD = 30;
 /** 추천 코스's numbered stop — 1a's 26px disc, centred in the head's slot. */
 const STOP = 26;
@@ -47,10 +47,7 @@ interface MapPinProps {
  * One 촬영지 on 지도.
  *
  * 1a draws a teardrop with a white border and a shadow, filled pink when
- * visited and grey when not, and a caption chip beneath. Under 2b the head is
- * a square block — the accent fill with a `✓` for a visited place, the surface
- * with a hairline for an unvisited one — and the caption is a chip, the one
- * shape that keeps a radius.
+ * visited and grey when not, and a caption chip beneath.
  *
  * On 추천 코스 the same pin is a stop: a 26px disc with its number, the start
  * in the deep accent and the rest in the light one — 1a's own start-vs-rest
@@ -69,41 +66,48 @@ export function MapPin({ visited, label, order, poi }: MapPinProps) {
   return (
     <View style={styles.pin} pointerEvents="none">
       {poi ? (
-        <View style={styles.head}>
-          <View
-            style={[
-              styles.dot,
-              { backgroundColor: adaptive.background, borderColor: adaptive.grey600 },
-            ]}
-          />
+        <View style={[styles.head, styles.pinShape]}>
+          <View style={styles.pinInner}>
+            <View
+              style={[
+                styles.dot,
+                { backgroundColor: adaptive.background, borderColor: adaptive.grey600 },
+              ]}
+            />
+          </View>
         </View>
       ) : order != null ? (
-        <View style={styles.head}>
-          <View
-            style={[
-              styles.stop,
-              { backgroundColor: order === 1 ? token.accent.fillColor : token.accent.softColor },
-            ]}
-          >
-            <Txt typography="st12" fontWeight="bold" color={token.accent.onFillColor}>
-              {order}
-            </Txt>
+        <View style={[styles.head, styles.pinShape]}>
+          <View style={styles.pinInner}>
+            <View
+              style={[
+                styles.stop,
+                { backgroundColor: order === 1 ? token.accent.fillColor : token.accent.softColor },
+              ]}
+            >
+              <Txt typography="st12" fontWeight="bold" color={token.accent.onFillColor}>
+                {order}
+              </Txt>
+            </View>
           </View>
         </View>
       ) : (
         <View
           style={[
             styles.head,
+            styles.pinShape,
             visited
               ? { backgroundColor: token.accent.fillColor }
               : { backgroundColor: adaptive.background, borderColor: adaptive.grey300, borderWidth: 1 },
           ]}
         >
-          {visited && (
-            <Txt typography="t7" fontWeight="bold" color={token.accent.onFillColor}>
-              ✓
-            </Txt>
-          )}
+          <View style={styles.pinInner}>
+            {visited && (
+              <Txt typography="t7" fontWeight="bold" color={token.accent.onFillColor}>
+                ✓
+              </Txt>
+            )}
+          </View>
         </View>
       )}
       <View style={[styles.chip, { backgroundColor: adaptive.background }]}>
@@ -127,6 +131,18 @@ const styles = StyleSheet.create({
     height: HEAD,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pinShape: {
+    borderRadius: HEAD / 2,
+    borderBottomLeftRadius: 4,
+    transform: [{ rotate: '-45deg' }],
+  },
+  pinInner: {
+    width: HEAD,
+    height: HEAD,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '45deg' }],
   },
   dot: {
     width: DOT,
