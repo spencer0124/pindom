@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-27
+last-updated: 2026-09-01
 audience: internal
 ---
 
@@ -29,9 +29,9 @@ internal ones. **The category follows the reader's need, not the subject matter.
 A document serves one need. When a procedure and its background start sharing a page, split
 them and link the halves.
 
-`tutorials/` and `internal/` are empty for now. pindom has no build or deploy pipeline yet,
-so a runbook for one would document a process that does not exist. `how-to/` holds the one
-procedure that does: joining the backend developer's Firebase project.
+`tutorials/` and `internal/` are empty for now. `how-to/` holds the two procedures that
+exist: joining the backend developer's Firebase project, and shipping an iOS build to
+TestFlight.
 
 ## Index
 
@@ -40,6 +40,7 @@ procedure that does: joining the backend developer's Firebase project.
 | Document | Summary |
 | --- | --- |
 | [connect-the-app-to-firebase.md](how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project, building with fixtures before you can, and every Firebase-adjacent document linked in one place. **Start here for anything backend-shaped** |
+| [ship-a-testflight-build.md](how-to/ship-a-testflight-build.md) | Cutting an iOS build and getting it to testers with `scripts/ship-testflight.sh` — the phases, the flags, and the four traps the script designs out. **Start here to ship** |
 
 ### reference
 

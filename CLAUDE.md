@@ -57,8 +57,30 @@ outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design
 | `yarn lint` | ESLint + markdownlint |
 | `yarn lint:md` | markdownlint only |
 | `yarn ios` / `yarn android` | native dev build (Expo Go will not work) |
+| `./scripts/ship-testflight.sh` | ship an iOS build to TestFlight, end to end |
 
 Run `yarn typecheck` and `yarn lint` before declaring work done.
+
+## Shipping to TestFlight
+
+**Do not archive or upload by hand.** `./scripts/ship-testflight.sh` does the whole thing —
+it merges `origin/main` into `dev`, bumps the build number, runs the gates, archives,
+verifies what got baked into the archive, uploads, waits for processing, and submits for
+external Beta App Review. Run it with no arguments.
+
+- **Resume, do not restart.** The archive phase costs minutes and everything after it costs
+  seconds. `--from verify` re-uses the archive already on disk. `--list` names the phases;
+  `--only <phase>` runs one.
+- **The script is the reference.** Its header explains why each guard exists, and every
+  constant — team, bundle id, TestFlight group ids, key paths — is declared at the top of
+  it. Do not re-derive them from App Store Connect.
+- **You still write two things**: a sentence in the `ios.buildNumber` comment in
+  `app.config.ts` saying what this build carries, and the commit. The script prints the
+  commit subject to use.
+
+The runbook, including the four traps the script designs out, is
+[docs/how-to/ship-a-testflight-build.md](docs/how-to/ship-a-testflight-build.md).
+The `ship-testflight` skill is a pointer to the same script.
 
 ## Writing docs
 
