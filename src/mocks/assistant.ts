@@ -1,17 +1,44 @@
-import type { AssistantAsk, AssistantReply } from '../lib/domain';
+import type { AssistantAsk, AssistantReply, AssistantSuggestion } from '../lib/domain';
 import { mockCourses } from './courses';
 import { mockPlaces } from './places';
 
-function mapFor(input: AssistantAsk, placeIds?: string[]): NonNullable<AssistantReply['map']> {
+function mapFor(
+  input: AssistantAsk,
+  placeIds?: string[],
+  suggestions: AssistantSuggestion[] = [],
+): NonNullable<AssistantReply['map']> {
   const places = placeIds
     ? placeIds.map((id) => mockPlaces.find((place) => place.id === id)).filter((place) => place != null)
     : mockPlaces.filter((place) => input.artistId == null || place.artistIds.includes(input.artistId)).slice(0, 3);
   return {
     stops: places.map(({ id, name, region, lat, lng }) => ({ placeId: id, name, region, lat, lng })),
-    suggestions: [],
-    path: [],
+    suggestions,
+    path: placeIds != null ? places.map(({ lat, lng }) => ({ lat, lng })) : [],
     ordered: placeIds != null,
+    ...(placeIds != null && { distanceMeters: 120_000, durationSeconds: 6_600 }),
   };
+}
+
+/** Cafés/밥집 near a 촬영지's coordinates, for the 맛집 answer's suggestion cards. */
+function suggestionsNear(place: { name: string; region: string; lat: number; lng: number }): AssistantSuggestion[] {
+  return [
+    {
+      name: `${place.region} 해장국집`,
+      category: '한식',
+      address: `${place.region} 인근`,
+      lat: place.lat + 0.001,
+      lng: place.lng + 0.001,
+      placeUrl: 'https://place.map.kakao.com',
+    },
+    {
+      name: `${place.name} 앞 카페`,
+      category: '카페',
+      address: `${place.region} 인근`,
+      lat: place.lat - 0.001,
+      lng: place.lng + 0.0015,
+      placeUrl: 'https://place.map.kakao.com',
+    },
+  ];
 }
 
 /**
@@ -24,10 +51,16 @@ function mapFor(input: AssistantAsk, placeIds?: string[]): NonNullable<Assistant
  */
 export function mockAssistantReply(input: AssistantAsk): AssistantReply {
   const q = input.message;
-  const course =
-    mockCourses.find((c) => c.artistId === input.artistId) ?? mockCourses[0];
+  const course = mockCourses.find((c) => c.artistId === input.artistId)
+    ?? (!input.artistId ? mockCourses[0] : undefined);
 
   if (/동선|코스|1박/.test(q)) {
+    if (course == null) {
+      return {
+        text: '등록된 촬영지를 기준으로 동선을 잡아볼게요. 지도와 목록에서 순서를 확인할 수 있어요.',
+        map: mapFor(input),
+      };
+    }
     return {
       text:
         `${course.name}로 잡아볼게요. ${course.description}.\n` +
@@ -39,12 +72,16 @@ export function mockAssistantReply(input: AssistantAsk): AssistantReply {
     };
   }
   if (/맛집|밥집|카페|먹/.test(q)) {
+    const anchor =
+      mockPlaces.find((place) => input.artistId == null || place.artistIds.includes(input.artistId))
+      ?? mockPlaces[0];
     return {
       text:
         '아침 일찍 여는 곳은 촬영지 반경 1km 안에 보통 두세 곳 있어요.\n' +
         '· 해장국집은 대개 6시 전후로 열어요\n' +
         '· 카페는 8시 이후가 안전해요\n' +
         '정확한 영업시간은 앱의 장소 정보에서 확인해 주세요.',
+      map: mapFor(input, undefined, suggestionsNear(anchor)),
     };
   }
   if (/시간|사람 적은|인증하고/.test(q)) {

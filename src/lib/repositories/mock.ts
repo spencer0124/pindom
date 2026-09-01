@@ -58,7 +58,7 @@ let user: User = { ...mockUser };
 let tickets: Ticket[] = [...mockTickets];
 let posts: Post[] = [...mockPosts];
 let reviews: Review[] = [...mockReviews];
-const entries: RaffleEntry[] = [...mockRaffleEntries];
+let entries: RaffleEntry[] = [...mockRaffleEntries];
 /**
  * Every 신고 this run has filed.
  *
@@ -221,6 +221,7 @@ export const mockRepositories: Repositories = {
       // routing asks whether the user follows anyone — and kept `placesVisited: 5`
       // and someone else's avatar and bio on 마이페이지. Firebase writes exactly
       // these fields at sign-up; the two have to start from the same place.
+      entries = entries.filter((entry) => entry.userId !== user.id);
       user = {
         ...mockUser,
         email,
@@ -258,6 +259,7 @@ export const mockRepositories: Repositories = {
       tickets = tickets.filter((t) => t.userId !== uid);
       posts = posts.filter((p) => p.authorId !== uid);
       reviews = reviews.filter((r) => r.authorId !== uid);
+      entries = entries.filter((entry) => entry.userId !== uid);
       for (const report of reports) {
         if (report.reporterId === uid) report.reporterId = 'deleted';
       }
@@ -440,7 +442,7 @@ export const mockRepositories: Repositories = {
 
     async listMine() {
       if (!session) return mockDelay(unauthenticated<RaffleEntry[]>());
-      return mockDelay(ResultHelper.ok([...entries]));
+      return mockDelay(ResultHelper.ok(entries.filter((entry) => entry.userId === user.id)));
     },
 
     async getById(raffleId) {
@@ -486,6 +488,7 @@ export const mockRepositories: Repositories = {
 
       const spending = tickets
         .filter((t) => !t.spent)
+        .sort((a, b) => a.issuedAt.getTime() - b.issuedAt.getTime())
         .slice(0, raffle.ticketCost);
       const entry: RaffleEntry = {
         id: nextId('entry'),

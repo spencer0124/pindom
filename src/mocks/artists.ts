@@ -13,7 +13,7 @@ export const mockArtists: Artist[] = [
     name: '루미나',
     initial: 'LM',
     imageUrl: 'https://picsum.photos/seed/lumina/300/300',
-    placeCount: 5,
+    placeCount: 7,
     accentColor: '#58CF04',
   },
   {
