@@ -24,7 +24,7 @@ export default function RaffleHistoryScreen() {
   }, []);
   useEffect(() => { void load(); }, [load]);
   if (state.status === 'loading') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><Loader.Centered label="응모 내역을 불러오는 중" /></SafeAreaView>;
-  if (state.status === 'error') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><ErrorPage title="응모 내역을 불러오지 못했어요" subtitle={state.message} onPressRightButton={load} /></SafeAreaView>;
+  if (state.status === 'error') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><ErrorPage title="응모 내역을 불러오지 못했어요" subtitle={state.message} onPressRightButton={load} rightButtonLabel="다시 시도" /></SafeAreaView>;
   const title = new Map(state.raffles.map((r) => [r.id, r.title]));
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>

@@ -45,6 +45,8 @@ export interface ErrorPageProps {
   subtitle?: string;
   /** Right button handler (e.g. "go back"). Shows button only when provided. */
   onPressRightButton?: () => void;
+  /** Right button label. Defaults to "돌아가기". */
+  rightButtonLabel?: string;
   /** Left button handler (e.g. "contact support"). Shows button only when provided. */
   onPressLeftButton?: () => void;
   /** Custom content below subtitle. */
@@ -59,6 +61,7 @@ export function ErrorPage({
   title,
   subtitle,
   onPressRightButton,
+  rightButtonLabel = '돌아가기',
   onPressLeftButton,
   children,
   style,
@@ -105,7 +108,7 @@ export function ErrorPage({
           {onPressRightButton != null && (
             <View style={styles.button}>
               <Button size="large" display="block" onPress={onPressRightButton}>
-                돌아가기
+                {rightButtonLabel}
               </Button>
             </View>
           )}

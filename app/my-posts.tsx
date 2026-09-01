@@ -23,7 +23,7 @@ export default function MyPostsScreen() {
   }, []);
   useEffect(() => { void load(); }, [load]);
   if (state.status === 'loading') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><Loader.Centered label="내 글을 불러오는 중" /></SafeAreaView>;
-  if (state.status === 'error') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><ErrorPage title="내 글을 불러오지 못했어요" subtitle={state.message} onPressRightButton={load} /></SafeAreaView>;
+  if (state.status === 'error') return <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}><ErrorPage title="내 글을 불러오지 못했어요" subtitle={state.message} onPressRightButton={load} rightButtonLabel="다시 시도" /></SafeAreaView>;
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <Pressable style={styles.back} onPress={() => router.back()}><Txt typography="t7" color={adaptive.grey600}>‹ 뒤로</Txt></Pressable>

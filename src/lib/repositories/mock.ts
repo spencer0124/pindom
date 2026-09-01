@@ -437,6 +437,7 @@ export const mockRepositories: Repositories = {
     },
 
     async listMine() {
+      if (!session) return mockDelay(unauthenticated<RaffleEntry[]>());
       return mockDelay(ResultHelper.ok([...entries]));
     },
 
@@ -578,6 +579,11 @@ export const mockRepositories: Repositories = {
           placesVisited: 0,
           tier: post.authorTier,
         }));
+      }
+      if (user.profileVisibility !== 'public') {
+        return mockDelay(ResultHelper.error<import('../domain').PublicProfile>(
+          Failure.firebase('permission-denied', '비공개 프로필이다'),
+        ));
       }
       return mockDelay(ResultHelper.ok({
         userId: user.id,

@@ -14,23 +14,25 @@ export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [state, setState] = useState<
     | { status: 'loading' }
-    | { status: 'error'; message: string }
+    | { status: 'error'; message: string; retryable: boolean }
     | { status: 'ready'; profile: PublicProfile }
   >({ status: 'loading' });
 
   const load = useCallback(async () => {
     if (!id) {
-      setState({ status: 'error', message: '프로필을 찾을 수 없어요.' });
+      setState({ status: 'error', message: '프로필을 찾을 수 없어요.', retryable: false });
       return;
     }
     setState({ status: 'loading' });
     const result = await userRepository.getPublicProfile(id);
     if (result.ok) return setState({ status: 'ready', profile: result.data });
-    const message =
-      result.failure.type === 'firebase' && result.failure.code === 'permission-denied'
-        ? '공개 프로필이 아니에요.'
-        : failureMessage(result.failure);
-    setState({ status: 'error', message });
+    const privateProfile =
+      result.failure.type === 'firebase' && result.failure.code === 'permission-denied';
+    setState({
+      status: 'error',
+      message: privateProfile ? '공개 프로필이 아니에요.' : failureMessage(result.failure),
+      retryable: !privateProfile,
+    });
   }, [id]);
 
   useEffect(() => { void load(); }, [load]);
@@ -45,7 +47,12 @@ export default function PublicProfileScreen() {
   if (state.status === 'error') {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
-        <ErrorPage title="프로필을 볼 수 없어요" subtitle={state.message} onPressRightButton={load} />
+        <ErrorPage
+          title="프로필을 볼 수 없어요"
+          subtitle={state.message}
+          onPressRightButton={state.retryable ? load : router.back}
+          rightButtonLabel={state.retryable ? '다시 시도' : '돌아가기'}
+        />
       </SafeAreaView>
     );
   }
