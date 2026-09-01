@@ -580,11 +580,8 @@ export const mockRepositories: Repositories = {
             : notFound<import('../domain').PublicProfile>('프로필'),
         );
       }
-      if (user.profileVisibility !== 'public') {
-        return mockDelay(ResultHelper.error<import('../domain').PublicProfile>(
-          Failure.firebase('permission-denied', '비공개 프로필이다'),
-        ));
-      }
+      // 여기까지 왔으면 자기 프로필이다. 비공개는 남에게만 비공개다 — 자기 글의
+      // 작성자를 눌러 자기 프로필을 여는 길이 커뮤니티에 있다.
       return mockDelay(ResultHelper.ok({
         userId: user.id,
         nickname: user.nickname,
