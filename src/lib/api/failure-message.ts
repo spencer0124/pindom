@@ -20,6 +20,20 @@ const AUTH_MESSAGES: Record<string, string> = {
 };
 
 /**
+ * Application codes a Cloud Function puts in `HttpsError.details`, for the two
+ * gates a signed-in user meets in normal use rather than by doing something
+ * wrong. "잠시 후 다시 시도해 주세요." misdescribes both: a day's quota does not
+ * come back in a moment, and an unverified address is fixed in a mail client,
+ * not by tapping again.
+ */
+const ERROR_CODE_MESSAGES: Record<string, string> = {
+  assistant_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
+  verify_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
+  route_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
+  email_not_verified: '이메일 인증이 필요해요. 가입한 메일함에서 인증 링크를 눌러 주세요.',
+};
+
+/**
  * A sentence a screen can show for any failure.
  *
  * `AppFailure` is a union and `CancelledFailure` carries no message, so reading
@@ -33,7 +47,7 @@ const AUTH_MESSAGES: Record<string, string> = {
  * match on `failure.type` or `errorCode` — the 잔여 티켓 충족 branch on 응모 keys
  * off `insufficient_tickets`, not off a string.
  *
- * The exception is `AUTH_MESSAGES` above. "잠시 후 다시 시도해 주세요." is a lie
+ * One exception is `AUTH_MESSAGES` above. "잠시 후 다시 시도해 주세요." is a lie
  * when the address has no `@` in it — waiting fixes nothing, and the user has no
  * way to learn what to change. These are the failures the user themselves can
  * clear, so each one says which field is wrong.
@@ -49,7 +63,12 @@ export function failureMessage(failure: AppFailure): string {
       return '응답을 읽지 못했어요. 잠시 후 다시 시도해 주세요.';
     case 'server':
       return '잠시 후 다시 시도해 주세요.';
-    case 'firebase':
-      return AUTH_MESSAGES[failure.code] ?? '잠시 후 다시 시도해 주세요.';
+    case 'firebase': {
+      // The application code first: it names *why* the call was refused, where
+      // `resource-exhausted` and `permission-denied` only name the shape.
+      const byErrorCode =
+        failure.errorCode != null ? ERROR_CODE_MESSAGES[failure.errorCode] : undefined;
+      return byErrorCode ?? AUTH_MESSAGES[failure.code] ?? '잠시 후 다시 시도해 주세요.';
+    }
   }
 }

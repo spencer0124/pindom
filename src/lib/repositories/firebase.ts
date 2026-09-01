@@ -2,6 +2,7 @@ import { getApp } from '@react-native-firebase/app';
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
 } from '@react-native-firebase/auth';
@@ -544,6 +545,12 @@ export const firebaseRepositories: Repositories = {
           placesVisited: 0,
           createdAt: serverTimestamp(),
         });
+        // Fire-and-forget: the server's REQUIRE_EMAIL_VERIFIED gate refuses a
+        // call from an address nobody has confirmed, and it can only be cleared
+        // from a link the account never received. A send that fails is not worth
+        // failing a sign-up over — the user is registered either way, and 로그인
+        // resends nothing yet.
+        void sendEmailVerification(cred.user).catch(() => {});
         return { userId: cred.user.uid, email };
       }),
 
