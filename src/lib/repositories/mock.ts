@@ -29,6 +29,8 @@ import {
   mockGallery,
   mockPlaces,
   mockPosts,
+  mockPublicProfiles,
+  mockRaffleEntries,
   mockRaffles,
   mockReviews,
   mockTickets,
@@ -56,7 +58,7 @@ let user: User = { ...mockUser };
 let tickets: Ticket[] = [...mockTickets];
 let posts: Post[] = [...mockPosts];
 let reviews: Review[] = [...mockReviews];
-const entries: RaffleEntry[] = [];
+let entries: RaffleEntry[] = [...mockRaffleEntries];
 /**
  * Every 신고 this run has filed.
  *
@@ -128,6 +130,15 @@ function withDistance(
 // ── Implementation ──
 
 export const mockRepositories: Repositories = {
+  boards: {
+    async listActive() {
+      return mockDelay(ResultHelper.ok([
+        { id: 'board-free', name: '자유게시판' },
+        ...mockArtists.map(({ id, name }) => ({ id, name })),
+      ]));
+    },
+  },
+
   assistant: {
     async ask(input) {
       if (!session) return mockDelay(unauthenticated<AssistantReply>());
@@ -210,6 +221,7 @@ export const mockRepositories: Repositories = {
       // routing asks whether the user follows anyone — and kept `placesVisited: 5`
       // and someone else's avatar and bio on 마이페이지. Firebase writes exactly
       // these fields at sign-up; the two have to start from the same place.
+      entries = entries.filter((entry) => entry.userId !== user.id);
       user = {
         ...mockUser,
         email,
@@ -247,6 +259,7 @@ export const mockRepositories: Repositories = {
       tickets = tickets.filter((t) => t.userId !== uid);
       posts = posts.filter((p) => p.authorId !== uid);
       reviews = reviews.filter((r) => r.authorId !== uid);
+      entries = entries.filter((entry) => entry.userId !== uid);
       for (const report of reports) {
         if (report.reporterId === uid) report.reporterId = 'deleted';
       }
@@ -427,6 +440,11 @@ export const mockRepositories: Repositories = {
       return mockDelay(ResultHelper.ok([...mockRaffles]));
     },
 
+    async listMine() {
+      if (!session) return mockDelay(unauthenticated<RaffleEntry[]>());
+      return mockDelay(ResultHelper.ok(entries.filter((entry) => entry.userId === user.id)));
+    },
+
     async getById(raffleId) {
       const raffle = mockRaffles.find((r) => r.id === raffleId);
       return mockDelay(
@@ -470,6 +488,7 @@ export const mockRepositories: Repositories = {
 
       const spending = tickets
         .filter((t) => !t.spent)
+        .sort((a, b) => a.issuedAt.getTime() - b.issuedAt.getTime())
         .slice(0, raffle.ticketCost);
       const entry: RaffleEntry = {
         id: nextId('entry'),
@@ -493,6 +512,11 @@ export const mockRepositories: Repositories = {
   },
 
   posts: {
+    async listMine() {
+      if (!session) return mockDelay(unauthenticated<Post[]>());
+      return mockDelay(ResultHelper.ok(posts.filter((p) => p.authorId === user.id)));
+    },
+
     async feed(boardId, cursor) {
       const board = posts.filter((p) => p.boardId === boardId);
       const start = cursor ? board.findIndex((p) => p.id === cursor) + 1 : 0;
@@ -546,6 +570,29 @@ export const mockRepositories: Repositories = {
   },
 
   users: {
+    async getPublicProfile(userId: string) {
+      if (!session) return mockDelay(unauthenticated<import('../domain').PublicProfile>());
+      if (userId !== user.id) {
+        const profile = mockPublicProfiles.find((item) => item.userId === userId);
+        return mockDelay(
+          profile
+            ? ResultHelper.ok(profile)
+            : notFound<import('../domain').PublicProfile>('프로필'),
+        );
+      }
+      // 여기까지 왔으면 자기 프로필이다. 비공개는 남에게만 비공개다 — 자기 글의
+      // 작성자를 눌러 자기 프로필을 여는 길이 커뮤니티에 있다.
+      return mockDelay(ResultHelper.ok({
+        userId: user.id,
+        nickname: user.nickname,
+        bio: user.bio ?? '',
+        ...(user.avatarUrl && { avatarUrl: user.avatarUrl }),
+        ticketsIssued: user.ticketsIssued,
+        placesVisited: user.placesVisited,
+        tier: user.tier,
+      }));
+    },
+
     async me() {
       if (!session) return mockDelay(unauthenticated<User>());
       return mockDelay(ResultHelper.ok(user));

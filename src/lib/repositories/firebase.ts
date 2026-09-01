@@ -384,6 +384,19 @@ function toGalleryPhoto(placeId: string, id: string, d: DocData): GalleryPhoto {
 }
 
 export const firebaseRepositories: Repositories = {
+  boards: {
+    listActive: () =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(collection(db(), 'boards'), where('archived', '==', false), orderBy('order')),
+        );
+        return snap.docs.map((d_) => ({
+          id: d_.id,
+          name: localized(d_.data() as DocData, 'name', `boards/${d_.id}`, DEFAULT_LOCALE),
+        }));
+      }),
+  },
+
   assistant: {
     /**
      * `askAssistant` was deployed on 2026-08-26 answering
@@ -762,6 +775,26 @@ export const firebaseRepositories: Repositories = {
         return toRaffle(snap.id, snap.data() as DocData);
       }),
 
+    listMine: () =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(collection(db(), 'raffleEntries'), where('userId', '==', requireUid())),
+        );
+        return snap.docs
+          .map((d_) => {
+            const d = d_.data() as DocData;
+            return {
+              id: d_.id,
+              userId: String(d.userId ?? ''),
+              raffleId: String(d.raffleId ?? ''),
+              ticketIds: strList(d, 'ticketIds'),
+              ticketsSpent: Number(d.ticketsSpent ?? 0),
+              createdAt: date(d, 'createdAt', `raffleEntries/${d_.id}`),
+            };
+          })
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      }),
+
     /**
      * Fails with `errorCode: 'insufficient_tickets'` when the balance is short.
      * `toFailure` lifts that out of `HttpsError.details` so 응모 can branch on
@@ -816,6 +849,16 @@ export const firebaseRepositories: Repositories = {
           cursor: snap.docs.length > FEED_PAGE_SIZE && last ? last.id : null,
         };
         return page;
+      }),
+
+    listMine: () =>
+      attempt(async () => {
+        const snap = await getDocs(
+          query(collection(db(), 'posts'), where('authorId', '==', requireUid())),
+        );
+        return snap.docs
+          .map((d_) => toPost(d_.id, d_.data() as DocData))
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       }),
 
     getById: (postId) =>
@@ -887,6 +930,21 @@ export const firebaseRepositories: Repositories = {
   },
 
   users: {
+    getPublicProfile: (userId) =>
+      attempt(async () => {
+        const call = httpsCallable(fns(), 'getPublicProfile');
+        const d = (await call({ userId })).data as DocData;
+        return {
+          userId: String(d.userId ?? userId),
+          nickname: String(d.nickname ?? ''),
+          bio: String(d.bio ?? ''),
+          ...(typeof d.avatarUrl === 'string' && { avatarUrl: d.avatarUrl }),
+          ticketsIssued: Number(d.ticketsIssued ?? 0),
+          placesVisited: Number(d.placesVisited ?? 0),
+          tier: (['club10', 'club20', 'clubGo'].includes(String(d.tier)) ? d.tier : 'club10') as 'club10' | 'club20' | 'clubGo',
+        };
+      }),
+
     me: () =>
       attempt(async () => {
         const uid = requireUid();

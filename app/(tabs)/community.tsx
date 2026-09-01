@@ -32,7 +32,7 @@ import { Shape } from '@/features/shared';
  */
 export default function CommunityScreen() {
   const adaptive = useAdaptive();
-  const { boards, artists, reload: reloadBoards } = useBoards();
+  const { boards, artists, error: boardsError, reload: reloadBoards } = useBoards();
   const [boardId, setBoardId] = useState<string | null>(FREE_BOARD.id);
   const { state, reload, refresh, loadMore } = useFeed(boardId);
 
@@ -82,6 +82,16 @@ export default function CommunityScreen() {
       {boards != null && boards.length > 0 && (
         <BoardChips boards={boards} selectedId={boardId} onSelect={setBoardId} />
       )}
+      {boardsError != null && (
+        <View style={styles.boardError}>
+          <Txt typography="st13" color={adaptive.grey600} style={styles.boardErrorText}>
+            게시판 목록을 불러오지 못했어요.
+          </Txt>
+          <Button size="tiny" style="weak" onPress={() => void reloadBoards()}>
+            다시 시도
+          </Button>
+        </View>
+      )}
       {board != null && <BoardHeader board={board} />}
 
       {state.status === 'loading' ? (
@@ -93,7 +103,7 @@ export default function CommunityScreen() {
           data={state.posts}
           keyExtractor={(post) => post.id}
           renderItem={({ item }) => (
-            <PostRow post={item} now={state.loadedAt} onOpenPlace={(placeId) => router.push(`/place/${placeId}` as never)} />
+            <PostRow post={item} now={state.loadedAt} onOpenPlace={(placeId) => router.push(`/place/${placeId}` as never)} onOpenAuthor={(userId) => router.push(`/profile/${userId}` as never)} />
           )}
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
@@ -139,5 +149,15 @@ const styles = StyleSheet.create({
   },
   more: {
     height: 56,
+  },
+  boardError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Shape.gutter,
+    paddingBottom: 8,
+  },
+  boardErrorText: {
+    flex: 1,
   },
 });

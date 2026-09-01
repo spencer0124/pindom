@@ -1,6 +1,7 @@
 import type { Result } from '../api/types';
 import type {
   Artist,
+  Board,
   AssistantAsk,
   AssistantReply,
   Course,
@@ -13,6 +14,7 @@ import type {
   NewPost,
   NewReport,
   Place,
+  PublicProfile,
   PlaceWithDistance,
   Post,
   Raffle,
@@ -79,6 +81,10 @@ export interface ArtistRepository {
   listMine(): Promise<Result<Artist[]>>;
   follow(artistId: string): Promise<Result<void>>;
   unfollow(artistId: string): Promise<Result<void>>;
+}
+
+export interface BoardRepository {
+  listActive(): Promise<Result<Board[]>>;
 }
 
 export interface CourseRepository {
@@ -164,6 +170,7 @@ export type EnteredRaffle = RaffleEntry & { ticketBalance?: number };
 
 export interface RaffleRepository {
   list(): Promise<Result<Raffle[]>>;
+  listMine(): Promise<Result<RaffleEntry[]>>;
   getById(raffleId: string): Promise<Result<Raffle>>;
   /**
    * 응모. Fails with `errorCode: 'insufficient_tickets'` when the balance is
@@ -189,6 +196,7 @@ export interface PostRepository {
    * Pass the previous page's `cursor` to load more.
    */
   feed(boardId: string, cursor?: string | null): Promise<Result<FeedPage>>;
+  listMine(): Promise<Result<Post[]>>;
   getById(postId: string): Promise<Result<Post>>;
   /** 글쓰기 */
   create(input: NewPost): Promise<Result<Post>>;
@@ -214,6 +222,7 @@ export interface ReportRepository {
 export interface UserRepository {
   /** 마이페이지, and the ticket balance 홈 and 응모 read. */
   me(): Promise<Result<User>>;
+  getPublicProfile(userId: string): Promise<Result<PublicProfile>>;
   /** 프로필 편집. Only the fields the client is allowed to write. */
   updateProfile(input: {
     nickname?: string;
@@ -253,6 +262,7 @@ export interface AssistantRepository {
 
 export interface Repositories {
   artists: ArtistRepository;
+  boards: BoardRepository;
   assistant: AssistantRepository;
   auth: AuthRepository;
   courses: CourseRepository;

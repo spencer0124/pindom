@@ -8,6 +8,6 @@ export { PlaceStats } from './PlaceStats';
 export { ReviewList } from './ReviewList';
 export { KOREA_CENTRE, readPosition, type Position } from './position';
 export { useDiscoveryStore } from './state';
-export { useMapData } from './useMapData';
+export { useMapData, type MapSort } from './useMapData';
 export { usePlaceDetail } from './usePlaceDetail';
 export { readVisitedPlaceIds } from './visited';

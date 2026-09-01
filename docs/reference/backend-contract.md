@@ -435,16 +435,11 @@ feed.
 | `createdAt` | `Timestamp` | |
 
 > [!WARNING]
-> **`boardId` is not validated by the rules, and 자유게시판 depends on that.** The deployed
-> `posts` create rule checks the author's identity, the two counters and the server clock —
-> it never asks whether `boardId` names a real artist. That is what lets 자유게시판 exist as
-> the reserved id `board-free` with no backend change: reads are open to any signed-in user
-> and the deployed composite index is already `boardId + createdAt`.
+> **Board ids are validated at write time.** The deployed `posts` create rule accepts the
+> legacy reserved id `board-free` and otherwise requires an existing `boards/{boardId}` document.
+> The app reads active boards (`archived == false`) before rendering chips, so missing or archived
+> boards cannot produce a dead posting target.
 >
-> A rule tightened to `exists(/databases/$(database)/documents/artists/$(request.resource.data.boardId))`
-> would kill 자유게시판 silently — posts would stop being accepted with no client-visible
-> reason beyond a permission failure. If that constraint is ever wanted, it has to exempt
-> `board-free`. Verified against the live project on 2026-08-26.
 
 ### `reports/{reportId}` — 신고
 
@@ -795,13 +790,8 @@ and `functions/src/assistant.ts`'s `Suggestion`/`Route`, field for field.
 > answer instead of drawing a blank bubble.
 
 > [!NOTE]
-> **`askAssistant` never writes a `courses` document.** `courseId` is typed on the client's
-> `AssistantReply` and read from the response, but nothing in `askAssistant` sends it — the
-> field stays `undefined` on every answer today. A route answer that should produce a course
-> would write it as a `courses` document for the artist, so 홈's 지역 코스 block and 추천 코스
-> read the same thing; that is not built. The legs the prototype annotates — travel time,
-> shooting window, nearby food — are the route and local APIs' figures and would belong on that
-> document, not on the reply.
+> `courseId` is returned when a route matches an existing `courses` document for the artist.
+> `askAssistant` does not create new courses; the admin/seed path owns those documents.
 
 ### `deleteAccount`
 

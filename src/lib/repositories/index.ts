@@ -1,6 +1,7 @@
 import { AppConfig } from '../config';
 import type {
   ArtistRepository,
+  BoardRepository,
   AssistantRepository,
   AuthRepository,
   CourseRepository,
@@ -51,6 +52,10 @@ export const artistRepository: ArtistRepository = {
   unfollow: async (artistId) => (await impl()).artists.unfollow(artistId),
 };
 
+export const boardRepository: BoardRepository = {
+  listActive: async () => (await impl()).boards.listActive(),
+};
+
 export const courseRepository: CourseRepository = {
   listForArtist: async (artistId) => (await impl()).courses.listForArtist(artistId),
   route: async (placeIds, origin) => (await impl()).courses.route(placeIds, origin),
@@ -94,6 +99,7 @@ export const ticketRepository: TicketRepository = {
 
 export const raffleRepository: RaffleRepository = {
   list: async () => (await impl()).raffles.list(),
+  listMine: async () => (await impl()).raffles.listMine(),
   getById: async (raffleId) => (await impl()).raffles.getById(raffleId),
   enter: async (raffleId, idempotencyKey) =>
     (await impl()).raffles.enter(raffleId, idempotencyKey),
@@ -101,6 +107,7 @@ export const raffleRepository: RaffleRepository = {
 
 export const postRepository: PostRepository = {
   feed: async (boardId, cursor) => (await impl()).posts.feed(boardId, cursor),
+  listMine: async () => (await impl()).posts.listMine(),
   getById: async (postId) => (await impl()).posts.getById(postId),
   create: async (input) => (await impl()).posts.create(input),
 };
@@ -111,6 +118,7 @@ export const reportRepository: ReportRepository = {
 
 export const userRepository: UserRepository = {
   me: async () => (await impl()).users.me(),
+  getPublicProfile: async (userId) => (await impl()).users.getPublicProfile(userId),
   updateProfile: async (input) => (await impl()).users.updateProfile(input),
   setLocale: async (locale) => (await impl()).users.setLocale(locale),
   block: async (userId) => (await impl()).users.block(userId),
@@ -119,6 +127,7 @@ export const userRepository: UserRepository = {
 
 export type {
   ArtistRepository,
+  BoardRepository,
   AuthRepository,
   CourseRepository,
   PlaceRepository,
