@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, SdsSpacing, Txt, useAdaptive } from '@/design-system';
 import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
@@ -15,6 +15,8 @@ import { Rule, Shape } from '@/features/shared';
  *
  * 응모하러 가기 needs a raffle to open, because 응모 is keyed to one; it goes
  * to the soonest-closing open raffle, and is not offered when there is none.
+ * 응모 내역 row goes to /raffle/history — the record a fresh entry leaves,
+ * reachable from where the user lands after tearing, not only from 마이페이지.
  * Private tickets are 보관함's, reached from 마이페이지 — the same tickets, the
  * other visibility. Every tile tilts under a held finger, as 티켓 발행's card
  * does; a touch that moves first is a scroll.
@@ -74,6 +76,23 @@ export default function TicketsScreen() {
 
         <Rule />
 
+        {/* 응모 뒤의 행방 — 내역 화면은 마이페이지에만 걸려 있어, 방금 응모한
+            사람이 컬렉션으로 돌아와서는 기록을 찾을 수 없었다. */}
+        <Pressable
+          onPress={() => router.push('/raffle/history' as never)}
+          accessibilityRole="button"
+          style={styles.historyRow}
+        >
+          <Txt typography="t6" color={adaptive.grey900}>
+            응모 내역 / 당첨 확인
+          </Txt>
+          <Txt typography="t6" color={adaptive.grey500}>
+            ›
+          </Txt>
+        </Pressable>
+
+        <Rule />
+
         <TicketGrid tickets={tickets} />
       </ScrollView>
     </SafeAreaView>
@@ -95,5 +114,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Shape.gutter,
     paddingTop: 8,
     paddingBottom: 14,
+  },
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Shape.gutter,
+    paddingVertical: 14,
   },
 });

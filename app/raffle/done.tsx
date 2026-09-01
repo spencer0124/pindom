@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, { Easing, FadeInDown, Keyframe, useSharedValue } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,18 +44,19 @@ const fadeUp = (delay: number) =>
     .withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] });
 
 /**
- * 응모완료 — the torn ticket, stamped, and the entry number.
+ * 응모완료 — the torn ticket, stamped, and what remains.
  *
  * Built from prototype block `1a` for layout, copy and flow and `2b` for colour,
  * type and corners, matching `app/(tabs)/index.tsx`. Figma `33:1830` is the
  * earlier frame.
  *
  * The halves are `TearStage` held at 1 with the stub reading USED — the same
- * object the user just tore, not a second drawing of it. The entry number is
- * the server's entry id, and the balance is the one the server answered with
- * the entry, so the note is whole on its first frame; it is read back only
- * when that answer carried none. Never computed here. 1a prints a fixed draw
- * date; the contract has none, so the line names the raffle's closing date,
+ * object the user just tore, not a second drawing of it. The balance is the one
+ * the server answered with the entry, so the note is whole on its first frame;
+ * it is read back only when that answer carried none. The entry id itself is
+ * not printed — it is the internal `{uid}_{raffleId}_{key}` idempotency key,
+ * sixty-odd characters of noise to a person. Never computed here. 1a prints a
+ * fixed draw date; the contract has none, so the line names the closing date,
  * which the Tickets checklist records.
  *
  * That line said 앱 알림으로 until 2026-08-27. It cannot: `PINDOM.entitlements`
@@ -79,9 +80,14 @@ export default function RaffleDoneScreen() {
   const torn = useSharedValue(1);
   const [balance, setBalance] = useState<number | null>(entryBalance);
 
-  useEffect(() => {
-    if (entry == null) router.replace('/tickets' as never);
-  }, [entry]);
+  // Only the focused screen may redirect: 자랑하기 resets the store while this
+  // screen is still mounted beneath the tab it navigates to, and a plain
+  // effect would answer that reset by replacing the destination with /tickets.
+  useFocusEffect(
+    useCallback(() => {
+      if (entry == null) router.replace('/tickets' as never);
+    }, [entry]),
+  );
 
   useEffect(() => {
     if (entryBalance != null) return;
@@ -125,9 +131,7 @@ export default function RaffleDoneScreen() {
             응모가 확정됐어요
           </Txt>
           <Txt typography="t6" color={adaptive.grey600} textAlign="center">
-            응모번호 {entry.id}
-            {balance != null ? ` · 남은 티켓 ${balance}장` : ''}
-            {'\n'}
+            {balance != null ? `남은 티켓 ${balance}장\n` : ''}
             당첨 발표는 {formatDay(raffle.closesAt)}, 가입 이메일로 안내됩니다
           </Txt>
         </Animated.View>

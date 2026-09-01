@@ -12,7 +12,7 @@ import Svg, { Polyline } from 'react-native-svg';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { AppConfig } from '@/lib/config';
 import { Shape } from '@/features/shared';
-import { MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MapPin } from './MapPin';
+import { MAP_PIN_ANCHOR, MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MapPin } from './MapPin';
 import { KOREA_CENTRE, type Position } from './position';
 
 /**
@@ -285,12 +285,15 @@ function regionOf(places: Position[], field: Field | null, inset: MapInset = {})
   const latSpan = Math.max(maxLat - minLat, SINGLE_PLACE_SPAN);
   const lngSpan = Math.max(maxLng - minLng, SINGLE_PLACE_SPAN);
 
-  // A pin's head sits above its coordinate and its caption below the head, so
-  // the top needs a whole pin and the bottom only the caption's half.
+  // The tip anchor splits a pin at the head's base: the head rises above its
+  // coordinate, the caption hangs below it.
   const cap = (room: number, extent: number) => Math.min(room, extent * MAX_ROOM);
-  const roomTop = cap((inset.top ?? 0) + MAP_PIN_HEIGHT + REGION_BREATH, field.height);
+  const roomTop = cap(
+    (inset.top ?? 0) + MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y + REGION_BREATH,
+    field.height,
+  );
   const roomBottom = cap(
-    (inset.bottom ?? 0) + MAP_PIN_HEIGHT / 2 + REGION_BREATH,
+    (inset.bottom ?? 0) + MAP_PIN_HEIGHT * (1 - MAP_PIN_ANCHOR.y) + REGION_BREATH,
     field.height,
   );
   const roomLeft = cap((inset.left ?? 0) + MAP_PIN_WIDTH / 2 + REGION_BREATH, field.width);
@@ -380,6 +383,13 @@ function Tiles({
       // are the controls that remain.
       isShowZoomControls={false}
       isShowScaleBar={false}
+      // The app is pinned dark (SDSProvider colorPreference="dark") and Basic
+      // tiles have no dark styling, so the dark chips and pins floated on a
+      // light map. Navi is the SDK's one night-capable type; symbolScale
+      // shrinks the base map's own labels so the pins and captions lead.
+      mapType="Navi"
+      isNightModeEnabled
+      symbolScale={0.8}
       locale="ko"
     >
       {places.map((place, index) => {
@@ -392,6 +402,7 @@ function Tiles({
             longitude={place.lng}
             width={MAP_PIN_WIDTH}
             height={MAP_PIN_HEIGHT}
+            anchor={MAP_PIN_ANCHOR}
             isHidden={!revealed}
             onTap={() => onSelect(place.id)}
           >
@@ -414,6 +425,7 @@ function Tiles({
           longitude={poi.lng}
           width={MAP_PIN_WIDTH}
           height={MAP_PIN_HEIGHT}
+          anchor={MAP_PIN_ANCHOR}
           isHidden={!revealed}
         >
           <View key={poi.name} collapsable={false} style={styles.markerChild}>
@@ -564,8 +576,8 @@ function StandIn({
                 entering={pinDrop}
                 style={[
                   styles.pinSlot,
-                  // 1a's `translate(-50%,-100%)`: the pin stands on its point.
-                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT },
+                  // Tip-anchored like the tile markers: the head's base sits on the coordinate.
+                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y },
                 ]}
               >
                 <Pressable
@@ -587,7 +599,10 @@ function StandIn({
                 key={`poi/${poi.name}/${poi.lat},${poi.lng}`}
                 entering={pinDrop}
                 pointerEvents="none"
-                style={[styles.pinSlot, { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT }]}
+                style={[
+                  styles.pinSlot,
+                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y },
+                ]}
               >
                 <MapPin visited={false} poi label={poi.name} />
               </Animated.View>
