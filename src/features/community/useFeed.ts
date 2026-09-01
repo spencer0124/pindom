@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
-import { hideBlocked, type Artist, type Post } from '@/lib/domain';
+import { hideBlocked, type Artist, type Board, type Post } from '@/lib/domain';
 import { useBlocklist } from '@/features/moderation';
 import { artistRepository, boardRepository, postRepository } from '@/lib/repositories';
-import type { Board } from '@/lib/domain';
 import { FREE_BOARD } from './boards';
 
 type State =
