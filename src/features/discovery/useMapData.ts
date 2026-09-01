@@ -17,6 +17,7 @@ export interface MapData {
   /** False when there is no fix. Distances are hidden rather than shown as 0m. */
   hasPosition: boolean;
 }
+export type MapSort = 'distance' | 'popular';
 
 type State =
   | { status: 'loading' }
@@ -55,7 +56,7 @@ function matches(place: PlaceWithDistance, query: string, artistName?: string): 
  * from the centre of the country purely to give the list a stable order — and
  * `hasPosition` is false, so no screen prints them.
  */
-export function useMapData(query: string) {
+export function useMapData(query: string, sort: MapSort = 'distance') {
   const [base, setBase] = useState<
     { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: Base }
   >({ status: 'loading' });
@@ -114,10 +115,14 @@ export function useMapData(query: string) {
       data: {
         ...base.data,
         selectedArtist,
-        places: forArtist.filter((p) => matches(p, query, selectedArtist?.name)),
+        places: forArtist
+          .filter((p) => matches(p, query, selectedArtist?.name))
+          .sort((a, b) => sort === 'popular'
+            ? (b.ticketCount + b.verifyCount + b.photoCount) - (a.ticketCount + a.verifyCount + a.photoCount)
+            : a.distanceMeters - b.distanceMeters),
       },
     };
-  }, [base, query, selectedArtistId]);
+  }, [base, query, selectedArtistId, sort]);
 
   return { state, reload: load };
 }

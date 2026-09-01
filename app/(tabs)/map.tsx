@@ -1,14 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ErrorPage, Loader, SearchField, useAdaptive } from '@/design-system';
+import { ErrorPage, Loader, SearchField, Txt, useAdaptive } from '@/design-system';
 import {
   MapCanvas,
   MapFilters,
   NearbyPanel,
   useDiscoveryStore,
   useMapData,
+  type MapSort,
 } from '@/features/discovery';
 import { Shape } from '@/features/shared';
 
@@ -35,8 +36,9 @@ import { Shape } from '@/features/shared';
 export default function MapScreen() {
   const adaptive = useAdaptive();
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<MapSort>('distance');
   const [chromeHeight, setChromeHeight] = useState(0);
-  const { state, reload } = useMapData(query);
+  const { state, reload } = useMapData(query, sort);
   const selectArtist = useDiscoveryStore((s) => s.select);
 
   const onChromeLayout = (e: LayoutChangeEvent) => setChromeHeight(e.nativeEvent.layout.height);
@@ -103,6 +105,13 @@ export default function MapScreen() {
             selectedId={selectedArtist?.id}
             onSelect={selectArtist}
           />
+          <View style={styles.sortRow}>
+            {(['distance', 'popular'] as const).map((value) => (
+              <Pressable key={value} onPress={() => setSort(value)} style={[styles.sort, { borderColor: sort === value ? adaptive.grey900 : adaptive.grey200 }]}>
+                <Txt typography="st13" color={sort === value ? adaptive.grey900 : adaptive.grey500}>{value === 'distance' ? '거리순' : '인기순'}</Txt>
+              </Pressable>
+            ))}
+          </View>
         </SafeAreaView>
       </View>
 
@@ -129,6 +138,8 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 8,
   },
+  sortRow: { flexDirection: 'row', gap: 8, marginHorizontal: Shape.gutter },
+  sort: { paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1 },
   search: {
     marginHorizontal: Shape.gutter,
     // 2b's radius rule is chips only; the design system's own 12px is the light

@@ -41,7 +41,7 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
   }, []);
 
   useEffect(() => {
-    if (available && permission != null && !permission.granted && permission.canAskAgain) {
+    if (permission != null && !permission.granted && permission.canAskAgain) {
       void requestPermission();
     }
   }, [available, permission, requestPermission]);

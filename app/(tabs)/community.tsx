@@ -93,7 +93,7 @@ export default function CommunityScreen() {
           data={state.posts}
           keyExtractor={(post) => post.id}
           renderItem={({ item }) => (
-            <PostRow post={item} now={state.loadedAt} onOpenPlace={(placeId) => router.push(`/place/${placeId}` as never)} />
+            <PostRow post={item} now={state.loadedAt} onOpenPlace={(placeId) => router.push(`/place/${placeId}` as never)} onOpenAuthor={(userId) => router.push(`/profile/${userId}` as never)} />
           )}
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}

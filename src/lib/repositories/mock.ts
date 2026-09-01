@@ -436,6 +436,10 @@ export const mockRepositories: Repositories = {
       return mockDelay(ResultHelper.ok([...mockRaffles]));
     },
 
+    async listMine() {
+      return mockDelay(ResultHelper.ok([...entries]));
+    },
+
     async getById(raffleId) {
       const raffle = mockRaffles.find((r) => r.id === raffleId);
       return mockDelay(
@@ -502,6 +506,11 @@ export const mockRepositories: Repositories = {
   },
 
   posts: {
+    async listMine() {
+      if (!session) return mockDelay(unauthenticated<Post[]>());
+      return mockDelay(ResultHelper.ok(posts.filter((p) => p.authorId === user.id)));
+    },
+
     async feed(boardId, cursor) {
       const board = posts.filter((p) => p.boardId === boardId);
       const start = cursor ? board.findIndex((p) => p.id === cursor) + 1 : 0;
@@ -555,6 +564,19 @@ export const mockRepositories: Repositories = {
   },
 
   users: {
+    async getPublicProfile(userId: string) {
+      if (userId !== user.id) return mockDelay(notFound<import('../domain').PublicProfile>('프로필'));
+      return mockDelay(ResultHelper.ok({
+        userId: user.id,
+        nickname: user.nickname,
+        bio: user.bio ?? '',
+        ...(user.avatarUrl && { avatarUrl: user.avatarUrl }),
+        ticketsIssued: user.ticketsIssued,
+        placesVisited: user.placesVisited,
+        tier: user.tier,
+      }));
+    },
+
     async me() {
       if (!session) return mockDelay(unauthenticated<User>());
       return mockDelay(ResultHelper.ok(user));
