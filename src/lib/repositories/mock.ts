@@ -29,6 +29,8 @@ import {
   mockGallery,
   mockPlaces,
   mockPosts,
+  mockPublicProfiles,
+  mockRaffleEntries,
   mockRaffles,
   mockReviews,
   mockTickets,
@@ -56,7 +58,7 @@ let user: User = { ...mockUser };
 let tickets: Ticket[] = [...mockTickets];
 let posts: Post[] = [...mockPosts];
 let reviews: Review[] = [...mockReviews];
-const entries: RaffleEntry[] = [];
+const entries: RaffleEntry[] = [...mockRaffleEntries];
 /**
  * Every 신고 this run has filed.
  *
@@ -568,17 +570,12 @@ export const mockRepositories: Repositories = {
     async getPublicProfile(userId: string) {
       if (!session) return mockDelay(unauthenticated<import('../domain').PublicProfile>());
       if (userId !== user.id) {
-        const post = posts.find((item) => item.authorId === userId);
-        if (!post) return mockDelay(notFound<import('../domain').PublicProfile>('프로필'));
-        return mockDelay(ResultHelper.ok({
-          userId,
-          nickname: post.authorNickname,
-          bio: '',
-          ...(post.authorAvatarUrl && { avatarUrl: post.authorAvatarUrl }),
-          ticketsIssued: 0,
-          placesVisited: 0,
-          tier: post.authorTier,
-        }));
+        const profile = mockPublicProfiles.find((item) => item.userId === userId);
+        return mockDelay(
+          profile
+            ? ResultHelper.ok(profile)
+            : notFound<import('../domain').PublicProfile>('프로필'),
+        );
       }
       if (user.profileVisibility !== 'public') {
         return mockDelay(ResultHelper.error<import('../domain').PublicProfile>(

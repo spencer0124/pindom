@@ -1,5 +1,18 @@
 import type { AssistantAsk, AssistantReply } from '../lib/domain';
 import { mockCourses } from './courses';
+import { mockPlaces } from './places';
+
+function mapFor(input: AssistantAsk, placeIds?: string[]): NonNullable<AssistantReply['map']> {
+  const places = placeIds
+    ? placeIds.map((id) => mockPlaces.find((place) => place.id === id)).filter((place) => place != null)
+    : mockPlaces.filter((place) => input.artistId == null || place.artistIds.includes(input.artistId)).slice(0, 3);
+  return {
+    stops: places.map(({ id, name, region, lat, lng }) => ({ placeId: id, name, region, lat, lng })),
+    suggestions: [],
+    path: [],
+    ordered: placeIds != null,
+  };
+}
 
 /**
  * Pindom AI fixtures — one canned answer per chip on the empty chat, and a
@@ -22,6 +35,7 @@ export function mockAssistantReply(input: AssistantAsk): AssistantReply {
         `· 오후에 다음 촬영지로 이동해 해 질 무렵 원본 컷 각도로 촬영\n` +
         `· 이동 순서는 지도에서 코스 보기로 확인할 수 있어요`,
       courseId: course.id,
+      map: mapFor(input, course.placeIds),
     };
   }
   if (/맛집|밥집|카페|먹/.test(q)) {
@@ -48,6 +62,7 @@ export function mockAssistantReply(input: AssistantAsk): AssistantReply {
         '· 한 촬영지는 30일에 한 번만 발행돼요\n' +
         '· 지역 코스로 묶으면 하루에 2~3장까지 가능합니다\n' +
         '· 20장을 채우면 팬사인회·굿즈 응모가 열려요',
+      map: mapFor(input),
     };
   }
   return {
