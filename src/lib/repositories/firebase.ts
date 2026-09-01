@@ -855,7 +855,7 @@ export const firebaseRepositories: Repositories = {
     listMine: () =>
       attempt(async () => {
         const snap = await getDocs(
-          query(collection(db(), 'posts'), where('authorId', '==', requireUid()), limit(100)),
+          query(collection(db(), 'posts'), where('authorId', '==', requireUid())),
         );
         return snap.docs
           .map((d_) => toPost(d_.id, d_.data() as DocData))

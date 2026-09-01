@@ -39,28 +39,30 @@ export function PostRow({ post, now, onOpenPlace, onOpenAuthor }: PostRowProps) 
 
   return (
     <View style={[styles.row, { borderTopColor: adaptive.grey200 }]}>
-      <Pressable
-        style={styles.head}
-        onPress={() => onOpenAuthor?.(post.authorId)}
-        disabled={onOpenAuthor == null}
-        accessibilityRole={onOpenAuthor == null ? undefined : 'button'}
-      >
-        <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
-          {post.authorAvatarUrl != null && (
-            <Image source={{ uri: post.authorAvatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-          )}
-        </View>
-        <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
-          {post.authorNickname}
-        </Txt>
-        <Txt typography="st13" color={adaptive.grey500} style={styles.time}>
-          {formatTimeAgo(post.createdAt, now)}
-        </Txt>
-        <View style={[styles.tier, { borderColor: token.accent.fillColor }]}>
-          <Txt typography="st13" fontWeight="bold" color={token.accent.fillColor}>
-            {tierLabel[post.authorTier]}
+      <View style={styles.head}>
+        <Pressable
+          style={styles.author}
+          onPress={() => onOpenAuthor?.(post.authorId)}
+          disabled={onOpenAuthor == null}
+          accessibilityRole={onOpenAuthor == null ? undefined : 'button'}
+        >
+          <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
+            {post.authorAvatarUrl != null && (
+              <Image source={{ uri: post.authorAvatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+            )}
+          </View>
+          <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
+            {post.authorNickname}
           </Txt>
-        </View>
+          <Txt typography="st13" color={adaptive.grey500} style={styles.time}>
+            {formatTimeAgo(post.createdAt, now)}
+          </Txt>
+          <View style={[styles.tier, { borderColor: token.accent.fillColor }]}>
+            <Txt typography="st13" fontWeight="bold" color={token.accent.fillColor}>
+              {tierLabel[post.authorTier]}
+            </Txt>
+          </View>
+        </Pressable>
         <ModerationButton
           target={{
             type: 'post',
@@ -69,7 +71,7 @@ export function PostRow({ post, now, onOpenPlace, onOpenAuthor }: PostRowProps) 
             authorNickname: post.authorNickname,
           }}
         />
-      </Pressable>
+      </View>
 
       <Txt typography="t6" color={adaptive.grey900}>
         {post.body}
@@ -115,6 +117,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  author: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
