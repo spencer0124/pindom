@@ -87,11 +87,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // 공식 규정 screen. Build 5 (2026-08-30) brings the assistant map into the
     // chat thread and the real-road course line (PR #1). Build 6 (2026-08-31)
     // adds the answer cards under that map — the drive order as a numbered
-    // list and the recommendations as rows opening 카카오맵 (PR #2). It lives
-    // here rather than in Info.plist because `ios/` is gitignored — a number
-    // kept only there is lost at the next prebuild, and the next uploader
-    // finds out from a rejected upload.
-    buildNumber: '6',
+    // list and the recommendations as rows opening 카카오맵 (PR #2). Build 7
+    // (2026-09-01) adds the assistant place cards and active boards, the chat
+    // retry and answer reporting, and the verification mail sent at signup
+    // (PR #3 and the fix that followed it). It lives here rather than in
+    // Info.plist because `ios/` is gitignored — a number kept only there is
+    // lost at the next prebuild, and the next uploader finds out from a
+    // rejected upload.
+    buildNumber: '7',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
