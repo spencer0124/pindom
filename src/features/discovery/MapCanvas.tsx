@@ -40,7 +40,7 @@ const MAX_ROOM = 0.4;
 /** The span a single place gets, in degrees — roughly a city. */
 const SINGLE_PLACE_SPAN = 0.08;
 /** Room `fit` leaves around what it frames, as a share of the span on each side. */
-const FRAME_MARGIN = 0.25;
+const FRAME_MARGIN = 0.12;
 /** Degrees. A lone pin gets roughly a neighbourhood rather than the whole globe. */
 const FRAME_MIN_SPAN = 0.01;
 /** 1a's `pinDrop .5s` — every pin drops at once, no stagger. */

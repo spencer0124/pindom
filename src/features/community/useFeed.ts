@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import { hideBlocked, type Artist, type Post } from '@/lib/domain';
 import { useBlocklist } from '@/features/moderation';
-import { artistRepository, postRepository } from '@/lib/repositories';
-import { boardsWithFree } from './boards';
+import { artistRepository, boardRepository, postRepository } from '@/lib/repositories';
+import type { Board } from '@/lib/domain';
 
 type State =
   | { status: 'loading' }
@@ -110,17 +110,30 @@ export function useFeed(boardId: string | null) {
  */
 export function useBoards() {
   const [artists, setArtists] = useState<Artist[] | null>(null);
+  const [boardList, setBoardList] = useState<Board[]>([]);
 
   const load = useCallback(async () => {
-    const mine = await artistRepository.listMine();
-    setArtists(mine.ok ? mine.data : []);
+    const [mine, active] = await Promise.all([
+      artistRepository.listMine(),
+      boardRepository.listActive(),
+    ]);
+    const followed = mine.ok ? mine.data : [];
+    const available = active.ok ? new Map(active.data.map((board) => [board.id, board])) : new Map<string, Board>();
+    setArtists(followed.filter((artist) => available.has(artist.id)));
+    if (active.ok) {
+      const free = available.get('board-free');
+      // Keep the user's follow order, but never expose an archived/missing board.
+      setBoardList([...(free ? [free] : []), ...followed.map((artist) => available.get(artist.id)).filter((board): board is Board => Boolean(board))]);
+    } else {
+      setBoardList([]);
+    }
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const boards = artists == null ? null : boardsWithFree(artists);
+  const boards = artists == null ? null : boardList;
 
   return { boards, artists, reload: load };
 }

@@ -1,6 +1,7 @@
 import { AppConfig } from '../config';
 import type {
   ArtistRepository,
+  BoardRepository,
   AssistantRepository,
   AuthRepository,
   CourseRepository,
@@ -49,6 +50,10 @@ export const artistRepository: ArtistRepository = {
   listMine: async () => (await impl()).artists.listMine(),
   follow: async (artistId) => (await impl()).artists.follow(artistId),
   unfollow: async (artistId) => (await impl()).artists.unfollow(artistId),
+};
+
+export const boardRepository: BoardRepository = {
+  listActive: async () => (await impl()).boards.listActive(),
 };
 
 export const courseRepository: CourseRepository = {
@@ -119,6 +124,7 @@ export const userRepository: UserRepository = {
 
 export type {
   ArtistRepository,
+  BoardRepository,
   AuthRepository,
   CourseRepository,
   PlaceRepository,

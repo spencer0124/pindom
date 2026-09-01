@@ -11,6 +11,7 @@
  * for the active locale. See `locale.ts`.
  */
 export type { Artist } from './artist';
+export type { Board } from './board';
 export type { Course, CourseRoute } from './course';
 export { DEFAULT_LOCALE, LOCALES } from './locale';
 export type { Locale } from './locale';

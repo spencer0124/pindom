@@ -1,6 +1,7 @@
 import type { Result } from '../api/types';
 import type {
   Artist,
+  Board,
   AssistantAsk,
   AssistantReply,
   Course,
@@ -79,6 +80,10 @@ export interface ArtistRepository {
   listMine(): Promise<Result<Artist[]>>;
   follow(artistId: string): Promise<Result<void>>;
   unfollow(artistId: string): Promise<Result<void>>;
+}
+
+export interface BoardRepository {
+  listActive(): Promise<Result<Board[]>>;
 }
 
 export interface CourseRepository {
@@ -253,6 +258,7 @@ export interface AssistantRepository {
 
 export interface Repositories {
   artists: ArtistRepository;
+  boards: BoardRepository;
   assistant: AssistantRepository;
   auth: AuthRepository;
   courses: CourseRepository;

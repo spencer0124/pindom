@@ -128,6 +128,15 @@ function withDistance(
 // ── Implementation ──
 
 export const mockRepositories: Repositories = {
+  boards: {
+    async listActive() {
+      return mockDelay(ResultHelper.ok([
+        { id: 'board-free', name: '자유게시판' },
+        ...mockArtists.map(({ id, name }) => ({ id, name })),
+      ]));
+    },
+  },
+
   assistant: {
     async ask(input) {
       if (!session) return mockDelay(unauthenticated<AssistantReply>());
