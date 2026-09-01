@@ -391,8 +391,7 @@ export const firebaseRepositories: Repositories = {
           query(collection(db(), 'boards'), where('archived', '==', false), orderBy('order')),
         );
         return snap.docs.map((d_) => ({
-          // The deployed app reserved board-free; admin data uses the canonical free id.
-          id: d_.id === 'free' ? 'board-free' : d_.id,
+          id: d_.id,
           name: localized(d_.data() as DocData, 'name', `boards/${d_.id}`, DEFAULT_LOCALE),
         }));
       }),
