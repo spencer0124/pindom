@@ -565,7 +565,20 @@ export const mockRepositories: Repositories = {
 
   users: {
     async getPublicProfile(userId: string) {
-      if (userId !== user.id) return mockDelay(notFound<import('../domain').PublicProfile>('프로필'));
+      if (!session) return mockDelay(unauthenticated<import('../domain').PublicProfile>());
+      if (userId !== user.id) {
+        const post = posts.find((item) => item.authorId === userId);
+        if (!post) return mockDelay(notFound<import('../domain').PublicProfile>('프로필'));
+        return mockDelay(ResultHelper.ok({
+          userId,
+          nickname: post.authorNickname,
+          bio: '',
+          ...(post.authorAvatarUrl && { avatarUrl: post.authorAvatarUrl }),
+          ticketsIssued: 0,
+          placesVisited: 0,
+          tier: post.authorTier,
+        }));
+      }
       return mockDelay(ResultHelper.ok({
         userId: user.id,
         nickname: user.nickname,

@@ -2,12 +2,14 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Txt, useAdaptive } from '@/design-system';
 import type { PlaceWithDistance } from '@/lib/domain';
 import { PlaceList, SectionHeader, Shape } from '@/features/shared';
+import type { MapSort } from './useMapData';
 
 interface NearbyPanelProps {
   places: PlaceWithDistance[];
   artistName?: string;
   visitedPlaceIds: string[];
   hasPosition: boolean;
+  sort: MapSort;
   /** True while a search box has narrowed the list — it changes the empty copy. */
   filtered: boolean;
   onSelect: (placeId: string) => void;
@@ -30,6 +32,7 @@ export function NearbyPanel({
   artistName,
   visitedPlaceIds,
   hasPosition,
+  sort,
   filtered,
   onSelect,
 }: NearbyPanelProps) {
@@ -46,7 +49,7 @@ export function NearbyPanel({
         <SectionHeader
           title={artistName != null ? `${artistName}의 촬영지` : '촬영지'}
           count={places.length}
-          right={hasPosition ? '거리순' : undefined}
+          right={sort === 'popular' ? '인기순' : hasPosition ? '거리순' : undefined}
         />
       </View>
 

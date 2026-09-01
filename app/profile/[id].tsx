@@ -1,8 +1,10 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorPage, Loader, Txt, useAdaptive } from '@/design-system';
+import { failureMessage } from '@/lib/api/failure-message';
 import { userRepository } from '@/lib/repositories';
 import type { PublicProfile } from '@/lib/domain';
 import { tierLabel } from '@/features/shared';
@@ -10,34 +12,62 @@ import { tierLabel } from '@/features/shared';
 export default function PublicProfileScreen() {
   const adaptive = useAdaptive();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [state, setState] = useState<{ loading: boolean; profile?: PublicProfile; error?: string }>({ loading: true });
+  const [state, setState] = useState<
+    | { status: 'loading' }
+    | { status: 'error'; message: string }
+    | { status: 'ready'; profile: PublicProfile }
+  >({ status: 'loading' });
 
-  useEffect(() => {
-    if (!id) return;
-    void userRepository.getPublicProfile(id).then((result) =>
-      setState(result.ok ? { loading: false, profile: result.data } : { loading: false, error: '공개 프로필이 아니에요.' }),
-    );
+  const load = useCallback(async () => {
+    if (!id) {
+      setState({ status: 'error', message: '프로필을 찾을 수 없어요.' });
+      return;
+    }
+    setState({ status: 'loading' });
+    const result = await userRepository.getPublicProfile(id);
+    if (result.ok) return setState({ status: 'ready', profile: result.data });
+    const message =
+      result.failure.type === 'firebase' && result.failure.code === 'permission-denied'
+        ? '공개 프로필이 아니에요.'
+        : failureMessage(result.failure);
+    setState({ status: 'error', message });
   }, [id]);
 
-  if (state.loading) return <Loader.Centered label="프로필을 불러오는 중" />;
-  if (!state.profile) return <ErrorPage title="프로필을 볼 수 없어요" subtitle={state.error} onPressRightButton={() => router.back()} />;
+  useEffect(() => { void load(); }, [load]);
+
+  if (state.status === 'loading') {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
+        <Loader.Centered label="프로필을 불러오는 중" />
+      </SafeAreaView>
+    );
+  }
+  if (state.status === 'error') {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
+        <ErrorPage title="프로필을 볼 수 없어요" subtitle={state.message} onPressRightButton={load} />
+      </SafeAreaView>
+    );
+  }
   const { profile } = state;
   return (
-    <ScrollView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]} contentContainerStyle={styles.content}>
-      <Pressable onPress={() => router.back()}><Txt typography="t7" color={adaptive.grey600}>‹ 뒤로</Txt></Pressable>
-      <View style={styles.head}>
-        <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
-          {profile.avatarUrl ? <Image source={{ uri: profile.avatarUrl }} style={StyleSheet.absoluteFill} /> : <Txt typography="t1" fontWeight="bold" color={adaptive.grey600}>{profile.nickname.slice(0, 1)}</Txt>}
+    <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Pressable onPress={() => router.back()}><Txt typography="t7" color={adaptive.grey600}>‹ 뒤로</Txt></Pressable>
+        <View style={styles.head}>
+          <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
+            {profile.avatarUrl ? <Image source={{ uri: profile.avatarUrl }} style={StyleSheet.absoluteFill} /> : <Txt typography="t1" fontWeight="bold" color={adaptive.grey600}>{profile.nickname.slice(0, 1)}</Txt>}
+          </View>
+          <Txt typography="t3" fontWeight="bold" color={adaptive.grey900}>{profile.nickname}</Txt>
+          <Txt typography="st13" color={adaptive.grey500}>{tierLabel[profile.tier]}</Txt>
         </View>
-        <Txt typography="t3" fontWeight="bold" color={adaptive.grey900}>{profile.nickname}</Txt>
-        <Txt typography="st13" color={adaptive.grey500}>{tierLabel[profile.tier]}</Txt>
-      </View>
-      {profile.bio ? <Txt typography="t6" color={adaptive.grey700} style={styles.bio}>{profile.bio}</Txt> : null}
-      <View style={styles.stats}>
-        <Txt typography="st13" color={adaptive.grey600}>방문 인증 {profile.ticketsIssued}</Txt>
-        <Txt typography="st13" color={adaptive.grey600}>방문 지역 {profile.placesVisited}곳</Txt>
-      </View>
-    </ScrollView>
+        {profile.bio ? <Txt typography="t6" color={adaptive.grey700} style={styles.bio}>{profile.bio}</Txt> : null}
+        <View style={styles.stats}>
+          <Txt typography="st13" color={adaptive.grey600}>방문 인증 {profile.ticketsIssued}</Txt>
+          <Txt typography="st13" color={adaptive.grey600}>방문 지역 {profile.placesVisited}곳</Txt>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

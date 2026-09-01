@@ -120,6 +120,7 @@ export default function MapScreen() {
         artistName={selectedArtist?.name}
         visitedPlaceIds={visitedPlaceIds}
         hasPosition={hasPosition}
+        sort={sort}
         filtered={query.trim().length > 0}
         onSelect={openPlace}
       />
