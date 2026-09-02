@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, { Easing, FadeInDown, Keyframe, useSharedValue } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -78,14 +78,17 @@ export default function RaffleDoneScreen() {
   const entryBalance = useTicketsStore((s) => s.entryBalance);
   const reset = useTicketsStore((s) => s.reset);
   const torn = useSharedValue(1);
+  const leaving = useRef(false);
   const [balance, setBalance] = useState<number | null>(entryBalance);
 
-  // Only the focused screen may redirect: 자랑하기 resets the store while this
-  // screen is still mounted beneath the tab it navigates to, and a plain
-  // effect would answer that reset by replacing the destination with /tickets.
+  // Only redirect a screen that was *abandoned* with no entry (deep link, stale
+  // stack). 자랑하기/컬렉션으로 null the entry themselves right before they
+  // navigate — the ref tells that apart, because the focus guard re-runs on the
+  // reset while this screen is still the focused one and would otherwise
+  // replace the chosen destination with /tickets.
   useFocusEffect(
     useCallback(() => {
-      if (entry == null) router.replace('/tickets' as never);
+      if (entry == null && !leaving.current) router.replace('/tickets' as never);
     }, [entry]),
   );
 
@@ -101,6 +104,7 @@ export default function RaffleDoneScreen() {
   }, [entryBalance]);
 
   const leave = (to: '/community' | '/tickets') => {
+    leaving.current = true;
     reset();
     router.navigate(to as never);
   };
