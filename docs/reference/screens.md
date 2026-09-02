@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-27
+last-updated: 2026-09-02
 audience: internal
 ---
 
@@ -69,6 +69,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `vault` | 보관함 | — | `/vault` | **built** — private tickets, 공개 전환 per row |
 | — | 차단한 사용자 | — | `/blocked` | **built** — App Store 1.2. Not the prototype's; nicknames are remembered locally because other users' documents are unreadable |
 | — | 응모 공식 규정 | — | `/raffle/rules` | **built** — App Store 5.3.2. Not the prototype's; linked from 응모 and from 마이페이지 |
+| — | 이용약관 | — | `/terms` | **built** — App Store 1.2. Not the prototype's; the agreement is gated on 온보딩's checkbox and the text stays readable from 마이페이지 |
 
 ### What changed against the Figma frames
 

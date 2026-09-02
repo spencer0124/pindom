@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
+import { Button, Checkbox, Txt, useAdaptive, useTheme } from '@/design-system';
 import { useSignIn, type AuthMode } from '@/features/auth';
 import { Shape } from '@/features/shared';
 import { wordmark } from '@/features/shared/shape';
@@ -44,10 +44,15 @@ export default function OnboardingScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
+  // 가입에만 건다. 1.2 가 요구하는 것은 계정을 만드는 시점의 동의이고,
+  // 로그인하는 사람은 그 계정을 만들 때 이미 동의한 사람이다.
+  const [agreed, setAgreed] = useState(false);
 
   const busy = state.status === 'busy';
   const canSubmit =
-    email.trim().length > 0 && password.length > 0 && (mode === 'signIn' || nickname.trim().length > 0);
+    email.trim().length > 0 &&
+    password.length > 0 &&
+    (mode === 'signIn' || (nickname.trim().length > 0 && agreed));
 
   const go = async () => {
     if (mode == null) return;
@@ -123,6 +128,24 @@ export default function OnboardingScreen() {
                 style={[styles.input, { color: adaptive.grey900, borderBottomColor: adaptive.grey200 }]}
               />
             )}
+            {mode === 'signUp' && (
+              <View style={styles.agree}>
+                <Checkbox.Line checked={agreed} onCheckedChange={setAgreed}>
+                  <Txt typography="st13" color={adaptive.grey700}>
+                    이용약관에 동의합니다
+                  </Txt>
+                </Checkbox.Line>
+                <Pressable
+                  onPress={() => router.push('/terms' as never)}
+                  accessibilityRole="button"
+                  hitSlop={8}
+                >
+                  <Txt typography="st13" fontWeight="medium" color={token.accent.fillColor}>
+                    약관 보기
+                  </Txt>
+                </Pressable>
+              </View>
+            )}
             {state.status === 'error' && (
               <Txt typography="st13" color={adaptive.grey600}>
                 {state.message}
@@ -155,6 +178,18 @@ export default function OnboardingScreen() {
           <Txt typography="st13" color={adaptive.grey500} textAlign="center" style={styles.note}>
             위치 권한과 카메라 권한이 필요합니다
           </Txt>
+          {/* 1.2 asks that the terms be presented before registering *or* logging
+              in, so this row is outside the sign-up branch: someone who only ever
+              taps 이메일로 로그인 still has the agreement in front of them. */}
+          <Pressable
+            onPress={() => router.push('/terms' as never)}
+            accessibilityRole="button"
+            hitSlop={8}
+          >
+            <Txt typography="st13" color={adaptive.grey500} textAlign="center">
+              계속하면 <Txt typography="st13" fontWeight="medium" color={adaptive.grey700}>이용약관</Txt>에 동의하는 것으로 봅니다
+            </Txt>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -205,5 +240,11 @@ const styles = StyleSheet.create({
   },
   note: {
     marginTop: 6,
+  },
+  agree: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 10,
   },
 });

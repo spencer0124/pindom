@@ -131,6 +131,9 @@ export default function MyScreen() {
     // support page, which is also where account deletion is documented.
     { label: '응모 공식 규정', go: () => router.push('/raffle/rules' as never) },
     { label: '문의하기', go: () => void Linking.openURL(ExternalLinks.support) },
+    // 온보딩의 동의 체크박스가 가리키는 것과 같은 화면. 동의는 한 번이지만 약관은
+    // 계속 읽을 수 있어야 하고, 가입한 뒤에는 온보딩으로 돌아갈 길이 없다.
+    { label: '이용약관', go: () => router.push('/terms' as never) },
     { label: '개인정보처리방침', go: () => void Linking.openURL(ExternalLinks.privacy) },
   ];
 
