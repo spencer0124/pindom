@@ -90,11 +90,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // list and the recommendations as rows opening 카카오맵 (PR #2). Build 7
     // (2026-09-01) adds the assistant place cards and active boards, the chat
     // retry and answer reporting, and the verification mail sent at signup
-    // (PR #3 and the fix that followed it). It lives here rather than in
-    // Info.plist because `ios/` is gitignored — a number kept only there is
-    // lost at the next prebuild, and the next uploader finds out from a
-    // rejected upload.
-    buildNumber: '7',
+    // (PR #3 and the fix that followed it). Build 8 (2026-09-02) redraws the
+    // map pin as a 압정 anchored at its needle tip — the default box-bottom
+    // anchor slid it off its coordinate at every zoom — switches the map to
+    // Navi night mode, and adds the 응모 내역 / 당첨 확인 entry points to
+    // 컬렉션. It lives here rather than in Info.plist because `ios/` is
+    // gitignored — a number kept only there is lost at the next prebuild, and
+    // the next uploader finds out from a rejected upload.
+    buildNumber: '8',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
