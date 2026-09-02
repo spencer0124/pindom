@@ -1,3 +1,4 @@
+import { useCameraPermissions } from 'expo-camera';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -41,6 +42,16 @@ export default function GpsVerifyScreen() {
   const { state, phase, distance, accuracy, checks, error, verify, reload } =
     useVerification(placeId);
   const autoOpen = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 카메라 권한은 인증 화면에서 미리 묻는다. CameraStage 에서만 물으면 GPS 를
+  // 통과하기 전에는 요청 자체가 없고, iOS 설정의 카메라 토글은 첫 요청 뒤에야
+  // 생겨서 "설정에 카메라 항목이 없다" 가 된다 — 여기 온 사람은 곧 찍을 사람이다.
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  useEffect(() => {
+    if (cameraPermission != null && !cameraPermission.granted && cameraPermission.canAskAgain) {
+      void requestCameraPermission();
+    }
+  }, [cameraPermission, requestCameraPermission]);
 
   const openCamera = useCallback(() => {
     if (autoOpen.current != null) {

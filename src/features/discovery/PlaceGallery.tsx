@@ -1,5 +1,6 @@
-import { Image, StyleSheet, View } from 'react-native';
-import { useAdaptive } from '@/design-system';
+import { useState } from 'react';
+import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Txt, useAdaptive } from '@/design-system';
 import type { GalleryPhoto } from '@/lib/domain';
 import { ModerationButton } from '@/features/moderation';
 import { Shape } from '@/features/shared';
@@ -31,15 +32,21 @@ interface PlaceGalleryProps {
  * on the content — a grid with no per-photo affordance is the case the guideline
  * is written about. It is the `overlay` variant because a bare glyph on an
  * arbitrary photograph is unreadable half the time.
+ *
+ * A cell opens its photo fullscreen in a Modal — contain-fit on black, any tap
+ * closes it.
  */
 export function PlaceGallery({ photos }: PlaceGalleryProps) {
   const adaptive = useAdaptive();
+  const [viewing, setViewing] = useState<GalleryPhoto | null>(null);
 
   return (
     <View style={styles.grid}>
       {photos.map((photo) => (
-        <View
+        <Pressable
           key={photo.id}
+          accessibilityRole="button"
+          onPress={() => setViewing(photo)}
           style={[
             styles.cell,
             { backgroundColor: adaptive.background, borderColor: adaptive.grey200 },
@@ -58,8 +65,30 @@ export function PlaceGallery({ photos }: PlaceGalleryProps) {
             variant="overlay"
             target={{ type: 'photo', id: photo.id, authorId: photo.authorId }}
           />
-        </View>
+        </Pressable>
       ))}
+      <Modal
+        visible={viewing != null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewing(null)}
+      >
+        {/* The photo, the whole screen, and a tap anywhere to leave — a viewer,
+            not a screen, so it carries no chrome beyond the close hint. */}
+        <Pressable style={styles.viewer} onPress={() => setViewing(null)}>
+          {viewing != null && (
+            <Image
+              source={{ uri: viewing.photoUrl }}
+              style={styles.viewerImage}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
+          )}
+          <Txt typography="st13" color="#FFFFFF" style={styles.viewerHint}>
+            탭해서 닫기
+          </Txt>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -77,5 +106,20 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
+  },
+  viewer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewerImage: {
+    width: '100%',
+    height: '80%',
+  },
+  viewerHint: {
+    position: 'absolute',
+    bottom: 48,
+    opacity: 0.7,
   },
 });

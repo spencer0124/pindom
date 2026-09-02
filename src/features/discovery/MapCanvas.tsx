@@ -12,7 +12,7 @@ import Svg, { Polyline } from 'react-native-svg';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { AppConfig } from '@/lib/config';
 import { Shape } from '@/features/shared';
-import { MAP_PIN_ANCHOR, MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MapPin } from './MapPin';
+import { MAP_PIN_ANCHOR, MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MAP_POI_ANCHOR, MapPin } from './MapPin';
 import { KOREA_CENTRE, type Position } from './position';
 
 /**
@@ -425,7 +425,7 @@ function Tiles({
           longitude={poi.lng}
           width={MAP_PIN_WIDTH}
           height={MAP_PIN_HEIGHT}
-          anchor={MAP_PIN_ANCHOR}
+          anchor={MAP_POI_ANCHOR}
           isHidden={!revealed}
         >
           <View key={poi.name} collapsable={false} style={styles.markerChild}>
@@ -601,7 +601,7 @@ function StandIn({
                 pointerEvents="none"
                 style={[
                   styles.pinSlot,
-                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y },
+                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_POI_ANCHOR.y },
                 ]}
               >
                 <MapPin visited={false} poi label={poi.name} />

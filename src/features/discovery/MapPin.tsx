@@ -32,6 +32,13 @@ export const MAP_PIN_HEIGHT = PIN_H + GAP + CHIP_HEIGHT;
  */
 export const MAP_PIN_ANCHOR = { x: 0.5, y: PIN_H / MAP_PIN_HEIGHT };
 
+/**
+ * A poi's dot sits centred in the graphic box, not at its foot, so its anchor
+ * is the dot's own centre — with the pin anchor it floated half the graphic
+ * above its coordinate and slid against the tiles on zoom.
+ */
+export const MAP_POI_ANCHOR = { x: 0.5, y: PIN_H / 2 / MAP_PIN_HEIGHT };
+
 interface MapPinProps {
   /** A verified place takes the accent and a `✓`; an unverified one is surface and rule. */
   visited: boolean;

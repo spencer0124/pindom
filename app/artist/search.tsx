@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ErrorPage, Loader, SearchField, Txt, useAdaptive, useTheme } from '@/design-system';
+import { Button, ErrorPage, Loader, SearchField, Txt, useAdaptive, useTheme } from '@/design-system';
 import { useArtistSearch } from '@/features/auth';
 import { Shape } from '@/features/shared';
 
@@ -16,7 +16,9 @@ import { Shape } from '@/features/shared';
  *
  * Reached from 온보딩 (first run), 홈's 최애 추가 chip and 마이페이지. A follow
  * re-keys the Discovery slice to the artist, as 1a does — which is what the
- * note under the search field promises.
+ * note under the search field promises. The bottom CTA appears once a follow
+ * exists — the header's ‹ 홈 was the only way forward and testers missed it; the
+ * button names the count and goes the same way `back` does.
  */
 export default function ArtistSearchScreen() {
   const adaptive = useAdaptive();
@@ -120,6 +122,14 @@ export default function ArtistSearchScreen() {
           </View>
         </ScrollView>
       )}
+
+      {state.status === 'ready' && state.followedIds.length > 0 && (
+        <View style={styles.footer}>
+          <Button size="large" type="primary" display="block" onPress={back}>
+            {`${state.followedIds.length}팀 팔로우하고 시작하기`}
+          </Button>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -178,5 +188,10 @@ const styles = StyleSheet.create({
   },
   empty: {
     paddingVertical: 40,
+  },
+  footer: {
+    paddingHorizontal: Shape.gutter,
+    paddingTop: 10,
+    paddingBottom: 8,
   },
 });

@@ -14,7 +14,11 @@ export interface PlaceDetailData {
   artist: Artist | null;
   gallery: GalleryPhoto[];
   reviews: Review[];
-  /** True when this user already has a ticket from here. */
+  /**
+   * True when this user already has a ticket from here — which is also what
+   * lets them write a 촬영 팁, since the rules key the review's document id to
+   * that ticket. 장소/상세 passes it to `ReviewList` as `canReview`.
+   */
   visited: boolean;
   /** Null when there is no fix — the 현재 거리 stat is dropped rather than faked. */
   distance: number | null;
@@ -38,6 +42,10 @@ type State =
  * the Discovery slice. A place can belong to several 최애, and labelling it with
  * whichever happens to be first would rename the badge depending on how you got
  * here.
+ *
+ * 촬영 팁 is written with the author's 티켓 id as the review's document id, so a
+ * tip cannot exist without a verified visit behind it — `visited` above is the
+ * same fact, read from the tickets already fetched for the map pins.
  *
  * 촬영 팁 and the 갤러리 both drop blocked authors before the screen sees them,
  * the same way 커뮤니티's feed does and for the same reason — the server cannot.

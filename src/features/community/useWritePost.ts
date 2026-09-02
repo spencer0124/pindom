@@ -8,10 +8,10 @@ type State = { status: 'idle' } | { status: 'busy' } | { status: 'error'; messag
 /**
  * 글쓰기's two pieces: the ticket a pin can attach, and the post.
  *
- * 1a's pin attaches "the 촬영지 most recently verified" — here, the newest
- * **public** ticket, and the post carries its `placeId` and `ticketId` so
- * 커뮤니티's 지도에서 보기 has somewhere to go. With no ticket yet there is
- * nothing to attach, and the toggle says so.
+ * 1a's pin attaches a 촬영지 — here, the ticket the user picked from the
+ * **public** list, opening on the newest one, and the post carries its
+ * `placeId` and `ticketId` so 커뮤니티's 지도에서 보기 has somewhere to go. With
+ * no ticket yet there is nothing to attach, and the toggle says so.
  *
  * 보관함 tickets are deliberately not considered. `listVault` would make "most
  * recent" literal, but 보관함 exists so a photo can be kept out of public view,
@@ -20,14 +20,14 @@ type State = { status: 'idle' } | { status: 'busy' } | { status: 'error'; messag
  * public list rather than implying every verification.
  */
 export function useWritePost(boardId: string | null) {
-  const [latest, setLatest] = useState<Ticket | null | undefined>(undefined);
+  const [tickets, setTickets] = useState<Ticket[] | undefined>(undefined);
   const [state, setState] = useState<State>({ status: 'idle' });
 
   useEffect(() => {
     let live = true;
     void ticketRepository.listMine().then((mine) => {
       if (!live) return;
-      setLatest(mine.ok ? (mine.data[0] ?? null) : null);
+      setTickets(mine.ok ? mine.data : []);
     });
     return () => {
       live = false;
@@ -35,7 +35,7 @@ export function useWritePost(boardId: string | null) {
   }, []);
 
   const submit = useCallback(
-    async (body: string, attachPin: boolean): Promise<boolean> => {
+    async (body: string, ticket: Ticket | null): Promise<boolean> => {
       if (boardId == null) {
         setState({ status: 'error', message: '게시판을 찾을 수 없어요.' });
         return false;
@@ -45,7 +45,7 @@ export function useWritePost(boardId: string | null) {
         boardId,
         body: body.trim(),
         imageUrls: [],
-        ...(attachPin && latest != null && { placeId: latest.placeId, ticketId: latest.id }),
+        ...(ticket != null && { placeId: ticket.placeId, ticketId: ticket.id }),
       });
       if (!result.ok) {
         setState({ status: 'error', message: failureMessage(result.failure) });
@@ -54,8 +54,8 @@ export function useWritePost(boardId: string | null) {
       setState({ status: 'idle' });
       return true;
     },
-    [boardId, latest],
+    [boardId],
   );
 
-  return { latest, state, submit };
+  return { tickets, state, submit };
 }
