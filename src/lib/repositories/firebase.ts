@@ -521,6 +521,27 @@ export const firebaseRepositories: Repositories = {
     signIn: (email, password) =>
       attempt(async () => {
         const cred = await signInWithEmailAndPassword(auth(), email, password);
+        // 가입이 반쪽으로 끝난 계정을 복구한다: createUser 는 성공했는데 users 문서
+        // 쓰기만 실패하면, 재가입은 "이미 있는 이메일" 로 막히고 문서는 영영 없다 —
+        // 글쓰기·촬영 팁·프로필이 전부 작성자 대조에서 막히는 계정이 된다.
+        // 규칙이 요구하는 모양 그대로(카운터 0, 닉네임 1–30자) 로그인 시점에 다시 쓴다.
+        // 닉네임은 이메일 앞부분으로 임시로 채운다 — 프로필 편집에서 바꾸면 된다.
+        const userRef = doc(db(), 'users', cred.user.uid);
+        if (!(await getDoc(userRef)).exists()) {
+          const nickname = (email.split('@')[0] || '팬').slice(0, 30) || '팬';
+          await setDoc(userRef, {
+            email,
+            nickname,
+            ticketBalance: 0,
+            ticketsIssued: 0,
+            placesVisited: 0,
+            createdAt: serverTimestamp(),
+          }).catch(() => {});
+        }
+        // 인증 메일 재발송 경로. 가입 때 한 번 보내고 끝이라, 메일이 유실된 계정은
+        // REQUIRE_EMAIL_VERIFIED 가 켜지는 순간 영구히 잠겼다 — 미인증 상태로
+        // 로그인할 때마다 다시 보낸다. 과다 요청은 Firebase 가 자체 차단한다.
+        if (!cred.user.emailVerified) void sendEmailVerification(cred.user).catch(() => {});
         return { userId: cred.user.uid, email: cred.user.email ?? email };
       }),
 
@@ -548,8 +569,8 @@ export const firebaseRepositories: Repositories = {
         // Fire-and-forget: the server's REQUIRE_EMAIL_VERIFIED gate refuses a
         // call from an address nobody has confirmed, and it can only be cleared
         // from a link the account never received. A send that fails is not worth
-        // failing a sign-up over — the user is registered either way, and 로그인
-        // resends nothing yet.
+        // failing a sign-up over — the user is registered either way, and 로그인이
+        // 미인증 계정에 재발송한다.
         void sendEmailVerification(cred.user).catch(() => {});
         return { userId: cred.user.uid, email };
       }),
