@@ -100,10 +100,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // the first one — so 설정 had no 카메라 row at all. It also carries the beta
     // feedback round: the 최애 찾기 start CTA, a full-screen gallery viewer,
     // 촬영 팁 restricted to people who verified, and pin choice when writing.
+    // Build 10 (2026-09-02) adds the 이용약관 agreement in front of 가입 — the one
+    // guideline 1.2 precaution that was never on the 2026-08-27 checklist, and
+    // the only thing the 09-02 rejection of build 4 named. 신고, 차단 and the
+    // filtering it asks about all shipped in build 4 already.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '9',
+    buildNumber: '10',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
