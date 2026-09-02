@@ -94,10 +94,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // map pin as a 압정 anchored at its needle tip — the default box-bottom
     // anchor slid it off its coordinate at every zoom — switches the map to
     // Navi night mode, and adds the 응모 내역 / 당첨 확인 entry points to
-    // 컬렉션. It lives here rather than in Info.plist because `ios/` is
-    // gitignored — a number kept only there is lost at the next prebuild, and
-    // the next uploader finds out from a rejected upload.
-    buildNumber: '8',
+    // 컬렉션. Build 9 (2026-09-02) asks for the camera permission on the 인증
+    // screen: asking only in CameraStage meant a reviewer who never cleared GPS
+    // never triggered the request, and iOS grows the Settings toggle only after
+    // the first one — so 설정 had no 카메라 row at all. It also carries the beta
+    // feedback round: the 최애 찾기 start CTA, a full-screen gallery viewer,
+    // 촬영 팁 restricted to people who verified, and pin choice when writing.
+    // It lives here rather than in Info.plist because `ios/` is gitignored — a
+    // number kept only there is lost at the next prebuild, and the next
+    // uploader finds out from a rejected upload.
+    buildNumber: '9',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
