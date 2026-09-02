@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { toFontWeightStyle, Txt, useAdaptive, useTheme, useTypographyTheme } from '@/design-system';
 import { useWritePost } from '@/features/community';
 import { Shape } from '@/features/shared';
+import type { Ticket } from '@/lib/domain';
 
 /** 1a's 18px map-pin outline; its colour is the on/off signal. */
 const PIN_ICON = 18;
@@ -21,8 +22,9 @@ const PRESSED_OPACITY = 0.6;
  *
  * The board comes from 커뮤니티 as a route param; a post always belongs to one.
  * The pin is 1a's: the screen opens with the 촬영지 of the newest **public**
- * ticket already attached, and a tap detaches it; the post carries its
- * `placeId` and `ticketId` unless the user tapped it off. 보관함 tickets are
+ * ticket already attached, a list below lets the user pick another, and a tap
+ * on the pin row detaches it; the post carries the picked ticket's `placeId`
+ * and `ticketId` unless the user tapped it off. 보관함 tickets are
  * not offered — see `useWritePost` — so the copy names the public list rather
  * than saying 인증한, which would be a promise this screen does not keep. The
  * toggle waits for the ticket read so its first frame is the attached state,
@@ -35,22 +37,24 @@ export default function WritePostScreen() {
   const { token } = useTheme();
   const { typography } = useTypographyTheme();
   const { boardId } = useLocalSearchParams<{ boardId: string }>();
-  const { latest, state, submit } = useWritePost(boardId ?? null);
+  const { tickets, state, submit } = useWritePost(boardId ?? null);
 
   const [draft, setDraft] = useState('');
   // 1a opens with `attachPin: true`; the effective state also needs a ticket.
   const [attachPin, setAttachPin] = useState(true);
+  // undefined means "not chosen yet" — the newest public ticket stands in.
+  const [picked, setPicked] = useState<Ticket | null | undefined>(undefined);
 
   const busy = state.status === 'busy';
   const canSubmit = draft.trim().length > 0 && !busy;
-  const canPin = latest != null;
+  const canPin = (tickets?.length ?? 0) > 0;
   // The ticket the post will carry — null when there is none or it was tapped off.
-  const pinned = attachPin && latest != null ? latest : null;
+  const pinned = attachPin ? (picked === undefined ? (tickets?.[0] ?? null) : picked) : null;
   const on = pinned != null;
 
   const post = async () => {
     if (!canSubmit) return;
-    const ok = await submit(draft, on);
+    const ok = await submit(draft, pinned);
     if (ok) router.back();
   };
 
@@ -98,7 +102,7 @@ export default function WritePostScreen() {
           ]}
         />
 
-        {latest !== undefined && (
+        {tickets !== undefined && (
           <Pressable
             onPress={() => canPin && setAttachPin((value) => !value)}
             disabled={!canPin}
@@ -132,6 +136,34 @@ export default function WritePostScreen() {
           </Pressable>
         )}
 
+        {on && (tickets?.length ?? 0) > 1 && (
+          <View style={styles.picker}>
+            {tickets?.map((ticket) => (
+              <Pressable
+                key={ticket.id}
+                onPress={() => {
+                  setAttachPin(true);
+                  setPicked(ticket);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: ticket.id === pinned?.id }}
+                style={({ pressed }) => [styles.pickerRow, pressed && styles.pressed]}
+              >
+                <Txt
+                  typography="t7"
+                  fontWeight={ticket.id === pinned?.id ? 'bold' : 'regular'}
+                  color={ticket.id === pinned?.id ? token.accent.fillColor : adaptive.grey900}
+                >
+                  {ticket.placeName}
+                </Txt>
+                <Txt typography="st13" color={adaptive.grey600}>
+                  {formatShort(ticket.issuedAt)}
+                </Txt>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
         {state.status === 'error' && (
           <Txt typography="st13" color={adaptive.grey600}>
             {state.message}
@@ -146,6 +178,10 @@ export default function WritePostScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function formatShort(date: Date): string {
+  return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 }
 
 const styles = StyleSheet.create({
@@ -183,6 +219,16 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1,
     padding: 14,
+  },
+  picker: {
+    gap: 2,
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: Shape.gutter,
   },
   pinCopy: {
     flex: 1,

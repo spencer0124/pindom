@@ -18,16 +18,19 @@ type TipTag = (typeof TIP_TAGS)[number];
 /**
  * Collection tier, in the prototype's own words.
  *
- * `1a` badges a review 인증 방문 instead, but nothing on the review document says
- * its author verified *this* place — the contract stores `authorTier` and calls
- * it "denormalised, rendered as a badge". Building the prototype's label would
- * mean inventing a field, so the badge says what the data actually knows.
+ * `1a` badges a review 인증 방문 instead. Every tip now does come from a verified
+ * visit — the document id is the author's 티켓 for this place, which is what the
+ * rules check — but the badge stays on `authorTier`: that is the field the
+ * contract denormalises for rendering, and 인증 방문 would be the same word on
+ * every row now that nothing else can be posted.
  */
 
 interface ReviewListProps {
   reviews: Review[];
   /** Pinned by the screen so every row is measured against one instant. */
   now: Date;
+  /** True when this user holds a 티켓 from here — the rules require one to post. */
+  canReview: boolean;
   onSubmit: (text: string, tags: string[]) => Promise<boolean>;
 }
 
@@ -50,7 +53,7 @@ interface ReviewListProps {
  * reachable from the content itself. `targetType` is `review` because that is
  * the collection's name on the server, even though every screen calls it 촬영 팁.
  */
-export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
+export function ReviewList({ reviews, now, canReview, onSubmit }: ReviewListProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
 
@@ -77,27 +80,35 @@ export function ReviewList({ reviews, now, onSubmit }: ReviewListProps) {
         <Txt typography="t7" color={adaptive.grey600}>
           먼저 다녀온 팬들이 남긴 포즈·시간대 꿀팁
         </Txt>
-        <Pressable
-          onPress={() => setOpen((was) => !was)}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: open }}
-          hitSlop={6}
-          style={[
-            styles.writeButton,
-            { borderColor: open ? token.accent.fillColor : adaptive.grey200 },
-          ]}
-        >
-          <Txt
-            typography="t7"
-            fontWeight="bold"
-            color={open ? token.accent.fillColor : adaptive.grey900}
+        {/* Without a 티켓 from here the rules refuse the write, so the toggle is
+            replaced by the reason rather than left to fail on 등록. */}
+        {canReview ? (
+          <Pressable
+            onPress={() => setOpen((was) => !was)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            hitSlop={6}
+            style={[
+              styles.writeButton,
+              { borderColor: open ? token.accent.fillColor : adaptive.grey200 },
+            ]}
           >
-            팁 남기기
+            <Txt
+              typography="t7"
+              fontWeight="bold"
+              color={open ? token.accent.fillColor : adaptive.grey900}
+            >
+              팁 남기기
+            </Txt>
+          </Pressable>
+        ) : (
+          <Txt typography="t7" color={adaptive.grey400}>
+            이곳에서 인증한 팬만 팁을 남길 수 있어요
           </Txt>
-        </Pressable>
+        )}
       </View>
 
-      {open && (
+      {open && canReview && (
         <View style={[styles.composer, { borderColor: adaptive.grey200 }]}>
           <TextInput
             value={draft}

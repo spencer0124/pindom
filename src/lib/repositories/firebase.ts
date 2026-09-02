@@ -650,23 +650,51 @@ export const firebaseRepositories: Repositories = {
         return snap.docs.map((d_) => toGalleryPhoto(placeId, d_.id, d_.data() as DocData));
       }),
 
+    /**
+     * The review's document id is the author's 티켓 for this place.
+     *
+     * That id is the whole proof: the rules cannot query a collection, so the
+     * only way they can ask "did this person stand here" is to read a document
+     * whose id the write already names — `get(tickets/{reviewId})`, checking
+     * the ticket's owner and place. A fixed id also caps it at one tip per
+     * ticket, which is why this writes with `setDoc` rather than `addDoc`.
+     *
+     * The ticket lookup is the same query `issueTicket` runs, and the composite
+     * index behind it (userId · placeId · issuedAt) is already in the server's
+     * firestore.indexes.json. 장소/상세 hides the composer when there is no
+     * ticket, so this throw is the second line rather than the first.
+     */
     addReview: (input: NewReview) =>
       attempt(async () => {
         const uid = requireUid();
+        const ticketSnap = await getDocs(
+          query(
+            collection(db(), 'tickets'),
+            where('userId', '==', uid),
+            where('placeId', '==', input.placeId),
+            orderBy('issuedAt', 'desc'),
+            limit(1),
+          ),
+        );
+        const ticketId = ticketSnap.docs[0]?.id;
+        if (ticketId == null) {
+          throw Object.assign(new Error('이곳에서 인증한 팬만 팁을 남길 수 있어요.'), {
+            code: 'permission-denied',
+          });
+        }
         const meSnap = await getDoc(doc(db(), 'users', uid));
         const me = toUser(uid, (meSnap.data() ?? {}) as DocData);
-        const written = await addDoc(
-          collection(db(), 'places', input.placeId, 'reviews'),
-          {
-            authorId: uid,
-            authorNickname: me.nickname,
-            authorTier: me.tier,
-            text: input.text,
-            tags: input.tags,
-            likeCount: 0,
-            createdAt: serverTimestamp(),
-          },
-        );
+        const written = doc(db(), 'places', input.placeId, 'reviews', ticketId);
+        await setDoc(written, {
+          authorId: uid,
+          authorNickname: me.nickname,
+          authorTier: me.tier,
+          text: input.text,
+          tags: input.tags,
+          likeCount: 0,
+          ticketId,
+          createdAt: serverTimestamp(),
+        });
         const snap = await getDoc(written);
         return toReview(input.placeId, snap.id, (snap.data() ?? {}) as DocData);
       }),

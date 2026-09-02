@@ -66,7 +66,7 @@ export default function PlaceDetailScreen() {
     );
   }
 
-  const { place, artist, gallery, reviews, distance } = state.data;
+  const { place, artist, gallery, reviews, visited, distance } = state.data;
 
   return (
     <View style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
@@ -114,7 +114,7 @@ export default function PlaceDetailScreen() {
 
         <View style={styles.section}>
           <SectionHeader title="촬영 팁" count={reviews.length} />
-          <ReviewList reviews={reviews} now={now} onSubmit={addReview} />
+          <ReviewList reviews={reviews} now={now} canReview={visited} onSubmit={addReview} />
         </View>
 
         <Rule />
