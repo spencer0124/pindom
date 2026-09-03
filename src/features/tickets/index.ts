@@ -1,4 +1,5 @@
 export { GAUGE_FIRST, GAUGE_TOP, tierView, type TierView } from './tier';
+export { HoloCard, type HoloStyle } from './HoloCard';
 export { RewardList } from './RewardList';
 export { TEAR_SWING, TearStage } from './TearStage';
 export { TicketGrid } from './TicketGrid';
