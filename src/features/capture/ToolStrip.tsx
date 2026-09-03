@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Svg, { Line, Rect } from 'react-native-svg';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { Shape } from '@/features/shared';
@@ -87,8 +89,20 @@ interface MosaicPatchProps {
 }
 
 /**
- * The 모자이크 patch — 1a places one at a fixed spot as the tool's preview.
+ * The 모자이크 patch — 1a places one at a fixed spot as the tool's preview, and
+ * the beta asked for it to be placed by hand instead: the patch starts where 1a
+ * draws it and the user drags it onto whatever the shot has to cover.
+ *
  * Diagonal hatching in ink over the chrome ground, blurred by its alpha alone.
+ *
+ * The drag mirrors `Cutout` — the same gesture-handler pan over the whole stage
+ * driving reanimated shared values — because the two overlays share the 편집
+ * canvas and a second drag mechanism on one stage would be a second set of
+ * quirks. It stays simpler in one way: the patch lives only on this screen, so
+ * the position is local shared values rather than a store round-trip, and the
+ * clamp runs inside the gesture instead of at commit — the patch never crosses
+ * the stage's edge, not even mid-drag. The position is a transform on the
+ * rendered view, so `captureRef` composes the patch where the user left it.
  */
 export function MosaicPatch({ stage, opacity }: MosaicPatchProps) {
   const adaptive = useAdaptive();
@@ -97,6 +111,26 @@ export function MosaicPatch({ stage, opacity }: MosaicPatchProps) {
   const left = Math.round(stage.width * 0.4);
   const top = Math.round(stage.height * 0.22);
 
+  const x = useSharedValue(left);
+  const y = useSharedValue(top);
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+
+  const pan = Gesture.Pan()
+    .minDistance(0)
+    .onStart(() => {
+      startX.value = x.value;
+      startY.value = y.value;
+    })
+    .onUpdate((event) => {
+      x.value = clamp(startX.value + event.translationX, 0, stage.width - width);
+      y.value = clamp(startY.value + event.translationY, 0, stage.height - height);
+    });
+
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateX: x.value }, { translateY: y.value }],
+  }));
+
   // Diagonal hatching drawn as lines. react-native-svg's <Pattern> tiles
   // unreliably under a rotate transform, so the stripes are explicit.
   const step = 8;
@@ -104,26 +138,50 @@ export function MosaicPatch({ stage, opacity }: MosaicPatchProps) {
   for (let offset = -height; offset < width + height; offset += step) lines.push(offset);
 
   return (
-    <View style={{ position: 'absolute', left, top, width, height, opacity }} pointerEvents="none">
-      <Svg width={width} height={height}>
-        <Rect x={0} y={0} width={width} height={height} fill={adaptive.background} />
-        {lines.map((offset) => (
-          <Line
-            key={offset}
-            x1={offset}
-            y1={0}
-            x2={offset + height}
-            y2={height}
-            stroke={adaptive.grey900}
-            strokeWidth={4}
-          />
-        ))}
-      </Svg>
-    </View>
+    // The drag surface is the whole stage, as in `Cutout`: a finger anywhere on
+    // the print moves the patch by its delta.
+    <GestureDetector gesture={pan}>
+      <View
+        style={StyleSheet.absoluteFill}
+        accessible
+        accessibilityLabel="모자이크"
+        accessibilityHint="드래그해서 위치를 옮깁니다"
+      >
+        <Animated.View
+          style={[styles.patch, { width, height, opacity }, style]}
+          pointerEvents="none"
+        >
+          <Svg width={width} height={height}>
+            <Rect x={0} y={0} width={width} height={height} fill={adaptive.background} />
+            {lines.map((offset) => (
+              <Line
+                key={offset}
+                x1={offset}
+                y1={0}
+                x2={offset + height}
+                y2={height}
+                stroke={adaptive.grey900}
+                strokeWidth={4}
+              />
+            ))}
+          </Svg>
+        </Animated.View>
+      </View>
+    </GestureDetector>
   );
 }
 
+function clamp(value: number, min: number, max: number) {
+  'worklet';
+  return Math.min(max, Math.max(min, value));
+}
+
 const styles = StyleSheet.create({
+  patch: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
   block: {
     paddingHorizontal: Shape.gutter,
     gap: 14,
