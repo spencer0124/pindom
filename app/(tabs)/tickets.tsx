@@ -17,8 +17,9 @@ import { Rule, Shape } from '@/features/shared';
  * to the soonest-closing open raffle, and is not offered when there is none.
  * 응모 내역 row goes to /raffle/history — the record a fresh entry leaves,
  * reachable from where the user lands after tearing, not only from 마이페이지.
- * Private tickets are 보관함's, reached from 마이페이지 — the same tickets, the
- * other visibility. Every tile tilts under a held finger, as 티켓 발행's card
+ * 보관함, reached from 마이페이지, holds every shot instead — public and
+ * private together — and is where either one is flipped to the other
+ * visibility; this grid is the public half of it. Every tile tilts under a held finger, as 티켓 발행's card
  * does; a touch that moves first is a scroll.
  */
 export default function TicketsScreen() {

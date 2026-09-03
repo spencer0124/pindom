@@ -7,21 +7,26 @@ import { useVault } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
 
 /**
- * 보관함 — the private tickets, and 공개 전환.
+ * 보관함 — every shot the user has taken, and the visibility flip.
  *
  * Built from prototype block `1a` for layout, copy and flow and `2b` for colour,
  * type and corners, matching `app/(tabs)/index.tsx`. The route screens.md
  * proposed; there is no Figma frame.
  *
- * The same tickets as 컬렉션, the other visibility — `tickets.listVault` is the
- * same query with `visibility == 'private'`. 1a's 공개 전환 · 가능 line is the
- * one action here: each tile can be made public, which moves it to 컬렉션 and,
- * server-side, into the place's gallery.
+ * Public and private sit side by side here, newest first — the roll of film,
+ * not one half of it. 컬렉션 still shows only the public tickets; this is the
+ * screen where the two halves meet and where either one can be moved across.
+ * The chip on each photo names the tile's current state and the caption's text
+ * button flips it, both directions (1a's 공개 전환 · 가능 line, made two-way).
+ * Nothing here writes the place's gallery: the backend's
+ * `syncGalleryOnVisibility` trigger follows the flip on its own, adding the
+ * gallery entry on 공개 전환 and removing it — rotating the photo URL — on
+ * 비공개 전환.
  *
  * The tickets are 1a's two-column grid of 3:4 photos — a vault reads as photos,
  * not as settings rows — laid out the way `TicketGrid` lays out 컬렉션. The
- * 비공개 chip sits on the photo, the caption carries the place and the serial
- * line, and 공개 전환 is a text button in that caption (fidelity decision 26).
+ * state chip sits on the photo, the caption carries the place and the serial
+ * line, and the flip is a text button in that caption (fidelity decision 26).
  * The typography map has no monospaced face, so the serial line is set in
  * tabular figures, as the ticket itself is.
  */
@@ -32,7 +37,7 @@ const PHOTO_ASPECT = 3 / 4;
 export default function VaultScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
-  const { state, reload, makePublic } = useVault();
+  const { state, reload, toggle } = useVault();
 
   const count = state.status === 'ready' ? state.tickets.length : null;
 
@@ -45,7 +50,7 @@ export default function VaultScreen() {
           </Txt>
         </Pressable>
         <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>
-          비공개 보관함
+          보관함
         </Txt>
         <Txt typography="t7" fontWeight="bold" color={token.accent.fillColor} style={[styles.headerSide, styles.headerRight]}>
           {count != null ? `${count}장` : ''}
@@ -60,18 +65,18 @@ export default function VaultScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.intro}>
             <Txt typography="t5" fontWeight="bold" color={adaptive.grey900}>
-              여기 있는 사진은 나만 봅니다
+              찍은 사진이 모두 여기 있습니다
             </Txt>
             <Txt typography="st13" color={adaptive.grey600}>
-              촬영 후 ‘비공개 저장’을 고른 컷이 모입니다. 장소 갤러리·커뮤니티에 노출되지 않고, 티켓과 응모 자격은 공개 여부와 무관하게 그대로 유지됩니다.
+              공개한 컷과 나만 보는 컷이 함께 모입니다. 사진마다 공개 여부를 언제든 바꿀 수 있고, 비공개로 바꾸면 장소 갤러리·커뮤니티에서 내려갑니다. 티켓과 응모 자격은 공개 여부와 무관하게 그대로 유지됩니다.
             </Txt>
           </View>
 
           <View style={[styles.stats, { borderColor: adaptive.grey200 }]}>
             {[
               { k: '보관 중', v: `${state.tickets.length}장` },
-              { k: '연결된 티켓', v: `${state.tickets.length}장` },
-              { k: '공개 전환', v: '가능', accent: true },
+              { k: '공개', v: `${state.tickets.filter((t) => t.visibility === 'public').length}장`, accent: true },
+              { k: '비공개', v: `${state.tickets.filter((t) => t.visibility === 'private').length}장` },
             ].map((stat, index) => (
               <View
                 key={stat.k}
@@ -92,48 +97,60 @@ export default function VaultScreen() {
           {state.tickets.length === 0 ? (
             <View style={styles.empty}>
               <Txt typography="t6" color={adaptive.grey600} textAlign="center">
-                비공개로 저장한 컷이 아직 없어요
+                아직 촬영한 컷이 없어요
               </Txt>
             </View>
           ) : (
             <View style={styles.grid}>
-              {state.tickets.map((ticket) => (
-                <View key={ticket.id} style={[styles.tile, { borderColor: adaptive.grey200 }]}>
-                  <View style={[styles.photo, { backgroundColor: adaptive.background }]}>
-                    <Image source={{ uri: ticket.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-                    <View style={[styles.badge, { backgroundColor: adaptive.background }]}>
-                      <Txt typography="st13" fontWeight="semiBold" color={adaptive.grey900}>
-                        비공개
-                      </Txt>
-                    </View>
-                  </View>
-                  <View style={styles.caption}>
-                    <View style={styles.copy}>
-                      <Txt typography="t7" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
-                        {ticket.placeName}
-                      </Txt>
-                      <Txt
-                        typography="st13"
-                        color={adaptive.grey500}
-                        style={styles.serial}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.8}
+              {state.tickets.map((ticket) => {
+                const isPublic = ticket.visibility === 'public';
+                return (
+                  <View key={ticket.id} style={[styles.tile, { borderColor: adaptive.grey200 }]}>
+                    <View style={[styles.photo, { backgroundColor: adaptive.background }]}>
+                      <Image source={{ uri: ticket.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: isPublic ? token.accent.fillColor : adaptive.background },
+                        ]}
                       >
-                        {ticket.serial} · {formatShort(ticket.issuedAt)}
-                      </Txt>
+                        <Txt
+                          typography="st13"
+                          fontWeight="semiBold"
+                          color={isPublic ? token.accent.onFillColor : adaptive.grey900}
+                        >
+                          {isPublic ? '공개' : '비공개'}
+                        </Txt>
+                      </View>
                     </View>
-                    <TextButton
-                      typography="st13"
-                      fontWeight="bold"
-                      color={token.accent.fillColor}
-                      onPress={() => void makePublic(ticket.id)}
-                    >
-                      공개 전환
-                    </TextButton>
+                    <View style={styles.caption}>
+                      <View style={styles.copy}>
+                        <Txt typography="t7" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
+                          {ticket.placeName}
+                        </Txt>
+                        <Txt
+                          typography="st13"
+                          color={adaptive.grey500}
+                          style={styles.serial}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          minimumFontScale={0.8}
+                        >
+                          {ticket.serial} · {formatShort(ticket.issuedAt)}
+                        </Txt>
+                      </View>
+                      <TextButton
+                        typography="st13"
+                        fontWeight="bold"
+                        color={token.accent.fillColor}
+                        onPress={() => void toggle(ticket)}
+                      >
+                        {isPublic ? '비공개 전환' : '공개 전환'}
+                      </TextButton>
+                    </View>
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
         </ScrollView>
