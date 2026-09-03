@@ -153,6 +153,8 @@ export default function WritePostScreen() {
                   typography="t7"
                   fontWeight={ticket.id === pinned?.id ? 'bold' : 'regular'}
                   color={ticket.id === pinned?.id ? token.accent.fillColor : adaptive.grey900}
+                  numberOfLines={1}
+                  style={styles.pickerName}
                 >
                   {ticket.placeName}
                 </Txt>
@@ -229,6 +231,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: Shape.gutter,
+  },
+  // 긴 장소 이름이 날짜를 화면 밖으로 밀지 않게 — space-between 행에서는
+  // 자라는 쪽이 줄어드는 법도 알아야 한다 (온보딩 약관 보기와 같은 병).
+  pickerName: {
+    flex: 1,
+    marginRight: 12,
   },
   pinCopy: {
     flex: 1,
