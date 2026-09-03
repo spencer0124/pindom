@@ -50,7 +50,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // The EAS account the project belongs to. `slug` and `owner` together resolve
   // to @seungyongcho/pindom, which is what `eas build` uploads against.
   owner: 'seungyongcho',
-  version: '1.0.0',
+  // CFBundleShortVersionString. ios/Info.plist carries a literal copy of this
+  // and ship-testflight.sh rewrites only CFBundleVersion, so a version bump has
+  // to be written to both — the same trap as ios.buildNumber below. A new
+  // version string also opens a fresh TestFlight version train, which is a
+  // fresh Beta App Review.
+  version: '1.0.1',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'pindom',
