@@ -117,10 +117,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // document for an account whose signup wrote Auth but not Firestore — that
     // account could not re-register and could not read anything — and resend the
     // verification mail on every unverified sign-in.
+    // Build 12 (2026-09-03) is the first build of the 1.0.1 train and carries the
+    // team's round from main: the Skia 홀로그램 티켓 card, 비공개 보관함 widened
+    // into a 사진 보관함 that collects every cut and toggles public both ways,
+    // 모자이크 placed by dragging, the 약관 보기 row that Checkbox.Line pushed off
+    // screen, and the ticket row whose long place name shoved its date out of
+    // view. @shopify/react-native-skia is the first native dependency added
+    // since the Naver map — a merge that touches package.json now means
+    // yarn install and pod install before any archive, or the JS references a
+    // module the binary does not have and 티켓 crashes on a device only.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '11',
+    buildNumber: '12',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
