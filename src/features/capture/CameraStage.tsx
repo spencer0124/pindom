@@ -18,10 +18,12 @@ export interface CameraStageHandle {
  * The live view — `1a`'s LIVE CAMERA · 실시간 배경 stage.
  *
  * Three states and all of them render: the camera, a permission still being
- * asked, and no camera at all. The last is the simulator, where 1a's own
- * gradient stand-in is replaced by the chrome ground and the same label, the
- * way 지도 draws a stand-in without a Naver client id. A screen state nobody can
- * reach is a screen state nobody checks.
+ * asked, and no camera at all. The last is the web build actually reporting no
+ * camera, where 1a's own gradient stand-in is replaced by the chrome ground and
+ * the same label, the way 지도 draws a stand-in without a Naver client id. The
+ * simulator no longer lands here: it draws the live view black and its shots
+ * fall back to the stand-in capture. A screen state nobody can reach is a
+ * screen state nobody checks.
  */
 export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_, ref) {
   const adaptive = useAdaptive();
@@ -34,7 +36,10 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
     let live = true;
     CameraView.isAvailableAsync()
       .then((ok) => live && setAvailable(ok))
-      .catch(() => live && setAvailable(false));
+      // 웹 전용 API 다 — iOS·안드로이드 네이티브 모듈에는 이 메서드가 없어 항상
+      // 던진다. 던졌다는 것 자체가 네이티브라는 뜻이고, 폰에는 카메라가 있다.
+      // false 로 받으면 모든 실기기가 "카메라 없음" 이 된다 (실기기에서 실제로 났던 버그).
+      .catch(() => live && setAvailable(true));
     return () => {
       live = false;
     };
@@ -50,15 +55,16 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
 
   useImperativeHandle(ref, () => ({
     capture: async () => {
-      try {
-        if (ready && camera.current != null) {
+      if (ready && camera.current != null) {
+        try {
           const shot = await camera.current.takePictureAsync({ quality: 0.85, shutterSound: false });
-          return shot?.uri ?? null;
+          if (shot?.uri) return shot.uri;
+        } catch {
+          // 시뮬레이터처럼 하드웨어 촬영이 실패하면 아래 스탠드인 캡처로 떨어진다.
         }
-        if (root.current != null) {
-          return await captureRef(root, { format: 'jpg', quality: 0.9 });
-        }
-        return null;
+      }
+      try {
+        return root.current != null ? await captureRef(root, { format: 'jpg', quality: 0.9 }) : null;
       } catch {
         return null;
       }
