@@ -104,10 +104,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // guideline 1.2 precaution that was never on the 2026-08-27 checklist, and
     // the only thing the 09-02 rejection of build 4 named. 신고, 차단 and the
     // filtering it asks about all shipped in build 4 already.
+    // Build 11 (2026-09-03) gets the camera back on real hardware: expo-camera's
+    // isAvailableAsync is a web-only method, so every phone threw
+    // UnavailabilityError and the catch read that as "no camera" — every ticket
+    // issued on a device carried the grey stand-in instead of a live photo, and
+    // no simulator run could show it. It also has 로그인 rewrite the users
+    // document for an account whose signup wrote Auth but not Firestore — that
+    // account could not re-register and could not read anything — and resend the
+    // verification mail on every unverified sign-in.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '10',
+    buildNumber: '11',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
