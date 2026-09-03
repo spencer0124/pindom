@@ -130,7 +130,7 @@ export default function OnboardingScreen() {
             )}
             {mode === 'signUp' && (
               <View style={styles.agree}>
-                <Checkbox.Line checked={agreed} onCheckedChange={setAgreed}>
+                <Checkbox.Line checked={agreed} onCheckedChange={setAgreed} style={styles.agreeLine}>
                   <Txt typography="st13" color={adaptive.grey700}>
                     이용약관에 동의합니다
                   </Txt>
@@ -246,5 +246,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 10,
+  },
+  // Checkbox.Line 의 라벨이 flex:1 이라 스타일 없이 두면 줄 전체를 채워
+  // 약관 보기가 화면 밖으로 밀린다 — 남는 폭만 차지하게 묶는다.
+  agreeLine: {
+    flex: 1,
+    marginRight: 12,
   },
 });

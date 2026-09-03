@@ -111,7 +111,7 @@ export default function MyScreen() {
   const menu: { label: string; value?: string; go: () => void }[] = [
     { label: '프로필 설정', value: user.nickname, go: () => router.push('/profile' as never) },
     { label: '응모 내역 / 당첨 확인', go: () => router.push('/raffle/history' as never) },
-    { label: '비공개 보관함', value: `${vaultCount}장`, go: () => router.push('/vault' as never) },
+    { label: '사진 보관함', value: `${vaultCount}장`, go: () => router.push('/vault' as never) },
     { label: '내 커뮤니티 글', go: () => router.push('/my-posts' as never) },
     {
       label: '차단한 사용자',
@@ -261,7 +261,7 @@ export default function MyScreen() {
                   로그아웃할까요?
                 </Txt>
                 <Txt typography="t7" color={adaptive.grey600}>
-                  모은 티켓 {user.ticketBalance}장과 비공개 보관함은 계정에 남아 있어요. 다시 로그인하면 그대로 이어집니다.
+                  모은 티켓 {user.ticketBalance}장과 사진 보관함은 계정에 남아 있어요. 다시 로그인하면 그대로 이어집니다.
                 </Txt>
                 <View style={styles.sheetActions}>
                   <Button size="large" style="weak" display="block" disabled={leaving} onPress={() => setConfirming(null)}>
@@ -281,7 +281,7 @@ export default function MyScreen() {
                     not, and the difference is the whole decision — a generic
                     "모든 데이터가 삭제됩니다" makes the user guess what they have. */}
                 <Txt typography="t7" color={adaptive.grey600}>
-                  방문 인증 {user.ticketsIssued}회, 보유 티켓 {user.ticketBalance}장, 비공개 보관함 {vaultCount}장과 작성한 글·촬영 팁·사진이 모두 삭제됩니다. 삭제된 계정과 기록은 되돌릴 수 없어요.
+                  방문 인증 {user.ticketsIssued}회, 보유 티켓 {user.ticketBalance}장, 사진 보관함 {vaultCount}장과 작성한 글·촬영 팁·사진이 모두 삭제됩니다. 삭제된 계정과 기록은 되돌릴 수 없어요.
                 </Txt>
                 {leaveError != null && (
                   <Txt typography="st13" color={SdsColors.alert500}>

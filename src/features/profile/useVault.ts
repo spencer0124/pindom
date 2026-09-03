@@ -9,42 +9,48 @@ type State =
   | { status: 'ready'; tickets: Ticket[] };
 
 /**
- * 보관함: the private tickets, and the one thing that can be done to them —
- * 공개 전환, which moves a ticket to 컬렉션. The same tickets as 컬렉션's, the
- * other visibility.
+ * 보관함: every ticket the user has shot, both visibilities in one list, and
+ * the one thing that can be done to them — flipping that visibility either
+ * way. `listMine` is the public half (컬렉션's own query) and `listVault` the
+ * private half; they are merged newest-first so the two read as one roll of
+ * film rather than two screens.
  *
- * It does **not** write a gallery entry. `places/{placeId}/gallery` is written once, by
- * `issueTicket`, and only for a ticket minted as public; no trigger watches
- * `tickets` afterwards. So a ticket made public here never reaches 장소/상세, and
- * — the direction that matters — a public ticket made private leaves its gallery
- * photo on 장소/상세 for everyone. Syncing it is the backend's to fix; nothing in
- * this repo can write that collection.
+ * It does **not** write a gallery entry, and does not have to: the backend's
+ * `syncGalleryOnVisibility` trigger watches `tickets` and follows the flip —
+ * writing `places/{placeId}/gallery` when a ticket turns public, removing that
+ * entry and rotating the photo URL when it turns private, so a ticket taken
+ * back out of public view leaves nothing behind on 장소/상세.
  */
 export function useVault() {
   const [state, setState] = useState<State>({ status: 'loading' });
 
   const load = useCallback(async () => {
     setState({ status: 'loading' });
-    const result = await ticketRepository.listVault();
-    if (!result.ok) return setState({ status: 'error', message: failureMessage(result.failure) });
-    setState({ status: 'ready', tickets: result.data });
+    const [mine, vault] = await Promise.all([ticketRepository.listMine(), ticketRepository.listVault()]);
+    if (!mine.ok) return setState({ status: 'error', message: failureMessage(mine.failure) });
+    if (!vault.ok) return setState({ status: 'error', message: failureMessage(vault.failure) });
+    const tickets = [...mine.data, ...vault.data].sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
+    setState({ status: 'ready', tickets });
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const makePublic = useCallback(async (ticketId: string) => {
-    const result = await ticketRepository.setVisibility(ticketId, 'public');
+  /** Flip one ticket to the other visibility; the tile stays put, its chip changes. */
+  const toggle = useCallback(async (ticket: Ticket) => {
+    const next = ticket.visibility === 'private' ? 'public' : 'private';
+    const result = await ticketRepository.setVisibility(ticket.id, next);
     if (result.ok) {
+      const updated = result.data;
       setState((current) =>
         current.status === 'ready'
-          ? { status: 'ready', tickets: current.tickets.filter((t) => t.id !== ticketId) }
+          ? { status: 'ready', tickets: current.tickets.map((t) => (t.id === updated.id ? updated : t)) }
           : current,
       );
     }
     return result.ok;
   }, []);
 
-  return { state, reload: load, makePublic };
+  return { state, reload: load, toggle };
 }

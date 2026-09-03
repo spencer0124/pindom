@@ -9,7 +9,7 @@ import { artistRepository, authRepository, ticketRepository, userRepository } fr
 export interface MyPageData {
   user: User;
   artists: Artist[];
-  /** How many tickets sit in 보관함 — the menu row prints it. */
+  /** How many photos sit in 보관함 — both visibilities, as the screen lists them. */
   vaultCount: number;
   /** Both of 1a's named permissions granted. Null while unknown. */
   permissionsGranted: boolean | null;
@@ -37,9 +37,10 @@ export function useMyPage() {
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setState({ status: 'loading' });
-    const [user, artists, vault] = await Promise.all([
+    const [user, artists, mine, vault] = await Promise.all([
       userRepository.me(),
       artistRepository.listMine(),
+      ticketRepository.listMine(),
       ticketRepository.listVault(),
     ]);
     if (!user.ok) return setState({ status: 'error', message: failureMessage(user.failure) });
@@ -60,7 +61,7 @@ export function useMyPage() {
       data: {
         user: user.data,
         artists: artists.ok ? artists.data : [],
-        vaultCount: vault.ok ? vault.data.length : 0,
+        vaultCount: (mine.ok ? mine.data.length : 0) + (vault.ok ? vault.data.length : 0),
         permissionsGranted,
       },
     });
