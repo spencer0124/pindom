@@ -5,6 +5,10 @@ PINDOM — Expo / React Native. Location-verified photo tickets.
 Read [docs/explanation/architecture.md](docs/explanation/architecture.md) first if you do
 not know what this app does. The docs index is [docs/README.md](docs/README.md).
 
+**New to mobile development?** [docs/onboarding.md](docs/onboarding.md) is the route in —
+running the app on an emulator, and when a change needs a native rebuild rather than a
+reload. Bilingual (한국어 / English).
+
 **The design source is [design/README.md](design/README.md)** — an interactive prototype that
 outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)).
 

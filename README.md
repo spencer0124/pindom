@@ -42,6 +42,11 @@ work** — you need a development build:
 yarn ios       # or: yarn android
 ```
 
+New to mobile? Do not start here — start with
+[docs/onboarding.md](docs/onboarding.md), which routes you through installing the toolchain
+from nothing, getting the app onto an emulator, and knowing when a change needs a rebuild
+rather than a reload. It is bilingual (한국어 / English).
+
 ## Documentation
 
 Full docs are in [docs/](docs/README.md), filed by reader need
@@ -49,6 +54,9 @@ Full docs are in [docs/](docs/README.md), filed by reader need
 
 | Document | For |
 | --- | --- |
+| [onboarding.md](docs/onboarding.md) | The router for a new developer, 한국어 / English. **Start here on your first day** |
+| [run-the-app-on-an-android-emulator.md](docs/tutorials/run-the-app-on-an-android-emulator.md) | Getting the app running from an empty Mac ([한국어](docs/tutorials/run-the-app-on-an-android-emulator.ko.md)) |
+| [expo-and-native-builds.md](docs/explanation/expo-and-native-builds.md) | What Expo, prebuild and CNG mean here, and when a change needs a native rebuild ([한국어](docs/explanation/expo-and-native-builds.ko.md)) |
 | [design/README.md](design/README.md) | The interactive prototype. **The design authority — read before building any screen** |
 | [connect-the-app-to-firebase.md](docs/how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project — and building before you can. **Start here for anything backend-shaped** |
 | [ship-a-testflight-build.md](docs/how-to/ship-a-testflight-build.md) | Cutting an iOS build and getting it to testers. **Start here to ship** |

@@ -29,11 +29,23 @@ internal ones. **The category follows the reader's need, not the subject matter.
 A document serves one need. When a procedure and its background start sharing a page, split
 them and link the halves.
 
-`tutorials/` and `internal/` are empty for now. `how-to/` holds the two procedures that
-exist: joining the backend developer's Firebase project, and shipping an iOS build to
-TestFlight.
+`internal/` is empty for now. `tutorials/` holds the guided first run for a developer
+joining the project. `how-to/` holds the two procedures that exist: joining the backend
+developer's Firebase project, and shipping an iOS build to TestFlight.
 
 ## Index
+
+### start here
+
+| Document | Summary |
+| --- | --- |
+| [onboarding.md](onboarding.md) | The router for a developer joining the project: which of the guides below to read, in what order, and a "when you are stuck, go here" table. Bilingual — **this is the link to send someone on their first day** |
+
+### tutorials
+
+| Document | Summary |
+| --- | --- |
+| [run-the-app-on-an-android-emulator.md](tutorials/run-the-app-on-an-android-emulator.md) | From an empty Mac to PINDOM running on a virtual Pixel with Fast Refresh: the JDK and SDK, the AVD, the first build, the emulator's GPS and camera, and the troubleshooting table. 한국어판: [run-the-app-on-an-android-emulator.ko.md](tutorials/run-the-app-on-an-android-emulator.ko.md). **Start here if you have never built a mobile app** |
 
 ### how-to
 
@@ -59,6 +71,7 @@ TestFlight.
 | --- | --- |
 | [architecture.md](explanation/architecture.md) | What PINDOM is, how the repo is laid out, the provider stack, the navigation graph, and where the trust boundary sits |
 | [design-language.md](explanation/design-language.md) | Why some screens are dark and most are light, and what that means for how theming is built |
+| [expo-and-native-builds.md](explanation/expo-and-native-builds.md) | The two artefacts a React Native app is made of, why `android/` is not in git, when a change needs a native rebuild rather than a reload, the vocabulary to ask Claude about this stack, and how to tell whether a search result applies here. 한국어판: [expo-and-native-builds.ko.md](explanation/expo-and-native-builds.ko.md). **Read after the tutorial** |
 
 ### decisions (ADR)
 
@@ -154,6 +167,7 @@ from**.
 
 - **kebab-case, lowercase, `.md`**, as in `design-system.md`
 - ADRs: `NNNN-kebab-title.md`, zero-padded, preferably starting with a verb
+- Translations: `<name>.ko.md`, beside the English file, in the same folder
 - Postmortems: `YYYY-MM-topic.md`
 - ALL-CAPS names are reserved for the files GitHub treats specially: `README`,
   `CONTRIBUTING`, `LICENSE`. This is why the component index is
@@ -176,6 +190,13 @@ names, UI copy, and design labels are identifiers and content, not prose to be t
 
 - Right: `` The 시작화면 frame (`33:2801`) is the entry point. ``
 - Wrong: `The "start screen" frame is the entry point.` — now nobody can find it in Figma.
+
+**Translations are the one exception.** A document written for someone who is *learning* —
+not looking something up — may carry a Korean companion at `<name>.ko.md` in the same
+folder, with the same structure. The English file stays the source of truth: change it
+first, and say so in a note at the top of the translation. Two files that both claim
+authority will disagree within a month, and the reader has no way to tell which is stale.
+Today this applies only to the onboarding pair routed from [onboarding.md](onboarding.md).
 
 > [!NOTE]
 > skkuverse-app enforces English through an umbrella linter (`lint_conventions.py`) that
