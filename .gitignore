@@ -66,3 +66,21 @@ Thumbs.db
 
 # explain-diff plugin output — generated HTML walkthroughs, regenerable
 explain-diff/
+
+# Local-only build automation. Not ignored because it is bad — it is finished and
+# it works — but because it does not belong in a public repo:
+# `sms-build-trigger.sh` hardcodes a personal phone number as its allow-list, and
+# the LaunchAgent is bound to one Mac. `build-cycle.sh` and the `build` skill go
+# with them because they are the same feature; a skill pointing at a script that
+# is not in the clone is worse than no skill. `scripts/ship-testflight.sh` stays
+# tracked — it is the source of truth these wrap, and this list is deliberately
+# per-file rather than `*.sh` so a future script is not dropped by accident.
+/scripts/build-cycle.sh
+/scripts/sms-build-trigger.sh
+/scripts/launchd/
+/docs/how-to/trigger-a-build-by-text-message.md
+/.claude/skills/build/
+
+# Per-machine Claude instructions. CLAUDE.md is tracked and public; this is where
+# notes about the local-only tooling above live instead.
+CLAUDE.local.md
