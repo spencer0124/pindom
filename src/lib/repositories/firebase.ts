@@ -25,7 +25,7 @@ import {
   where,
 } from '@react-native-firebase/firestore';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
-import { getStorage, putFile, ref } from '@react-native-firebase/storage';
+import { getDownloadURL, getStorage, putFile, ref } from '@react-native-firebase/storage';
 
 import { AppConfig } from '../config';
 import { Failure, ResultHelper, type AppFailure, type Result } from '../api/types';
@@ -1024,6 +1024,16 @@ export const firebaseRepositories: Repositories = {
         await updateDoc(doc(db(), 'users', uid), { ...input });
         const snap = await getDoc(doc(db(), 'users', uid));
         return toUser(uid, (snap.data() ?? {}) as DocData);
+      }),
+
+    uploadAvatar: (localUri) =>
+      attempt(async () => {
+        // `avatars/{uid}/` is the prefix the storage rules check, the same shape
+        // as `tickets/{uid}/`; a timestamp is unique enough per user.
+        const object = ref(storage(), `avatars/${requireUid()}/${Date.now()}.jpg`);
+        await putFile(object, localUri, { contentType: 'image/jpeg' });
+        // A URL rather than the path: `users.avatarUrl` is rendered directly.
+        return getDownloadURL(object);
       }),
 
     setLocale: (locale: Locale) =>

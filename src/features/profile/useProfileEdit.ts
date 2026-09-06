@@ -23,9 +23,11 @@ type State =
  * from — plus the save.
  *
  * `updateProfile` takes only the fields the client may write (nickname, bio,
- * avatarUrl, profileVisibility), which is exactly the draft. 1a's 사진 올리기
- * needs a picker this build does not have; 내 인증컷에서 고르기 is the user's own
- * ticket photos, which are already uploaded and already theirs.
+ * avatarUrl, profileVisibility), which is exactly the draft. 1a's 사진 올리기 is
+ * the album picker on the screen, which uploads through
+ * `userRepository.uploadAvatar` and writes the resulting URL into the draft;
+ * 내 인증컷에서 고르기 is the user's own ticket photos, which are already uploaded
+ * and already theirs.
  */
 export function useProfileEdit() {
   const [state, setState] = useState<State>({ status: 'loading' });

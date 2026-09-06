@@ -230,6 +230,16 @@ export interface UserRepository {
     avatarUrl?: string;
     profileVisibility?: 'public' | 'private';
   }): Promise<Result<User>>;
+  /**
+   * Put an album photo where the profile can point at it, and return the
+   * **download URL** — not a path, unlike `TicketRepository.uploadPhoto`.
+   *
+   * `users.avatarUrl` is read straight into an `<Image source>` by every screen
+   * that shows a profile, so what this resolves has to be loadable as-is. The
+   * object goes to `avatars/{uid}/…`, which is the prefix the storage rules
+   * check for ownership, so it is built here and nowhere else.
+   */
+  uploadAvatar(localUri: string): Promise<Result<string>>;
   /** 언어. */
   setLocale(locale: Locale): Promise<Result<User>>;
   /**

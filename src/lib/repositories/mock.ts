@@ -598,6 +598,12 @@ export const mockRepositories: Repositories = {
       return mockDelay(ResultHelper.ok(user));
     },
 
+    async uploadAvatar(localUri: string) {
+      if (!session) return mockDelay(unauthenticated<string>());
+      // No Storage in the fixture path: the local file stands in for the object.
+      return mockDelay(ResultHelper.ok(localUri));
+    },
+
     async updateProfile(input) {
       if (!session) return mockDelay(unauthenticated<User>());
       user = {

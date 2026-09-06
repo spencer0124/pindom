@@ -120,6 +120,7 @@ export const userRepository: UserRepository = {
   me: async () => (await impl()).users.me(),
   getPublicProfile: async (userId) => (await impl()).users.getPublicProfile(userId),
   updateProfile: async (input) => (await impl()).users.updateProfile(input),
+  uploadAvatar: async (localUri) => (await impl()).users.uploadAvatar(localUri),
   setLocale: async (locale) => (await impl()).users.setLocale(locale),
   block: async (userId) => (await impl()).users.block(userId),
   unblock: async (userId) => (await impl()).users.unblock(userId),

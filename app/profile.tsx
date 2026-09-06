@@ -1,11 +1,14 @@
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
+import { failureMessage } from '@/lib/api/failure-message';
 import type { ProfileVisibility } from '@/lib/domain';
+import { userRepository } from '@/lib/repositories';
 import { NICKNAME_MAX, useProfileEdit, type ProfileDraft } from '@/features/profile';
 import { Rule, Shape } from '@/features/shared';
 
@@ -21,9 +24,9 @@ const VISIBILITY: { id: ProfileVisibility; label: string; desc: string }[] = [
  * type and corners, matching `app/(tabs)/index.tsx`. The route screens.md
  * proposed; there is no Figma frame.
  *
- * 1a offers 사진 올리기 and 내 인증컷에서 고르기. The first needs an image picker
- * this build does not have; the second is the user's own ticket photos, which
- * are already uploaded and already theirs, so that is the avatar strip. 1a's
+ * 1a offers 사진 올리기 and 내 인증컷에서 고르기. The first opens the album through
+ * expo-image-picker and uploads to `avatars/{uid}/`; the second is the user's own
+ * ticket photos, which are already uploaded and already theirs. 1a's
  * interest tags (드라마 OST · 예능) have no field; 내 아티스트 shows the followed
  * 최애 and 추가 goes to 최애 찾기. 1a's five preset avatars are not drawn: the
  * contract writes `avatarUrl` only (fidelity decision 25).
@@ -34,8 +37,8 @@ const VISIBILITY: { id: ProfileVisibility; label: string; desc: string }[] = [
  */
 
 /**
- * 1a's camera badge on the avatar — a cue that this is editable. Tapping it
- * points at the 인증컷 strip below, or explains the gate when there is none.
+ * 1a's camera badge on the avatar — a cue that this is editable. Tapping the
+ * avatar opens the album; the 인증컷 strip below is the other source.
  */
 const CAMERA_BADGE = 32;
 const CAMERA_GLYPH = 15;
@@ -46,6 +49,7 @@ export default function ProfileEditScreen() {
   const { token } = useTheme();
   const { state, reload, saving, save } = useProfileEdit();
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (state.status === 'ready' && draft == null) {
@@ -93,6 +97,32 @@ export default function ProfileEditScreen() {
     if (ok) router.back();
   };
 
+  /**
+   * 사진 올리기 — the album. `allowsEditing` makes the picker re-render the crop
+   * it hands back, so the uploaded file is a fresh image rather than the album
+   * original, and the album's EXIF/GPS never leaves the phone. Uploading only
+   * fills the preview; 저장 is what writes `avatarUrl`.
+   */
+  const pickAvatar = async () => {
+    if (uploading) return;
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    const asset = picked.canceled ? undefined : picked.assets[0];
+    if (asset == null) return;
+    setUploading(true);
+    const uploaded = await userRepository.uploadAvatar(asset.uri);
+    setUploading(false);
+    if (!uploaded.ok) {
+      Alert.alert('프로필 사진', failureMessage(uploaded.failure));
+      return;
+    }
+    setDraft({ ...draft, avatarUrl: uploaded.data });
+  };
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
       <View style={styles.header}>
@@ -120,17 +150,11 @@ export default function ProfileEditScreen() {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <View style={styles.avatarBlock}>
             <Pressable
-              onPress={() =>
-                Alert.alert(
-                  '프로필 사진',
-                  shots.length === 0
-                    ? '촬영지에서 인증하고 찍은 컷을 프로필 사진으로 쓸 수 있어요. 먼저 티켓을 발행해 보세요.'
-                    : '아래 내 인증컷 목록에서 사진을 골라 주세요.',
-                )
-              }
+              onPress={() => void pickAvatar()}
+              disabled={uploading}
               accessibilityRole="button"
               accessibilityLabel="프로필 사진 변경"
-              style={styles.avatarWrap}
+              style={[styles.avatarWrap, uploading && styles.avatarBusy]}
             >
               <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
                 {draft.avatarUrl != null ? (
@@ -150,11 +174,13 @@ export default function ProfileEditScreen() {
                 </Svg>
               </View>
             </Pressable>
-            {shots.length === 0 && (
-              <Txt typography="st13" color={adaptive.grey500}>
-                인증컷을 찍으면 프로필 사진으로 쓸 수 있어요
-              </Txt>
-            )}
+            <Txt typography="st13" color={adaptive.grey500}>
+              {uploading
+                ? '사진을 올리는 중이에요'
+                : shots.length === 0
+                  ? '사진을 눌러 앨범에서 고를 수 있어요'
+                  : '사진을 눌러 앨범에서 고르거나, 아래 인증컷에서 선택할 수 있어요'}
+            </Txt>
             {shots.length > 0 && (
               <>
                 <Txt typography="st13" fontWeight="medium" color={adaptive.grey600}>
@@ -339,6 +365,9 @@ const styles = StyleSheet.create({
   avatarWrap: {
     width: 96,
     height: 96,
+  },
+  avatarBusy: {
+    opacity: 0.5,
   },
   avatar: {
     width: 96,

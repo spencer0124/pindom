@@ -140,6 +140,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         '촬영지에 도착했는지 확인하기 위해 현재 위치를 사용합니다.',
       NSCameraUsageDescription:
         '촬영지에서 사진을 찍어 티켓을 발행하기 위해 카메라를 사용합니다.',
+      NSPhotoLibraryUsageDescription:
+        '프로필 사진으로 쓸 이미지를 앨범에서 고르기 위해 접근합니다.',
     },
   },
 
