@@ -126,10 +126,22 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // since the Naver map — a merge that touches package.json now means
     // yarn install and pod install before any archive, or the JS references a
     // module the binary does not have and 티켓 crashes on a device only.
+    // Build 13 (2026-09-06) carries the next round from main: 프로필 사진을
+    // 앨범에서 고르는 expo-image-picker 흐름, 마이페이지 헤더 상단 여백과 아바타
+    // 탭 안내, 그리고 개인정보처리방침·문의하기를 앱 밖으로 내보내지 않고 인앱
+    // 브라우저 시트로 여는 변경. Build 12's warning about package.json held —
+    // yarn install and pod install were both needed again — but it named only
+    // half the trap. `ios.infoPlist` keys are materialised into
+    // ios/PINDOM/Info.plist at prebuild, so the NSPhotoLibraryUsageDescription
+    // this round added here alone never reached the binary. Nothing catches
+    // that: typecheck passes, the archive succeeds, the upload is accepted, and
+    // iOS kills the app the first time a tester opens the picker. A merge that
+    // adds an infoPlist key means `npx expo prebuild -p ios`, and the check is
+    // `plutil -p ios/PINDOM/Info.plist`, not a green build.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '12',
+    buildNumber: '13',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
