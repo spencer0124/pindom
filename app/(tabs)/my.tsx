@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useRef, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
@@ -130,11 +131,12 @@ export default function MyScreen() {
     // findable-if-you-have-earned-your-way-in. 문의하기 is guideline 5.1.1(v)'s
     // support page, which is also where account deletion is documented.
     { label: '응모 공식 규정', go: () => router.push('/raffle/rules' as never) },
-    { label: '문의하기', go: () => void Linking.openURL(ExternalLinks.support) },
+    { label: '문의하기', go: () => void WebBrowser.openBrowserAsync(ExternalLinks.support).catch(() => {}) },
     // 온보딩의 동의 체크박스가 가리키는 것과 같은 화면. 동의는 한 번이지만 약관은
     // 계속 읽을 수 있어야 하고, 가입한 뒤에는 온보딩으로 돌아갈 길이 없다.
     { label: '이용약관', go: () => router.push('/terms' as never) },
-    { label: '개인정보처리방침', go: () => void Linking.openURL(ExternalLinks.privacy) },
+    // 방침 원문은 노션에 있고 인앱 브라우저 시트로 열어 앱 밖으로 내보내지 않는다.
+    { label: '개인정보처리방침', go: () => void WebBrowser.openBrowserAsync(ExternalLinks.privacy).catch(() => {}) },
   ];
 
   return (
