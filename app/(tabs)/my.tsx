@@ -317,7 +317,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
     paddingHorizontal: Shape.gutter,
-    paddingTop: 10,
+    // 아바타 줄이 상태바에 붙어 보인다는 베타 피드백 — 위쪽에 여백을 준다
+    paddingTop: 24,
     paddingBottom: 18,
   },
   avatar: {

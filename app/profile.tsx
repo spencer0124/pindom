@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { Button, ErrorPage, Loader, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
@@ -33,7 +33,10 @@ const VISIBILITY: { id: ProfileVisibility; label: string; desc: string }[] = [
  * 저장 turns when the name is good.
  */
 
-/** 1a's camera badge on the avatar — a cue that this is editable, no handler. */
+/**
+ * 1a's camera badge on the avatar — a cue that this is editable. Tapping it
+ * points at the 인증컷 strip below, or explains the gate when there is none.
+ */
 const CAMERA_BADGE = 32;
 const CAMERA_GLYPH = 15;
 const CAMERA_STROKE = 1.9;
@@ -116,7 +119,19 @@ export default function ProfileEditScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.body}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <View style={styles.avatarBlock}>
-            <View style={styles.avatarWrap}>
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  '프로필 사진',
+                  shots.length === 0
+                    ? '촬영지에서 인증하고 찍은 컷을 프로필 사진으로 쓸 수 있어요. 먼저 티켓을 발행해 보세요.'
+                    : '아래 내 인증컷 목록에서 사진을 골라 주세요.',
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="프로필 사진 변경"
+              style={styles.avatarWrap}
+            >
               <View style={[styles.avatar, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
                 {draft.avatarUrl != null ? (
                   <Image source={{ uri: draft.avatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
@@ -134,7 +149,12 @@ export default function ProfileEditScreen() {
                   </G>
                 </Svg>
               </View>
-            </View>
+            </Pressable>
+            {shots.length === 0 && (
+              <Txt typography="st13" color={adaptive.grey500}>
+                인증컷을 찍으면 프로필 사진으로 쓸 수 있어요
+              </Txt>
+            )}
             {shots.length > 0 && (
               <>
                 <Txt typography="st13" fontWeight="medium" color={adaptive.grey600}>
