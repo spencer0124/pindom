@@ -138,10 +138,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // iOS kills the app the first time a tester opens the picker. A merge that
     // adds an infoPlist key means `npx expo prebuild -p ios`, and the check is
     // `plutil -p ios/PINDOM/Info.plist`, not a green build.
+    // Build 14 (2026-09-07) carries: no new commits from main.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '13',
+    buildNumber: '14',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
