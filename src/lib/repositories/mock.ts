@@ -582,6 +582,8 @@ export const mockRepositories: Repositories = {
       }
       // 여기까지 왔으면 자기 프로필이다. 비공개는 남에게만 비공개다 — 자기 글의
       // 작성자를 눌러 자기 프로필을 여는 길이 커뮤니티에 있다.
+      // 남에게 보이는 프로필과 같은 투영이므로, 여기서도 공개 티켓만 싣는다.
+      // 자기 프로필 화면은 비공개 컷을 `listMine` + `listVault`로 따로 읽는다.
       return mockDelay(ResultHelper.ok({
         userId: user.id,
         nickname: user.nickname,
@@ -590,6 +592,18 @@ export const mockRepositories: Repositories = {
         ticketsIssued: user.ticketsIssued,
         placesVisited: user.placesVisited,
         tier: user.tier,
+        tickets: tickets
+          .filter((t) => t.visibility === 'public')
+          .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime())
+          .slice(0, 30)
+          .map((t) => ({
+            ticketId: t.id,
+            placeId: t.placeId,
+            placeName: t.placeName,
+            photoUrl: t.photoUrl,
+            issuedAt: t.issuedAt,
+            ...(t.artistId && { artistId: t.artistId }),
+          })),
       }));
     },
 

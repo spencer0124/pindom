@@ -27,6 +27,22 @@ export const mockPublicProfiles: PublicProfile[] = [
     ticketsIssued: 24,
     placesVisited: 8,
     tier: 'club20',
+    tickets: [
+      {
+        ticketId: 'ticket-yuna-1',
+        placeId: 'place-namsan',
+        placeName: 'N서울타워 전망대',
+        photoUrl: 'https://picsum.photos/seed/yunaA/900/1200',
+        issuedAt: new Date('2026-08-20T18:10:00+09:00'),
+      },
+      {
+        ticketId: 'ticket-yuna-2',
+        placeId: 'place-gamcheon',
+        placeName: '감천문화마을',
+        photoUrl: 'https://picsum.photos/seed/yunaB/900/1200',
+        issuedAt: new Date('2026-08-02T14:30:00+09:00'),
+      },
+    ],
   },
   {
     userId: 'user-minseo',
@@ -36,6 +52,15 @@ export const mockPublicProfiles: PublicProfile[] = [
     ticketsIssued: 12,
     placesVisited: 6,
     tier: 'club10',
+    tickets: [
+      {
+        ticketId: 'ticket-minseo-1',
+        placeId: 'place-cheonggye',
+        placeName: '청계천 광통교',
+        photoUrl: 'https://picsum.photos/seed/minseoA/900/1200',
+        issuedAt: new Date('2026-08-11T20:05:00+09:00'),
+      },
+    ],
   },
   {
     userId: 'user-hana',
@@ -45,6 +70,15 @@ export const mockPublicProfiles: PublicProfile[] = [
     ticketsIssued: 9,
     placesVisited: 5,
     tier: 'club10',
+    tickets: [
+      {
+        ticketId: 'ticket-hana-1',
+        placeId: 'place-eurwangni',
+        placeName: '을왕리 해수욕장',
+        photoUrl: 'https://picsum.photos/seed/hanaA/900/1200',
+        issuedAt: new Date('2026-07-30T18:44:00+09:00'),
+      },
+    ],
   },
   {
     userId: 'user-jihoon',
@@ -53,6 +87,7 @@ export const mockPublicProfiles: PublicProfile[] = [
     ticketsIssued: 31,
     placesVisited: 12,
     tier: 'clubGo',
+    tickets: [],
   },
   {
     userId: 'user-seojun',
@@ -61,5 +96,6 @@ export const mockPublicProfiles: PublicProfile[] = [
     ticketsIssued: 22,
     placesVisited: 9,
     tier: 'club20',
+    tickets: [],
   },
 ];

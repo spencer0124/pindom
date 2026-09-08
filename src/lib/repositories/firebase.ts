@@ -986,10 +986,20 @@ export const firebaseRepositories: Repositories = {
   },
 
   users: {
+    /**
+     * The callable's payload, mapped onto `PublicProfile`.
+     *
+     * `tickets` is the 인증 촬영지·공개 사진 projection — public tickets only,
+     * newest first — and is read tolerantly: a build running against a
+     * function deployed before the field existed gets an empty list rather
+     * than a broken profile. `issuedAt` arrives as an ISO string, because a
+     * callable's payload is JSON and has no Timestamp.
+     */
     getPublicProfile: (userId) =>
       attempt(async () => {
         const call = httpsCallable(fns(), 'getPublicProfile');
         const d = (await call({ userId })).data as DocData;
+        const tickets = Array.isArray(d.tickets) ? (d.tickets as DocData[]) : [];
         return {
           userId: String(d.userId ?? userId),
           nickname: String(d.nickname ?? ''),
@@ -998,6 +1008,14 @@ export const firebaseRepositories: Repositories = {
           ticketsIssued: Number(d.ticketsIssued ?? 0),
           placesVisited: Number(d.placesVisited ?? 0),
           tier: (['club10', 'club20', 'clubGo'].includes(String(d.tier)) ? d.tier : 'club10') as 'club10' | 'club20' | 'clubGo',
+          tickets: tickets.map((t) => ({
+            ticketId: String(t.ticketId ?? ''),
+            placeId: String(t.placeId ?? ''),
+            placeName: String(t.placeName ?? ''),
+            photoUrl: String(t.photoUrl ?? ''),
+            issuedAt: new Date(String(t.issuedAt ?? '')),
+            ...(typeof t.artistId === 'string' && { artistId: t.artistId }),
+          })),
         };
       }),
 
