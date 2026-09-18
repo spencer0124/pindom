@@ -167,7 +167,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // here rather than in android/app/build.gradle because `android/` is
     // gitignored: a number kept only there is reset to 1 by the next prebuild,
     // and the next uploader finds out from a rejected upload.
-    versionCode: 1,
+    // Version 2 (2026-09-18) is 1.0.1 — the first Android build since 1.0.0, so
+    // it carries everything from iOS builds 11–15 at once: the on-device camera,
+    // the Skia hologram ticket, the photo vault, drag mosaic, album profile
+    // photos and the in-app browser.
+    versionCode: 2,
     ...(androidFirebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
       // The ground the icon is drawn on. `#6541F2` here was the violet brand
