@@ -63,7 +63,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
-| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
+| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; issue/place counts include tests; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
 | — | 공개 프로필 | — | `/profile/[id]` | **built** — public ticket projection preserves TEST; owner can also see private cuts; neutral issue/place counts |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
