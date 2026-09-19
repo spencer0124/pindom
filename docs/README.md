@@ -53,6 +53,7 @@ developer's Firebase project, and shipping an iOS build to TestFlight.
 | --- | --- |
 | [connect-the-app-to-firebase.md](how-to/connect-the-app-to-firebase.md) | Joining the backend developer's Firebase project, building with fixtures before you can, and every Firebase-adjacent document linked in one place. **Start here for anything backend-shaped** |
 | [ship-a-testflight-build.md](how-to/ship-a-testflight-build.md) | Cutting an iOS build and getting it to testers with `scripts/ship-testflight.sh` — the phases, the flags, and the four traps the script designs out. **Start here to ship** |
+| [use-place-cutouts.md](how-to/use-place-cutouts.md) | 관데공 장소 사진·초성 표시, 누끼와 함께 촬영하기, 업데이트 범위와 검증 결과 |
 
 ### reference
 

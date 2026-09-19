@@ -1,13 +1,14 @@
 import type { Place } from '../lib/domain';
+import { gwandegongPlaces } from './gwandegong';
 
 /**
  * 촬영지 fixtures.
  *
- * Real locations with approximate coordinates, chosen so the 지도 pins spread
- * across the country rather than clustering. Titles and descriptions are
- * placeholder copy, not cleared rights — replace before anything ships.
+ * The supplied 관데공 collection shares the live catalog's photos and coordinates.
+ * The remaining legacy locations retain their fictional demo copy and images.
  */
 export const mockPlaces: Place[] = [
+  ...gwandegongPlaces,
   {
     id: 'place-jumunjin',
     roman: 'Jumunjin Breakwater',

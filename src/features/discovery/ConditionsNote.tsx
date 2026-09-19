@@ -6,6 +6,7 @@ interface ConditionsNoteProps {
   /** From `place.radiusMeters` — per-place so it stays tunable without a deploy. */
   radiusMeters: number;
   artistName?: string;
+  hasCutout: boolean;
 }
 
 /**
@@ -22,13 +23,14 @@ interface ConditionsNoteProps {
  * contract makes it per-place. Every other number in the sentence is fixed by
  * the function.
  */
-export function ConditionsNote({ radiusMeters, artistName }: ConditionsNoteProps) {
+export function ConditionsNote({ radiusMeters, artistName, hasCutout }: ConditionsNoteProps) {
   const adaptive = useAdaptive();
 
-  const overlay =
-    artistName != null
-      ? `인증되면 ${artistName}의 원본 컷이 카메라에 겹쳐집니다`
-      : '인증되면 원본 컷이 카메라에 겹쳐집니다';
+  const capture = hasCutout
+    ? artistName != null
+      ? `인증되면 ${artistName}의 누끼와 함께 사진을 찍을 수 있어요`
+      : '인증되면 누끼와 함께 사진을 찍을 수 있어요'
+    : '인증되면 현장에서 사진을 찍고 티켓을 만들 수 있어요';
 
   return (
     <View style={styles.block}>
@@ -36,7 +38,7 @@ export function ConditionsNote({ radiusMeters, artistName }: ConditionsNoteProps
         인증 조건
       </Txt>
       <Txt typography="t7" color={adaptive.grey600}>
-        {`반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${overlay}`}
+        {`반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${capture}`}
       </Txt>
     </View>
   );

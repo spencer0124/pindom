@@ -85,7 +85,7 @@ export function PhotoEditor({ uri, placeName, onBack, onNext }: {
       });
       await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const composed = await captureRef(frame, { format: 'jpg', quality: 0.95 });
-      onNext(composed);
+      onNext(composed.startsWith('/') ? `file://${composed}` : composed);
     } catch {
       setError('편집한 사진을 저장하지 못했어요. 다시 시도해 주세요.');
     } finally {

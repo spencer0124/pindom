@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -90,6 +90,24 @@ export default function PlaceDetailScreen() {
           <Txt typography="t6" color={adaptive.grey700} style={styles.description}>
             {place.description}
           </Txt>
+          {place.contributorInitials && (
+            <Txt typography="t7" color={adaptive.grey600} style={styles.work}>
+              제공 · {place.contributorInitials}
+            </Txt>
+          )}
+          {place.coverImageCredit && (
+            place.coverImageSourceUrl ? (
+              <Link href={place.coverImageSourceUrl as Href} asChild>
+                <Txt typography="t7" color={adaptive.grey600} style={styles.source}>
+                  {place.coverImageCredit} ↗
+                </Txt>
+              </Link>
+            ) : (
+              <Txt typography="t7" color={adaptive.grey600} style={styles.work}>
+                {place.coverImageCredit}
+              </Txt>
+            )
+          )}
         </View>
 
         <Rule />
@@ -119,7 +137,7 @@ export default function PlaceDetailScreen() {
 
         <Rule />
 
-        <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name} />
+        <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name} hasCutout={Boolean(place.cutoutImageUrl)} />
       </ScrollView>
 
       <SafeAreaView
@@ -162,6 +180,10 @@ const styles = StyleSheet.create({
   },
   description: {
     marginTop: 10,
+  },
+  source: {
+    marginTop: 8,
+    textDecorationLine: 'underline',
   },
   section: {
     gap: 2,

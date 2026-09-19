@@ -212,6 +212,11 @@ function toAssistantMap(d: DocData): AssistantMap | null {
 function toPlace(id: string, d: DocData): Place {
   const at = `places/${id}`;
   const { lat, lng } = geo(d, 'location', at);
+  const cutoutImageUrl = optStr(d, 'cutoutImageUrl');
+  const cutoutAspectRatio = optNum(d, 'cutoutAspectRatio');
+  const contributorInitials = optStr(d, 'contributorInitials');
+  const coverImageCredit = optStr(d, 'coverImageCredit');
+  const coverImageSourceUrl = optStr(d, 'coverImageSourceUrl');
   return {
     id,
     // A 촬영지 name is **not** translated, on purpose. 언어 says so in as many
@@ -232,6 +237,11 @@ function toPlace(id: string, d: DocData): Place {
     lng,
     radiusMeters: optNum(d, 'radiusMeters') ?? 50,
     coverImageUrl: str(d, 'coverImageUrl', at),
+    ...(cutoutImageUrl && { cutoutImageUrl }),
+    ...(cutoutAspectRatio != null && Number.isFinite(cutoutAspectRatio) && cutoutAspectRatio > 0 && { cutoutAspectRatio }),
+    ...(contributorInitials && { contributorInitials }),
+    ...(coverImageCredit && { coverImageCredit }),
+    ...(coverImageSourceUrl && { coverImageSourceUrl }),
     ticketCount: num(d, 'ticketCount', at),
     verifyCount: num(d, 'verifyCount', at),
     photoCount: num(d, 'photoCount', at),

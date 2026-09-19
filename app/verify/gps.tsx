@@ -125,7 +125,7 @@ export default function GpsVerifyScreen() {
 
   const title =
     phase === 'verified'
-      ? '인증 완료 · 원본 컷이 열립니다'
+      ? (place.cutoutImageUrl ? '인증 완료 · 누끼와 함께 찍어 보세요' : '인증 완료 · 카메라가 열립니다')
       : busy
         ? '위치를 확인하는 중'
         : remaining == null

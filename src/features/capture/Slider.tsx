@@ -56,10 +56,11 @@ export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLa
     <GestureDetector gesture={gesture}>
       <View
         style={styles.hit}
+        accessible
         onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
         accessibilityRole="adjustable"
         accessibilityLabel={accessibilityLabel}
-        accessibilityValue={{ min, max, now: clamp(value, min, max) }}
+        accessibilityValue={{ min, max, now: clamp(value, min, max), text: `${Math.round(clamp(value, min, max))}%` }}
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
         onAccessibilityAction={({ nativeEvent }) => {
           const step = Math.max(1, Math.round((max - min) / 20));
@@ -96,7 +97,7 @@ function clamp(value: number, min: number, max: number) {
 const styles = StyleSheet.create({
   hit: {
     flex: 1,
-    height: 32,
+    height: 44,
     justifyContent: 'center',
   },
   track: {

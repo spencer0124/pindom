@@ -1,13 +1,14 @@
 import type { Artist } from '../lib/domain';
+import { gwandegongArtist } from './gwandegong';
 
 /**
  * 최애 fixtures.
  *
- * Fictional groups on purpose — the prototype uses silhouette placeholders for people and
- * names no real artist, and seeding a real one into a public repo invites a rights problem
- * the product does not need.
+ * The user-supplied 관데공 collection comes first. The remaining groups are
+ * fictional fixtures retained for the existing demo flows.
  */
 export const mockArtists: Artist[] = [
+  gwandegongArtist,
   {
     id: 'artist-lumina',
     name: '루미나',
