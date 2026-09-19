@@ -50,7 +50,7 @@ export default function CameraScreen() {
   // switch with a replace to 지도. An unfocused screen is popped, not redirected.
   useFocusEffect(
     useCallback(() => {
-      if (grant == null || place == null) {
+      if (grant == null || grant.expiresAt.getTime() <= Date.now() || place == null || place.archived) {
         router.replace(place != null ? (`/verify/gps?placeId=${place.id}` as never) : ('/map' as never));
       }
     }, [grant, place]),
@@ -89,12 +89,12 @@ export default function CameraScreen() {
             </Txt>
           </View>
           <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>
-            GPS 인증 완료 · 촬영 준비
+            {grant?.testMode ? '위치 제한 해제 · 카메라 테스트' : 'GPS 인증 완료 · 촬영 준비'}
           </Txt>
         </Animated.View>
       </SafeAreaView>
 
-      <PhotoFrame placeName={place.name} date={now} style={styles.frame} aspectRatio={3 / 4}>
+      <PhotoFrame placeName={place.name} date={now} testMode={grant?.testMode} style={styles.frame} aspectRatio={3 / 4}>
         {() => focused && active ? <CameraStage ref={stage} previewImageUrl={place.coverImageUrl}
           cutout={place.cutoutImageUrl && cutoutEnabled ? { uri: place.cutoutImageUrl, aspectRatio: place.cutoutAspectRatio ?? 0.5, pose: cutoutPose } : undefined}
           onCutoutChange={setCutoutPose} /> : null}
