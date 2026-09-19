@@ -39,7 +39,7 @@ const AUTO_OPEN_MS = 900;
 export default function GpsVerifyScreen() {
   const adaptive = useAdaptive();
   const { placeId } = useLocalSearchParams<{ placeId: string }>();
-  const { state, phase, distance, accuracy, checks, error, verify, reload } =
+  const { state, phase, distance, accuracy, checks, result, error, verify, reload } =
     useVerification(placeId);
   const autoOpen = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -78,7 +78,9 @@ export default function GpsVerifyScreen() {
     }
     const verdict = await verify();
     if (verdict == null) return;
-    if (verdict.verified) {
+    if (verdict.verified && verdict.grant?.testMode) {
+      openCamera();
+    } else if (verdict.verified) {
       autoOpen.current = setTimeout(() => {
         autoOpen.current = null;
         router.push('/capture/camera' as never);
@@ -123,8 +125,10 @@ export default function GpsVerifyScreen() {
   const { place } = state;
   const remaining = distance != null ? Math.max(0, distance - place.radiusMeters) : null;
 
-  const title =
-    phase === 'verified'
+  const testMode = place.cameraTestEnabled === true || result?.grant?.testMode === true;
+  const title = testMode
+    ? busy ? '카메라를 준비하는 중' : '위치 제한 해제 · 카메라 테스트'
+    : phase === 'verified'
       ? (place.cutoutImageUrl ? '인증 완료 · 누끼와 함께 찍어 보세요' : '인증 완료 · 카메라가 열립니다')
       : busy
         ? '위치를 확인하는 중'
@@ -138,7 +142,9 @@ export default function GpsVerifyScreen() {
               ? `반경까지 ${formatDistance(remaining)} · 거의 다 왔어요`
               : `반경까지 ${formatDistance(remaining)}`;
 
-  const cta = phase === 'verified' ? '카메라 열기' : busy ? '인증 중…' : '현재 위치로 인증';
+  const cta = testMode
+    ? busy ? '카메라 준비 중…' : '카메라 열기'
+    : phase === 'verified' ? '카메라 열기' : busy ? '인증 중…' : '현재 위치로 인증';
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: adaptive.greyBackground }]}>
@@ -149,18 +155,18 @@ export default function GpsVerifyScreen() {
       </Pressable>
 
       <View style={styles.body}>
-        <Radar distance={distance} radiusMeters={place.radiusMeters} />
+        {!testMode && <Radar distance={distance} radiusMeters={place.radiusMeters} />}
 
         <View style={styles.copy}>
           <Txt typography="t3" fontWeight="bold" color={adaptive.grey900} textAlign="center">
             {title}
           </Txt>
           <Txt typography="t7" color={adaptive.grey600} textAlign="center">
-            {place.name} · 반경 안에서만 촬영이 열립니다
+            {testMode ? `${place.name} · 현재 위치와 관계없이 촬영할 수 있어요` : `${place.name} · 반경 안에서만 촬영이 열립니다`}
           </Txt>
         </View>
 
-        <VerifyChecks checks={checks} />
+        {!testMode && <VerifyChecks checks={checks} />}
       </View>
 
       <View style={styles.footer}>
@@ -180,7 +186,7 @@ export default function GpsVerifyScreen() {
           textAlign="center"
           style={styles.caption}
         >
-          {error ?? '반경·이동속도 판정은 인증을 누르면 자동으로 이뤄집니다'}
+          {error ?? (testMode ? '사진과 티켓에는 TEST가 표시돼요. 위치 권한은 필요하지 않아요.' : '반경·이동속도 판정은 인증을 누르면 자동으로 이뤄집니다')}
         </Txt>
       </View>
     </SafeAreaView>
