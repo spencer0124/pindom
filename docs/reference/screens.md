@@ -65,6 +65,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
 | `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
+| — | 공개 프로필 | — | `/profile/[id]` | **built** — public ticket projection preserves TEST; owner can also see private cuts; neutral issue/place counts |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
 | `vault` | 보관함 | — | `/vault` | **built** — private tickets, 공개 전환 per row |
 | — | 차단한 사용자 | — | `/blocked` | **built** — App Store 1.2. Not the prototype's; nicknames are remembered locally because other users' documents are unreadable |
