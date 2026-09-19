@@ -21,8 +21,8 @@ describe('supplied Gwandegong catalog', () => {
     }
   });
 
-  it('uses initials for all contributors and public image URLs for cutouts', () => {
-    const initials = new Set(['ㅇㅎㅈ', 'ㅈㅅㅇ', 'ㅇㅈㅇ', 'ㄱㅁㅈ']);
+  it('uses English initials for all contributors and public image URLs for cutouts', () => {
+    const initials = new Set(['YHJ', 'JSY', 'LJW', 'KMJ']);
     assert.equal(new Set(places.map((place) => place.contributorInitials)).size, initials.size);
     assert.doesNotMatch(text, /\/Users\/|file:\/\/|sourceKey|Downloads/);
     for (const place of places) {
