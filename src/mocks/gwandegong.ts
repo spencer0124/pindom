@@ -5,6 +5,7 @@ import catalog from './gwandegong-catalog.json';
 export const gwandegongArtist: Artist = catalog.artist;
 export const gwandegongPlaces: Place[] = catalog.places.map((place) => ({
   ...place,
+  cameraTestEnabled: true,
   workKind: place.workKind as Place['workKind'],
   createdAt: new Date(place.createdAt),
 }));

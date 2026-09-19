@@ -55,7 +55,12 @@ export const useCaptureStore = create<CaptureState>((set, get) => ({
   begin: (place, artistName) => {
     // Re-opening GPS인증 for the same place keeps the session so the speed check
     // sees a series; a different place starts over.
-    if (get().place?.id === place.id) return set({ place, artistName });
+    const previous = get();
+    if (previous.place?.id === place.id &&
+      previous.place.cameraTestEnabled === place.cameraTestEnabled &&
+      !place.archived && (!previous.grant || previous.grant.expiresAt.getTime() > Date.now())) {
+      return set({ place, artistName });
+    }
     set({ ...EMPTY, place, artistName });
   },
   setSessionId: (sessionId) => set({ sessionId }),

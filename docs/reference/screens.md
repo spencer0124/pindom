@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-09-07
+last-updated: 2026-09-20
 audience: internal
 ---
 
@@ -55,9 +55,9 @@ profile, language and vault sit at the root rather than under `/my`.
 | `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
-| `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles |
+| `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles with TEST markers |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
-| `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
+| `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — 반권 mechanic preserving TEST; one `enterRaffle` at the end |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — 자유게시판 pinned first, then per-artist boards; a paged feed; no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |

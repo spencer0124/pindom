@@ -30,6 +30,8 @@ const ERROR_CODE_MESSAGES: Record<string, string> = {
   assistant_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
   verify_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
   route_daily_limit: '오늘 이용 한도를 모두 썼어요. 내일 다시 이용할 수 있어요.',
+  camera_test_disabled: '카메라 테스트가 종료됐어요. 장소 상세로 돌아가 위치 인증을 시작해 주세요.',
+  place_archived: '운영이 종료된 촬영지예요. 다른 장소를 선택해 주세요.',
   email_not_verified: '이메일 인증이 필요해요. 가입한 메일함에서 인증 링크를 눌러 주세요.',
 };
 

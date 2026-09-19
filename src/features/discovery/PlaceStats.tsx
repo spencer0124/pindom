@@ -34,7 +34,7 @@ export function PlaceStats({ verifyCount, photoCount, distance }: PlaceStatsProp
   const { token } = useTheme();
 
   const cells: { label: string; value: string; accent?: boolean }[] = [
-    { label: '방문 인증', value: verifyCount.toLocaleString('ko-KR') },
+    { label: '카메라 이용', value: verifyCount.toLocaleString('ko-KR') },
     { label: '촬영된 사진', value: photoCount.toLocaleString('ko-KR') },
     ...(distance != null
       ? [{ label: '현재 거리', value: formatDistance(distance), accent: true }]

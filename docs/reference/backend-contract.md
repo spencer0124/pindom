@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-09-07
+last-updated: 2026-09-20
 audience: internal
 ---
 
@@ -133,6 +133,12 @@ ceremony. Rules: own document only, read and write.
   towardPlaceId?: string;      // set when the question is about getting to a 촬영지
 }
 
+// camera-test request: no coordinates, readings or location permission required
+{
+  placeId: string;
+  cameraTest: true;
+}
+
 // response
 {
   sessionId: string;
@@ -258,6 +264,8 @@ authoritative coordinate must come from here, never from the client.
 | `reviewCount` | `number` | **Dead field — nothing writes it.** Reviews are client-written and none of the three functions touch them, so this is `0` forever. 리뷰 counts the list it already loaded. Seeded at `0`; drop the field when the seed does |
 | `location` | `GeoPoint` | |
 | `radiusMeters` | `number` | Verification radius. Defaults to 50; per-place so it stays tunable without a deploy |
+| `archived` | `boolean?` | Server-managed. `true` removes the place from discovery/search/recommendations and rejects new verification/issuance. Keep the document readable for historical tickets |
+| `cameraTestEnabled` | `boolean?` | Server-managed. `true` permits camera-test grants without GPS. No expiry: remains enabled until the user explicitly requests restoration. Missing/false restores the ordinary location gates |
 | `coverImageUrl` | `string` | **Ours.** TourAPI's `firstimage` is not imported — see the withdrawn row 2 in [App action items](#app-action-items) |
 | `ticketCount` | `number` | **Function-only.** How many tickets have been minted here. Feeds 홈 recommendations |
 | `openHours` | `LocalizedString` | TourAPI `usetime`. Free prose — 상시 개방, not a parseable schedule. Rendered on 장소/상세 so a visitor does not travel to a closed gate and lose the ticket. Absent for places with no opening hours (an outdoor breakwater) |
@@ -318,6 +326,7 @@ client.
 | `description` | `LocalizedString` | |
 | `placeIds` | `string[]` | Ordered — the walk order is the point |
 | `placeCount` | `number` | Denormalised, rendered on the card |
+| `archived` | `boolean?` | Server-managed. Excluded from course lists and recommendations when true |
 
 ### `places/{placeId}/reviews/{reviewId}` — 리뷰
 
@@ -378,6 +387,7 @@ of an accepted verification — see the
 | `issuedAt` | `Timestamp` | |
 | `spent` | `boolean` | Rendered as the `USED` stub state on 티켓 절취 |
 | `spentOnEntryId` | `string?` | Set when consumed by a raffle entry |
+| `testMode` | `boolean?` | Function-only. Inherited from a camera-test grant. The app prints `TEST`, never `GPS ✓`, on these tickets and preserves the field through `getPublicProfile.tickets[]` for public-photo labels |
 | `artistId` | `string?` | Inherited from the place. Lets 컬렉션 group by 최애 |
 
 ### `raffles/{raffleId}` — 응모
@@ -497,6 +507,7 @@ only passes the `sessionId` back on subsequent calls.
 | `readings` | `array` | `{ location: GeoPoint, accuracy: number, capturedAt: Timestamp, distanceMeters: number }`. Capped at the **5 most recent** — appending past that drops the oldest, because Firestore rewrites the whole document per element |
 | `status` | `'active' \| 'verified' \| 'consumed' \| 'expired'` | `consumed` is how a spent grant is recorded |
 | `grantExpiresAt` | `Timestamp?` | Set when a reading is accepted |
+| `testMode` | `boolean?` | True for a server-enabled camera test. Test sessions do not prove presence |
 | `startedAt` | `Timestamp` | |
 | `expiresAt` | `Timestamp` | `startedAt` + 24h, for a Firestore TTL policy. `grantExpiresAt` cannot serve this — it is optional and a failed session never has one |
 
@@ -522,7 +533,7 @@ The 50m radius and speed checks. They live here rather than in security rules be
 have no `sqrt` and no trigonometry — a haversine distance is not expressible in them.
 
 ```ts
-// request
+// ordinary GPS request
 {
   placeId: string;
   lat: number;
@@ -541,9 +552,21 @@ have no `sqrt` and no trigonometry — a haversine distance is not expressible i
   requiredRadiusMeters: number;
   accuracyMeters: number;
   reason?: 'out_of_radius' | 'implausible_speed' | 'poor_accuracy' | 'mock_location';
-  grant?: { token: string; expiresAt: string };  // present only when verified; token IS the sessionId
+  grant?: { token: string; expiresAt: string; testMode?: boolean };  // token IS the sessionId
 }
 ```
+
+For an unarchived place with `cameraTestEnabled === true`, a camera-test request returns
+`verified: true`, numeric distance/radius/accuracy fields of `0`, and `grant.testMode: true`.
+Those zeroes are placeholders, not GPS measurements; the app hides the radar and location
+checks and shows **위치 제한 해제 · 카메라 테스트**. It skips all GPS reads and permission
+requests on this path. Older apps submitting ordinary readings also receive a test grant
+while the server flag is enabled. The flag does not expire; each grant still expires normally.
+
+A camera-test request for a disabled place fails with `failed-precondition` and
+`details.errorCode: 'camera_test_disabled'`. An archived place returns `not-found`.
+Authentication, email verification, daily quota, grant ownership/expiry and issuance cooldown
+remain enforced. The client never enables this mode or grants itself capture access.
 
 > [!IMPORTANT]
 > **`distanceMeters` is the adjudicated distance, not the raw one.** The function subtracts the
@@ -669,7 +692,10 @@ caller; then, in one transaction:
 4. increments `places/{placeId}.ticketCount` and `photoCount`,
 5. writes a `places/{placeId}/gallery` entry **if** `visibility` is `public`.
 
-Consumes the grant, so one verification mints one ticket.
+Consumes the grant, so one verification mints one ticket. A camera-test grant writes
+`tickets.testMode: true`. Issuance checks that the place is still unarchived and test access is
+still enabled; restoration rejects an unspent test grant with `camera_test_disabled`.
+The ordinary expiry, reuse, photo ownership and cooldown checks also apply to test grants.
 
 **`photoPath` must start with `tickets/{uid}/` for the calling uid.** The function checks the
 prefix *and* that an object exists there; a path outside the caller's own folder is

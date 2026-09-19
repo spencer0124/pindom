@@ -3,6 +3,7 @@ import type { Course } from '../lib/domain';
 /** 코스 fixtures — ordered itineraries shown on 홈. */
 export const mockCourses: Course[] = [
   {
+    archived: true,
     id: 'course-gangneung',
     artistId: 'artist-lumina',
     name: '강릉 바다 코스',
@@ -11,6 +12,7 @@ export const mockCourses: Course[] = [
     placeCount: 2,
   },
   {
+    archived: true,
     id: 'course-seoul-night',
     artistId: 'artist-lumina',
     name: '서울 야경 코스',

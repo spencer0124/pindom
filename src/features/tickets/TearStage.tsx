@@ -247,6 +247,7 @@ export function TearStage({ ticket, progress, dragging, width, subtitle, spent =
       subtitle={subtitle}
       serial={ticket.serial}
       issuedAt={ticket.issuedAt}
+      testMode={ticket.testMode}
       spent={spent}
     />
   );

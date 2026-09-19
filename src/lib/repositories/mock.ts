@@ -71,7 +71,7 @@ const reports: (NewReport & { reporterId: string; createdAt: Date })[] = [];
 /** How far through `mockVerificationSequence` each verify session has walked. */
 const verifyProgress = new Map<string, number>();
 /** Which 촬영지 each grant was minted for — the real function reads this off the session. */
-const grantPlaces = new Map<string, string>();
+const grantPlaces = new Map<string, { placeId: string; expiresAt: Date; testMode?: boolean }>();
 
 let sequence = 0;
 const nextId = (prefix: string) => `${prefix}-${(sequence += 1)}`;
@@ -125,6 +125,26 @@ function withDistance(
     ...place,
     distanceMeters: from ? distanceMeters(from, place) : 0,
   };
+}
+
+function cameraTestResult(placeId: string, sessionId = nextId('verify-session')): Result<VerificationResult> {
+  if (!session) return unauthenticated<VerificationResult>();
+  const place = mockPlaces.find((entry) => entry.id === placeId);
+  if (!place || place.archived) return notFound<VerificationResult>('촬영지');
+  if (!place.cameraTestEnabled) {
+    return ResultHelper.error(Failure.firebase('failed-precondition', '카메라 테스트가 종료됐어요.', 'camera_test_disabled'));
+  }
+  const token = nextId('grant');
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  grantPlaces.set(token, { placeId, expiresAt, testMode: true });
+  return ResultHelper.ok({
+    sessionId,
+    verified: true,
+    distanceMeters: 0,
+    requiredRadiusMeters: 0,
+    accuracyMeters: 0,
+    grant: { token, expiresAt, testMode: true },
+  });
 }
 
 // ── Implementation ──
@@ -190,7 +210,7 @@ export const mockRepositories: Repositories = {
 
   courses: {
     async listForArtist(artistId) {
-      const hits = mockCourses.filter((c) => c.artistId === artistId);
+      const hits = mockCourses.filter((c) => !c.archived && c.artistId === artistId);
       return mockDelay(ResultHelper.ok(hits));
     },
 
@@ -199,7 +219,7 @@ export const mockRepositories: Repositories = {
     async route(placeIds, origin) {
       const stops = placeIds
         .map((id) => mockPlaces.find((p) => p.id === id))
-        .filter((p): p is (typeof mockPlaces)[number] => p != null)
+        .filter((p): p is (typeof mockPlaces)[number] => p != null && !p.archived)
         .map((p) => ({ lat: p.lat, lng: p.lng }));
       const path = origin != null ? [origin, ...stops] : stops;
       return mockDelay(
@@ -277,7 +297,7 @@ export const mockRepositories: Repositories = {
     async listAll(lat, lng) {
       // Every place, nearest first — 지도 shows the whole country, so nothing is
       // filtered out by distance here. Distance is for ordering and display only.
-      const all = [...mockPlaces]
+      const all = mockPlaces.filter((place) => !place.archived)
         .map((p) => withDistance(p, { lat, lng }))
         .sort((a, b) => a.distanceMeters - b.distanceMeters);
       return mockDelay(ResultHelper.ok(all));
@@ -321,8 +341,16 @@ export const mockRepositories: Repositories = {
   },
 
   verification: {
+    async startCameraTest(placeId) {
+      return mockDelay(cameraTestResult(placeId));
+    },
+
     async submitReading(reading: LocationReading) {
       if (!session) return mockDelay(unauthenticated<VerificationResult>());
+
+      const place = mockPlaces.find((entry) => entry.id === reading.placeId);
+      if (!place || place.archived) return mockDelay(notFound<VerificationResult>('촬영지'));
+      if (place.cameraTestEnabled) return mockDelay(cameraTestResult(place.id, reading.sessionId));
 
       const sessionId = reading.sessionId ?? nextId('verify-session');
       const step = verifyProgress.get(sessionId) ?? 0;
@@ -338,8 +366,9 @@ export const mockRepositories: Repositories = {
       };
       if (scripted.verified) {
         const token = nextId('grant');
-        grantPlaces.set(token, reading.placeId);
-        result.grant = { token, expiresAt: new Date(Date.now() + 10 * 60 * 1000) };
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        grantPlaces.set(token, { placeId: reading.placeId, expiresAt });
+        result.grant = { token, expiresAt };
       }
       return mockDelay(ResultHelper.ok(result));
     },
@@ -391,14 +420,17 @@ export const mockRepositories: Repositories = {
       // The place comes from the grant, as it does server-side — the client
       // never names it. An unknown or re-used token is the `grant_expired` /
       // `grant_consumed` pair the contract describes, collapsed to one here.
-      const placeId = grantPlaces.get(grantToken);
-      const place = mockPlaces.find((p) => p.id === placeId);
-      if (!place) {
+      const grant = grantPlaces.get(grantToken);
+      const place = mockPlaces.find((p) => p.id === grant?.placeId);
+      if (!place || place.archived || !grant || grant.expiresAt.getTime() <= Date.now()) {
         return mockDelay(
           ResultHelper.error(
             Failure.firebase('failed-precondition', '인증이 만료됐어요.', 'grant_expired'),
           ),
         );
+      }
+      if (grant.testMode && !place.cameraTestEnabled) {
+        return mockDelay(ResultHelper.error(Failure.firebase('failed-precondition', '카메라 테스트가 종료됐어요.', 'camera_test_disabled')));
       }
       grantPlaces.delete(grantToken);
 
@@ -413,6 +445,7 @@ export const mockRepositories: Repositories = {
         visibility,
         issuedAt: new Date(),
         spent: false,
+        testMode: grant.testMode === true,
       };
       // Read before the push: an empty result is a first visit, which is the same
       // question `issueTicket` answers from its cooldown query.
@@ -602,6 +635,7 @@ export const mockRepositories: Repositories = {
             placeName: t.placeName,
             photoUrl: t.photoUrl,
             issuedAt: t.issuedAt,
+            testMode: t.testMode === true,
             ...(t.artistId && { artistId: t.artistId }),
           })),
       }));

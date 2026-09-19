@@ -15,6 +15,8 @@ export interface PublicProfileTicket {
   photoUrl: string;
   issuedAt: Date;
   artistId?: string;
+  /** Preserved by the public projection; test photos do not prove a visit. */
+  testMode?: boolean;
 }
 
 export interface PublicProfile {

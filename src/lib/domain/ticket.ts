@@ -23,6 +23,8 @@ export interface Ticket {
   /** `private` puts the ticket in 보관함 rather than the public collection */
   visibility: TicketVisibility;
   issuedAt: Date;
+  /** Camera test tickets are labelled separately from verified visits. */
+  testMode?: boolean;
   /** Rendered as the `USED` stub state on 티켓 절취 */
   spent: boolean;
   spentOnEntryId?: string;

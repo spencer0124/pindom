@@ -7,6 +7,7 @@ interface ConditionsNoteProps {
   radiusMeters: number;
   artistName?: string;
   hasCutout: boolean;
+  testMode?: boolean;
 }
 
 /**
@@ -23,7 +24,7 @@ interface ConditionsNoteProps {
  * contract makes it per-place. Every other number in the sentence is fixed by
  * the function.
  */
-export function ConditionsNote({ radiusMeters, artistName, hasCutout }: ConditionsNoteProps) {
+export function ConditionsNote({ radiusMeters, artistName, hasCutout, testMode = false }: ConditionsNoteProps) {
   const adaptive = useAdaptive();
 
   const capture = hasCutout
@@ -35,10 +36,12 @@ export function ConditionsNote({ radiusMeters, artistName, hasCutout }: Conditio
   return (
     <View style={styles.block}>
       <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>
-        인증 조건
+        {testMode ? '위치 제한 해제 · 카메라 테스트' : '인증 조건'}
       </Txt>
       <Txt typography="t7" color={adaptive.grey600}>
-        {`반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${capture}`}
+        {testMode
+          ? '현재 위치와 관계없이 촬영할 수 있어요. 사진과 티켓에는 TEST가 표시되며, 티켓 발행 한도는 그대로 적용돼요.'
+          : `반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${capture}`}
       </Txt>
     </View>
   );

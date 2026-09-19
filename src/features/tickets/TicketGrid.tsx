@@ -39,7 +39,7 @@ export function TicketGrid({ tickets, onSelect }: TicketGridProps) {
           <Pressable
             onPress={onSelect ? () => onSelect(ticket.id) : undefined}
             accessible
-            accessibilityLabel={`${ticket.placeName}, ${ticket.issuedAt.toLocaleDateString('ko-KR')}, ${ticket.spent ? '사용 완료' : '사용 가능'}, ${ticket.serial}`}
+            accessibilityLabel={`${ticket.placeName}, ${ticket.issuedAt.toLocaleDateString('ko-KR')}, ${ticket.spent ? '사용 완료' : '사용 가능'}, ${ticket.serial}${ticket.testMode ? ', 카메라 테스트' : ''}`}
             accessibilityRole={onSelect ? 'button' : undefined}
           >
             <TicketCard
@@ -48,6 +48,7 @@ export function TicketGrid({ tickets, onSelect }: TicketGridProps) {
               placeName={ticket.placeName}
               serial={ticket.serial}
               issuedAt={ticket.issuedAt}
+              testMode={ticket.testMode}
               spent={ticket.spent}
             />
           </Pressable>

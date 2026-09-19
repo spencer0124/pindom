@@ -11,6 +11,7 @@ interface PhotoFrameProps {
   placeName: string;
   /** The day the shot is taken — printed beside the GPS mark. */
   date: Date;
+  testMode?: boolean;
   /** Receives the stage's measured size so overlays can place themselves in it. */
   children: (stage: StageSize) => ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -31,7 +32,7 @@ interface PhotoFrameProps {
  * the radius.
  */
 export const PhotoFrame = forwardRef<View, PhotoFrameProps>(function PhotoFrame(
-  { placeName, date, children, style, compact = false, aspectRatio },
+  { placeName, date, testMode = false, children, style, compact = false, aspectRatio },
   ref,
 ) {
   const adaptive = useAdaptive();
@@ -58,7 +59,7 @@ export const PhotoFrame = forwardRef<View, PhotoFrameProps>(function PhotoFrame(
                 PINDOM · {placeName}
               </Txt>
               <Txt typography="st13" color={adaptive.grey500} style={styles.mono}>
-                {formatStamp(date)} · GPS ✓
+                {formatStamp(date)} · {testMode ? 'TEST' : 'GPS ✓'}
               </Txt>
             </View>
           )}

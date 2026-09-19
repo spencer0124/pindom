@@ -6,6 +6,8 @@
  */
 export interface Course {
   id: string;
+  /** Server-managed: hidden from discovery when its places are archived. */
+  archived?: boolean;
   artistId: string;
   name: string;
   description: string;

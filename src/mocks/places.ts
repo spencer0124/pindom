@@ -5,11 +5,12 @@ import { gwandegongPlaces } from './gwandegong';
  * 촬영지 fixtures.
  *
  * The supplied 관데공 collection shares the live catalog's photos and coordinates.
- * The remaining legacy locations retain their fictional demo copy and images.
+ * Legacy locations stay archived so existing ticket history can still resolve them.
  */
 export const mockPlaces: Place[] = [
   ...gwandegongPlaces,
   {
+    archived: true,
     id: 'place-jumunjin',
     roman: 'Jumunjin Breakwater',
     region: '강원 강릉',
@@ -31,6 +32,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-03-02T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-gamcheon',
     roman: 'Gamcheon Culture Village',
     region: '부산 사하',
@@ -51,6 +53,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-03-02T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-namsan',
     roman: 'N Seoul Tower',
     region: '서울 중구',
@@ -71,6 +74,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-03-02T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-cheonggye',
     roman: 'Cheonggyecheon Gwangtonggyo',
     region: '서울 종로',
@@ -91,6 +95,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-04-11T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-eurwangni',
     roman: 'Eurwangni Beach',
     region: '인천 중구',
@@ -119,6 +124,7 @@ export const mockPlaces: Place[] = [
     // empty 갤러리 and empty 촬영 팁 are all unreachable when the demo user has
     // already stood everywhere. A screen state nobody can reach is a screen
     // state nobody checks.
+    archived: true,
     id: 'place-hyeopjae',
     roman: 'Hyeopjae Beach',
     region: '제주 한림',
@@ -139,6 +145,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-08-18T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-hyehwa',
     roman: 'Hyehwa Daehangno',
     region: '서울 종로',
@@ -159,6 +166,7 @@ export const mockPlaces: Place[] = [
     createdAt: new Date('2026-08-26T09:00:00+09:00'),
   },
   {
+    archived: true,
     id: 'place-hyehwa-skk',
     roman: 'Sungkyunkwan University 600th Anniversary Hall',
     region: '서울 종로',

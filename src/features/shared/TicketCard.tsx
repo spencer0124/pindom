@@ -18,6 +18,8 @@ export interface TicketCardProps {
   subtitle?: string;
   serial: string;
   issuedAt: Date;
+  /** Camera test tickets show TEST in place of the GPS verification stamp. */
+  testMode?: boolean;
   /** 티켓 절취 renders the spent stub; 티켓 발행 and 컬렉션 never do. */
   spent?: boolean;
   /**
@@ -37,6 +39,7 @@ export function TicketCard({
   subtitle,
   serial,
   issuedAt,
+  testMode = false,
   spent = false,
   size = 'full',
   animate = size === 'full',
@@ -56,7 +59,7 @@ export function TicketCard({
     <View
       onLayout={(e: LayoutChangeEvent) => setLayout(e.nativeEvent.layout)}
       accessible={!tile}
-      accessibilityLabel={`${placeName}, ${subtitle ?? ''}, ${formatStamp(issuedAt)}, ${serial}, ${spent ? '사용 완료' : '사용 가능'}`}
+      accessibilityLabel={`${placeName}, ${subtitle ?? ''}, ${formatStamp(issuedAt)}, ${serial}, ${spent ? '사용 완료' : '사용 가능'}${testMode ? ', 카메라 테스트' : ''}`}
       style={[
         styles.card,
         tile ? styles.cardTile : styles.cardFull,
@@ -96,7 +99,7 @@ export function TicketCard({
         </View>
         <View style={[styles.stamp, compact && styles.stampCompact]}>
           <Txt typography="st13" color={SdsColors.ticketInk} style={styles.mono}>
-              {formatStamp(issuedAt)}{!tile && !compact ? ' · GPS ✓' : ''}
+            {formatStamp(issuedAt)}{testMode ? ' · TEST' : !tile && !compact ? ' · GPS ✓' : ''}
           </Txt>
           <Txt
             typography="st13"

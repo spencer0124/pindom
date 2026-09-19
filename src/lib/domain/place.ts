@@ -10,6 +10,10 @@ export type PlaceWorkKind = 'mv' | 'drama' | 'self';
  */
 export interface Place {
   id: string;
+  /** Server-managed: hidden from discovery; retained for historical tickets. */
+  archived?: boolean;
+  /** Server-managed camera test access; remains enabled until explicitly restored. */
+  cameraTestEnabled?: boolean;
   name: string;
   /** Latin caption shown under the Korean name — `Jumunjin Breakwater` */
   roman: string;
