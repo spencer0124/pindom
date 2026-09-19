@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-09-02
+last-updated: 2026-09-07
 audience: internal
 ---
 
@@ -51,8 +51,8 @@ profile, language and vault sit at the root rather than under `/my`.
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — `1b`-A 레이더; the verdict is the server's |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
-| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — live view + cutout; stand-in without a camera |
-| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — composes the print; 모자이크 only |
+| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; 0.5× on supported iOS devices; no placeholder silhouette |
+| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles |

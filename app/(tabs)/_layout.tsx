@@ -2,29 +2,16 @@ import { Redirect, Tabs } from 'expo-router';
 import {
   ChatCircleIcon,
   HouseIcon,
-  MapPinIcon,
   TicketIcon,
   UserIcon,
 } from 'phosphor-react-native';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Loader, useAdaptive, useTheme, useTypographyTheme } from '@/design-system';
+import { PindomMark } from '@/features/shared';
 import { AssistantFab } from '@/features/assistant';
 import { useSession } from '@/features/auth';
 
-/**
- * Five-tab bar, ordered as the 홈 design shows it:
- *   지도 · 커뮤니티 · 홈 · 티켓 · 마이
- *
- * 홈 sits in the middle visually but is the initial route, which is why it is
- * declared first here — expo-router orders tabs by declaration, so `order` is
- * controlled by file/screen order and the middle position comes from putting
- * index third in the list below.
- *
- * Every icon is an outline; the active one is the accent *and* a heavier
- * stroke, which is how 1a marks it (`strokeWidth` 2.2 against 1.8). No tab is
- * filled permanently — the first build filled 홈, which made it look active
- * on every other tab.
- */
+/** Five stable destinations; the active icon carries rose color and a filled shape. */
 export default function TabsLayout() {
   const { token } = useTheme();
   const { typography } = useTypographyTheme();
@@ -53,9 +40,11 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: adaptive.background,
           borderTopColor: adaptive.grey200,
+          borderTopWidth: StyleSheet.hairlineWidth,
         },
         // 1a's label is 10px; the nearest step on the typography map.
-        tabBarLabelStyle: { fontSize: typography.st13.fontSize },
+        tabBarLabelStyle: { fontSize: typography.st12.fontSize, fontWeight: '600', marginBottom: 4 },
+        tabBarItemStyle: { paddingTop: 6 },
       }}
     >
       <Tabs.Screen
@@ -63,7 +52,7 @@ export default function TabsLayout() {
         options={{
           title: '지도',
           tabBarIcon: ({ color, size, focused }) => (
-            <MapPinIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+            <PindomMark color={color} size={size + 2} filled={focused} />
           ),
         }}
       />
@@ -72,7 +61,7 @@ export default function TabsLayout() {
         options={{
           title: '커뮤니티',
           tabBarIcon: ({ color, size, focused }) => (
-            <ChatCircleIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+            <ChatCircleIcon color={color} size={size} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />
@@ -81,7 +70,7 @@ export default function TabsLayout() {
         options={{
           title: '홈',
           tabBarIcon: ({ color, size, focused }) => (
-            <HouseIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+            <HouseIcon color={color} size={size} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />
@@ -90,7 +79,7 @@ export default function TabsLayout() {
         options={{
           title: '티켓',
           tabBarIcon: ({ color, size, focused }) => (
-            <TicketIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+            <TicketIcon color={color} size={size} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />
@@ -99,7 +88,7 @@ export default function TabsLayout() {
         options={{
           title: '마이',
           tabBarIcon: ({ color, size, focused }) => (
-            <UserIcon color={color} size={size} weight={focused ? 'bold' : 'regular'} />
+            <UserIcon color={color} size={size} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />

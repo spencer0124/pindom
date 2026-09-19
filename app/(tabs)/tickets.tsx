@@ -1,27 +1,13 @@
+import { CaretRightIcon } from 'phosphor-react-native';
 import { router } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorPage, Loader, SdsSpacing, Txt, useAdaptive } from '@/design-system';
 import { ASSISTANT_FAB_CLEARANCE } from '@/features/assistant';
 import { TicketGrid, TierGauge, useCollection } from '@/features/tickets';
-import { Rule, Shape } from '@/features/shared';
+import { PindomMark, Rule, SectionHeader, Shape } from '@/features/shared';
 
-/**
- * 컬렉션 — the balance, the tier, and every public ticket.
- *
- * Built from prototype block `1a` for layout, copy and flow and `2b` for colour,
- * type and corners, matching `app/(tabs)/index.tsx`. Figma `33:1961` is the
- * earlier frame.
- *
- * 응모하러 가기 needs a raffle to open, because 응모 is keyed to one; it goes
- * to the soonest-closing open raffle, and is not offered when there is none.
- * 응모 내역 row goes to /raffle/history — the record a fresh entry leaves,
- * reachable from where the user lands after tearing, not only from 마이페이지.
- * 보관함, reached from 마이페이지, holds every shot instead — public and
- * private together — and is where either one is flipped to the other
- * visibility; this grid is the public half of it. Every tile tilts under a held finger, as 티켓 발행's card
- * does; a touch that moves first is a scroll.
- */
+/** Balance, reward progress, entry history and public holographic tickets. */
 export default function TicketsScreen() {
   const adaptive = useAdaptive();
   const { state, reload } = useCollection();
@@ -52,6 +38,10 @@ export default function TicketsScreen() {
           <RefreshControl refreshing={false} onRefresh={reload} tintColor={adaptive.grey500} />
         }
       >
+        <View style={styles.title}>
+          <PindomMark size={30} color={adaptive.brand500} />
+          <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>나의 티켓</Txt>
+        </View>
         <View style={styles.header}>
           <View>
             <Txt typography="t7" color={adaptive.grey600}>
@@ -87,13 +77,12 @@ export default function TicketsScreen() {
           <Txt typography="t6" color={adaptive.grey900}>
             응모 내역 / 당첨 확인
           </Txt>
-          <Txt typography="t6" color={adaptive.grey500}>
-            ›
-          </Txt>
+          <CaretRightIcon size={20} color={adaptive.grey500} />
         </Pressable>
 
         <Rule />
 
+        <SectionHeader title="모아둔 순간" right={`${tickets.length}장의 기록`} />
         <TicketGrid tickets={tickets} />
       </ScrollView>
     </SafeAreaView>
@@ -108,9 +97,12 @@ const styles = StyleSheet.create({
     // The last tile clears the assistant's button, as 홈's last course does.
     paddingBottom: ASSISTANT_FAB_CLEARANCE + SdsSpacing.base,
   },
+  title: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: Shape.gutter, paddingTop: 16, paddingBottom: 20 },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 16,
     justifyContent: 'space-between',
     paddingHorizontal: Shape.gutter,
     paddingTop: 8,
@@ -121,6 +113,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Shape.gutter,
-    paddingVertical: 14,
+    paddingVertical: 18,
+    minHeight: 56,
+    gap: 12,
   },
 });

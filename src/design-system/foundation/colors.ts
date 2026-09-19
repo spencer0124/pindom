@@ -9,24 +9,7 @@ import { SdsColors } from '@/design-system/tokens';
 
 export type ColorPreference = 'light' | 'dark';
 
-/**
- * Full adaptive color map — resolves to actual hex values based on preference.
- *
- * **PINDOM runs `dark` everywhere.** Direction `2b` is a single dark surface
- * applied to every screen (ADR 0006), and `app/_layout.tsx` sets the preference
- * once. This is not a user setting and there is no toggle — see ADR 0004.
- *
- * The `light` branch is kept because the design system is vendored and its
- * components are written against a light default; deleting it would mean
- * rewriting all of them at once.
- *
- * Note what the dark branch does to the greys. `2b` has **no grey scale** — its
- * secondary tone is white at an opacity over the ground. So `grey900`, which is
- * primary text in light mode, becomes solid white here, and the ladder descends
- * through the sampled opacities rather than through darker greys. A component
- * asking for `grey600` gets "the metadata tone" either way, which is what makes
- * the swap work without touching the component.
- */
+/** Light pink is the app default; dark remains available for photo surfaces. */
 export function getAdaptiveColors(preference: ColorPreference) {
   if (preference === 'dark') {
     return {
@@ -68,20 +51,11 @@ export function getAdaptiveColors(preference: ColorPreference) {
   return { ...SdsColors };
 }
 
-/** Default seed colors for the theme system */
+/** Semantic actions derive from the same rose seed across all screens. */
 export const colorSeeds = {
-  // PINDOM acid green — the single brand action colour across the app. Every
-  // accent-coloured component derives from this one value via
-  // ThemeProvider.deriveToken(), so changing it here re-themes the whole
-  // system. Sampled from block `2b` of the prototype: section labels and the
-  // single most important number on screen.
-  primary: SdsColors.acid500,
+  primary: SdsColors.brand500,
   danger: SdsColors.red500,
-  // Sampled — 마감 임박 and other urgency in `2b`.
   warning: SdsColors.alert500,
-  // Not present in `2b`, so this is inherited rather than verified. Note that
-  // it is a second green next to the acid accent; if a success state ever gets
-  // designed, expect this to change.
   success: SdsColors.green500,
 } as const;
 

@@ -69,7 +69,7 @@ export function PlaceList({
             {index > 0 && <Rule weight="row" inset />}
             <ListRow
               onPress={() => onSelect(place.id)}
-              verticalPadding="small"
+              verticalPadding="medium"
               accessibilityLabel={place.name}
               left={
                 <View>
@@ -90,7 +90,7 @@ export function PlaceList({
                     <Txt
                       typography="t7"
                       fontWeight="bold"
-                      color={verified ? token.accent.onFillColor : adaptive.grey800}
+                      color={verified ? token.accent.onFillColor : SdsColors.ink}
                       numberOfLines={1}
                       textAlign="center"
                     >
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   thumb: {
     width: THUMB,
     height: THUMB,
+    borderRadius: 12,
   },
   state: {
     // A bar across the foot of the thumbnail rather than a corner tag: 인증 완료
@@ -153,7 +154,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingVertical: 1,
+    paddingVertical: 2,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   stack: {
     gap: 3,

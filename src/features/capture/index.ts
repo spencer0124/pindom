@@ -1,7 +1,6 @@
 export { CameraStage, type CameraStageHandle } from './CameraStage';
-export { Cutout } from './Cutout';
-export { CUTOUT_HOME, CUTOUT_SCALE, useCaptureStore, type CutoutPlacement } from './state';
-export { MosaicPatch, TOOLS, ToolStrip, type ToolId } from './ToolStrip';
+export { useCaptureStore } from './state';
+export { TOOLS, ToolStrip, type ToolId } from './ToolStrip';
 export { PhotoFrame, formatStamp, type StageSize } from './PhotoFrame';
 export { Radar } from './Radar';
 export { Slider } from './Slider';

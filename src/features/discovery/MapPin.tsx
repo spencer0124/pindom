@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
+import { readableOn } from '@/design-system/utils/color';
 import { Shape } from '@/features/shared';
 
 /** The pushpin graphic's box: head and collar on top, needle down to its point. */
@@ -101,6 +102,8 @@ export function MapPin({ visited, label, order, poi }: MapPinProps) {
       ? token.accent.fillColor
       : adaptive.background;
 
+  const badgeInk = readableOn(fill, { onLight: SdsColors.ticketInk, onDark: SdsColors.ink });
+
   return (
     <View style={styles.pin} pointerEvents="none">
       {poi ? (
@@ -122,11 +125,11 @@ export function MapPin({ visited, label, order, poi }: MapPinProps) {
           {/* The head's badge — the walk number, or the visited mark. */}
           <View style={styles.badge}>
             {order != null ? (
-              <Txt typography="st12" fontWeight="bold" color={token.accent.onFillColor}>
+              <Txt typography="st12" fontWeight="bold" color={badgeInk}>
                 {order}
               </Txt>
             ) : visited ? (
-              <Txt typography="st12" fontWeight="bold" color={token.accent.onFillColor}>
+              <Txt typography="st12" fontWeight="bold" color={badgeInk}>
                 ✓
               </Txt>
             ) : null}

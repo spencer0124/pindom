@@ -3,7 +3,7 @@ title: Architecture Overview
 type: explanation
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-09-07
 audience: internal
 ---
 
@@ -113,9 +113,11 @@ flowchart LR
 - **`src/lib/api/` is superseded**, except `types.ts`. The axios client, its interceptor chain
   and the provisional `endpoints.ts` describe a REST server that is not being built. `Result<T>`
   and the failure taxonomy survive as the convention repositories return.
-- **Only three operations are server-side code.** Security rules have no `sqrt` and no
-  trigonometry, so `verifyLocation`, `issueTicket` and `enterRaffle` are Cloud Functions.
-  Everything else is direct Firestore access guarded by rules.
+- **Value-bearing writes run on the server.** `verifyLocation`, `issueTicket` and
+  `enterRaffle` enforce verification and ticket accounting. Assistant, routing, admin,
+  profile projection, moderation, gallery synchronization and account deletion also use
+  Functions; the authoritative list is `pindom-server/functions/src/index.ts`. Other
+  client operations use direct Firestore access guarded by rules.
 - **Firestore enforces no schema**, so the field names the two codebases agree on live in
   [../reference/backend-contract.md](../reference/backend-contract.md). That document is the
   referee, because nothing in either codebase will catch a mismatch.

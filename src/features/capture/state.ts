@@ -1,26 +1,6 @@
 import { create } from 'zustand';
 import type { Place, TicketVisibility, VerificationGrant } from '@/lib/domain';
 
-/**
- * Where the 최애 cutout sits over the photo.
- *
- * `x` and `y` are fractions of the stage's width and height, measured from its
- * centre, so the same value lands in the same place on the camera preview, the
- * 편집 canvas and the 공개설정 thumbnail — three stages of three different sizes.
- * `scale` is the percentage 1a's slider writes: 88–112, 100 is 원본 비율.
- */
-export interface CutoutPlacement {
-  x: number;
-  y: number;
-  scale: number;
-}
-
-/** 1a's starting position — offset right and a little down from centre. */
-export const CUTOUT_HOME: CutoutPlacement = { x: 0.14, y: 0.04, scale: 100 };
-
-/** The range 편집 was tightened to in the 2026-08-20 drop. See design/README.md #4. */
-export const CUTOUT_SCALE = { min: 88, max: 112 } as const;
-
 interface CaptureState {
   /** The 촬영지 the whole chain is keyed to. Set by GPS인증 from its route param. */
   place: Place | null;
@@ -32,11 +12,10 @@ interface CaptureState {
   grant: VerificationGrant | null;
   /** The server's last measured distance, so GPS인증 reopens on its figure, not the client's. */
   lastDistance: number | null;
-  /** The raw shot from the camera — before the cutout and the tools. */
+  /** The raw shot from the camera — before the editing tools. */
   photoUri: string | null;
   /** The composed image 편집 produced — what gets uploaded. */
   composedUri: string | null;
-  cutout: CutoutPlacement;
   visibility: TicketVisibility;
 
   begin: (place: Place, artistName: string | null) => void;
@@ -45,8 +24,6 @@ interface CaptureState {
   setLastDistance: (meters: number) => void;
   setPhoto: (uri: string) => void;
   setComposed: (uri: string) => void;
-  setCutout: (placement: Partial<CutoutPlacement>) => void;
-  resetCutout: () => void;
   setVisibility: (visibility: TicketVisibility) => void;
   /** After 티켓 발행, or on 취소: the grant is single-use and the photo is gone. */
   reset: () => void;
@@ -60,7 +37,6 @@ const EMPTY = {
   lastDistance: null,
   photoUri: null,
   composedUri: null,
-  cutout: CUTOUT_HOME,
   visibility: 'public' as TicketVisibility,
 };
 
@@ -87,8 +63,6 @@ export const useCaptureStore = create<CaptureState>((set, get) => ({
   setLastDistance: (lastDistance) => set({ lastDistance }),
   setPhoto: (photoUri) => set({ photoUri, composedUri: null }),
   setComposed: (composedUri) => set({ composedUri }),
-  setCutout: (placement) => set({ cutout: { ...get().cutout, ...placement } }),
-  resetCutout: () => set({ cutout: CUTOUT_HOME }),
   setVisibility: (visibility) => set({ visibility }),
   reset: () => set({ ...EMPTY }),
 }));

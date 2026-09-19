@@ -3,7 +3,7 @@ title: Docs Index & Conventions
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-09-01
+last-updated: 2026-09-07
 audience: internal
 ---
 
@@ -112,6 +112,8 @@ copied to a second place is a value that will disagree with the first.
 | [2026-08-26-backend-fix-requests.md](plans/2026-08-26-backend-fix-requests.md) | The one page to hand the backend developer: what is still broken in the deployed project, how to reproduce each, and what would close it — ordered by what it costs a user. **Start here if you are picking up backend work** |
 | [2026-08-26-app-store-submission-setup.md](plans/2026-08-26-app-store-submission-setup.md) | Everything App Store Connect required before 1.0.0 could be submitted, where each value came from, the two judgment calls, and what the API cannot do. **Start here for App Store Connect work** |
 | [2026-08-31-play-store-submission-setup.md](plans/2026-08-31-play-store-submission-setup.md) | The same submission taken to Google Play: what ported across unchanged, the gitignored-config trap that would have shipped a fixture build, Play's screenshot ratio rule, and why there is no closed test. **Start here for Play Console work** |
+
+최신 종합 점검: [앱·백엔드 점검 및 촬영 기능 변경](plans/2026-09-07-architecture-capture-audit.md).
 
 ## Outside this folder
 

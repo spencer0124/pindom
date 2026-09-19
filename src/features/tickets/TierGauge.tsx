@@ -8,14 +8,7 @@ interface TierGaugeProps {
   user: User;
 }
 
-/**
- * The collection tier: the label, how far to the next one, and the gauge with
- * its two marks — 10 · 앨범/콘서트 and 20 · 팬사인회/굿즈.
- *
- * 1a draws it as a card with a two-colour gradient fill. Under `2b` it is a
- * block on a rule with a flat accent fill, and the midpoint tick is a hairline
- * in the ground colour rather than a boxed marker.
- */
+/** Tier progress and reward thresholds, with wrapping labels on narrow screens. */
 export function TierGauge({ user }: TierGaugeProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -70,12 +63,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   track: {
     height: 8,
+    borderRadius: 4,
   },
   fill: {
     height: 8,
+    borderRadius: 4,
   },
   tick: {
     position: 'absolute',

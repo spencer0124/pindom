@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-18T15:56:03.383375+00:00",
+  "title": "Design System: Pindom",
+  "extensions": {
+    "colorMeta": {
+      "brand50": {
+        "role": "primary",
+        "displayName": "brand50",
+        "tonalRamp": [
+          "oklch(15% 0.0190 352.64)",
+          "oklch(26% 0.0190 352.64)",
+          "oklch(38% 0.0190 352.64)",
+          "oklch(49% 0.0190 352.64)",
+          "oklch(61% 0.0190 352.64)",
+          "oklch(72% 0.0190 352.64)",
+          "oklch(84% 0.0190 352.64)",
+          "oklch(95% 0.0190 352.64)"
+        ]
+      },
+      "brand200": {
+        "role": "primary",
+        "displayName": "brand200",
+        "tonalRamp": [
+          "oklch(15% 0.0880 7.59)",
+          "oklch(26% 0.0880 7.59)",
+          "oklch(38% 0.0880 7.59)",
+          "oklch(49% 0.0880 7.59)",
+          "oklch(61% 0.0880 7.59)",
+          "oklch(72% 0.0880 7.59)",
+          "oklch(84% 0.0880 7.59)",
+          "oklch(95% 0.0880 7.59)"
+        ]
+      },
+      "brand400": {
+        "role": "primary",
+        "displayName": "brand400",
+        "tonalRamp": [
+          "oklch(15% 0.1290 359.95)",
+          "oklch(26% 0.1290 359.95)",
+          "oklch(38% 0.1290 359.95)",
+          "oklch(49% 0.1290 359.95)",
+          "oklch(61% 0.1290 359.95)",
+          "oklch(72% 0.1290 359.95)",
+          "oklch(84% 0.1290 359.95)",
+          "oklch(95% 0.1290 359.95)"
+        ]
+      },
+      "brand500": {
+        "role": "primary",
+        "displayName": "brand500",
+        "tonalRamp": [
+          "oklch(15% 0.1741 2.09)",
+          "oklch(26% 0.1741 2.09)",
+          "oklch(38% 0.1741 2.09)",
+          "oklch(49% 0.1741 2.09)",
+          "oklch(61% 0.1741 2.09)",
+          "oklch(72% 0.1741 2.09)",
+          "oklch(84% 0.1741 2.09)",
+          "oklch(95% 0.1741 2.09)"
+        ]
+      },
+      "brand600": {
+        "role": "primary",
+        "displayName": "brand600",
+        "tonalRamp": [
+          "oklch(15% 0.1631 2.44)",
+          "oklch(26% 0.1631 2.44)",
+          "oklch(38% 0.1631 2.44)",
+          "oklch(49% 0.1631 2.44)",
+          "oklch(61% 0.1631 2.44)",
+          "oklch(72% 0.1631 2.44)",
+          "oklch(84% 0.1631 2.44)",
+          "oklch(95% 0.1631 2.44)"
+        ]
+      },
+      "brand700": {
+        "role": "primary",
+        "displayName": "brand700",
+        "tonalRamp": [
+          "oklch(15% 0.1438 2.17)",
+          "oklch(26% 0.1438 2.17)",
+          "oklch(38% 0.1438 2.17)",
+          "oklch(49% 0.1438 2.17)",
+          "oklch(61% 0.1438 2.17)",
+          "oklch(72% 0.1438 2.17)",
+          "oklch(84% 0.1438 2.17)",
+          "oklch(95% 0.1438 2.17)"
+        ]
+      },
+      "grey50": {
+        "role": "neutral",
+        "displayName": "grey50",
+        "tonalRamp": [
+          "oklch(15% 0.0059 350.79)",
+          "oklch(26% 0.0059 350.79)",
+          "oklch(38% 0.0059 350.79)",
+          "oklch(49% 0.0059 350.79)",
+          "oklch(61% 0.0059 350.79)",
+          "oklch(72% 0.0059 350.79)",
+          "oklch(84% 0.0059 350.79)",
+          "oklch(95% 0.0059 350.79)"
+        ]
+      },
+      "grey100": {
+        "role": "neutral",
+        "displayName": "grey100",
+        "tonalRamp": [
+          "oklch(15% 0.0190 352.64)",
+          "oklch(26% 0.0190 352.64)",
+          "oklch(38% 0.0190 352.64)",
+          "oklch(49% 0.0190 352.64)",
+          "oklch(61% 0.0190 352.64)",
+          "oklch(72% 0.0190 352.64)",
+          "oklch(84% 0.0190 352.64)",
+          "oklch(95% 0.0190 352.64)"
+        ]
+      },
+      "grey200": {
+        "role": "neutral",
+        "displayName": "grey200",
+        "tonalRamp": [
+          "oklch(15% 0.0198 349.10)",
+          "oklch(26% 0.0198 349.10)",
+          "oklch(38% 0.0198 349.10)",
+          "oklch(49% 0.0198 349.10)",
+          "oklch(61% 0.0198 349.10)",
+          "oklch(72% 0.0198 349.10)",
+          "oklch(84% 0.0198 349.10)",
+          "oklch(95% 0.0198 349.10)"
+        ]
+      },
+      "grey300": {
+        "role": "neutral",
+        "displayName": "grey300",
+        "tonalRamp": [
+          "oklch(15% 0.0325 347.21)",
+          "oklch(26% 0.0325 347.21)",
+          "oklch(38% 0.0325 347.21)",
+          "oklch(49% 0.0325 347.21)",
+          "oklch(61% 0.0325 347.21)",
+          "oklch(72% 0.0325 347.21)",
+          "oklch(84% 0.0325 347.21)",
+          "oklch(95% 0.0325 347.21)"
+        ]
+      },
+      "grey400": {
+        "role": "neutral",
+        "displayName": "grey400",
+        "tonalRamp": [
+          "oklch(15% 0.0490 348.93)",
+          "oklch(26% 0.0490 348.93)",
+          "oklch(38% 0.0490 348.93)",
+          "oklch(49% 0.0490 348.93)",
+          "oklch(61% 0.0490 348.93)",
+          "oklch(72% 0.0490 348.93)",
+          "oklch(84% 0.0490 348.93)",
+          "oklch(95% 0.0490 348.93)"
+        ]
+      },
+      "grey500": {
+        "role": "neutral",
+        "displayName": "grey500",
+        "tonalRamp": [
+          "oklch(15% 0.0429 348.17)",
+          "oklch(26% 0.0429 348.17)",
+          "oklch(38% 0.0429 348.17)",
+          "oklch(49% 0.0429 348.17)",
+          "oklch(61% 0.0429 348.17)",
+          "oklch(72% 0.0429 348.17)",
+          "oklch(84% 0.0429 348.17)",
+          "oklch(95% 0.0429 348.17)"
+        ]
+      },
+      "grey600": {
+        "role": "neutral",
+        "displayName": "grey600",
+        "tonalRamp": [
+          "oklch(15% 0.0442 346.46)",
+          "oklch(26% 0.0442 346.46)",
+          "oklch(38% 0.0442 346.46)",
+          "oklch(49% 0.0442 346.46)",
+          "oklch(61% 0.0442 346.46)",
+          "oklch(72% 0.0442 346.46)",
+          "oklch(84% 0.0442 346.46)",
+          "oklch(95% 0.0442 346.46)"
+        ]
+      },
+      "grey700": {
+        "role": "neutral",
+        "displayName": "grey700",
+        "tonalRamp": [
+          "oklch(15% 0.0438 347.69)",
+          "oklch(26% 0.0438 347.69)",
+          "oklch(38% 0.0438 347.69)",
+          "oklch(49% 0.0438 347.69)",
+          "oklch(61% 0.0438 347.69)",
+          "oklch(72% 0.0438 347.69)",
+          "oklch(84% 0.0438 347.69)",
+          "oklch(95% 0.0438 347.69)"
+        ]
+      },
+      "grey800": {
+        "role": "neutral",
+        "displayName": "grey800",
+        "tonalRamp": [
+          "oklch(15% 0.0485 347.70)",
+          "oklch(26% 0.0485 347.70)",
+          "oklch(38% 0.0485 347.70)",
+          "oklch(49% 0.0485 347.70)",
+          "oklch(61% 0.0485 347.70)",
+          "oklch(72% 0.0485 347.70)",
+          "oklch(84% 0.0485 347.70)",
+          "oklch(95% 0.0485 347.70)"
+        ]
+      },
+      "grey900": {
+        "role": "neutral",
+        "displayName": "grey900",
+        "tonalRamp": [
+          "oklch(15% 0.0405 343.98)",
+          "oklch(26% 0.0405 343.98)",
+          "oklch(38% 0.0405 343.98)",
+          "oklch(49% 0.0405 343.98)",
+          "oklch(61% 0.0405 343.98)",
+          "oklch(72% 0.0405 343.98)",
+          "oklch(84% 0.0405 343.98)",
+          "oklch(95% 0.0405 343.98)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "background",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "greyBackground": {
+        "role": "neutral",
+        "displayName": "greyBackground",
+        "tonalRamp": [
+          "oklch(15% 0.0094 352.35)",
+          "oklch(26% 0.0094 352.35)",
+          "oklch(38% 0.0094 352.35)",
+          "oklch(49% 0.0094 352.35)",
+          "oklch(61% 0.0094 352.35)",
+          "oklch(72% 0.0094 352.35)",
+          "oklch(84% 0.0094 352.35)",
+          "oklch(95% 0.0094 352.35)"
+        ]
+      },
+      "ticketInk": {
+        "role": "secondary",
+        "displayName": "ticketInk",
+        "tonalRamp": [
+          "oklch(15% 0.0605 7.28)",
+          "oklch(26% 0.0605 7.28)",
+          "oklch(38% 0.0605 7.28)",
+          "oklch(49% 0.0605 7.28)",
+          "oklch(61% 0.0605 7.28)",
+          "oklch(72% 0.0605 7.28)",
+          "oklch(84% 0.0605 7.28)",
+          "oklch(95% 0.0605 7.28)"
+        ]
+      },
+      "ticketPink": {
+        "role": "secondary",
+        "displayName": "ticketPink",
+        "tonalRamp": [
+          "oklch(15% 0.0595 352.70)",
+          "oklch(26% 0.0595 352.70)",
+          "oklch(38% 0.0595 352.70)",
+          "oklch(49% 0.0595 352.70)",
+          "oklch(61% 0.0595 352.70)",
+          "oklch(72% 0.0595 352.70)",
+          "oklch(84% 0.0595 352.70)",
+          "oklch(95% 0.0595 352.70)"
+        ]
+      },
+      "ticketLilac": {
+        "role": "secondary",
+        "displayName": "ticketLilac",
+        "tonalRamp": [
+          "oklch(15% 0.0581 295.00)",
+          "oklch(26% 0.0581 295.00)",
+          "oklch(38% 0.0581 295.00)",
+          "oklch(49% 0.0581 295.00)",
+          "oklch(61% 0.0581 295.00)",
+          "oklch(72% 0.0581 295.00)",
+          "oklch(84% 0.0581 295.00)",
+          "oklch(95% 0.0581 295.00)"
+        ]
+      },
+      "ticketMint": {
+        "role": "secondary",
+        "displayName": "ticketMint",
+        "tonalRamp": [
+          "oklch(15% 0.0419 181.53)",
+          "oklch(26% 0.0419 181.53)",
+          "oklch(38% 0.0419 181.53)",
+          "oklch(49% 0.0419 181.53)",
+          "oklch(61% 0.0419 181.53)",
+          "oklch(72% 0.0419 181.53)",
+          "oklch(84% 0.0419 181.53)",
+          "oklch(95% 0.0419 181.53)"
+        ]
+      },
+      "ticketPearl": {
+        "role": "secondary",
+        "displayName": "ticketPearl",
+        "tonalRamp": [
+          "oklch(15% 0.0356 89.44)",
+          "oklch(26% 0.0356 89.44)",
+          "oklch(38% 0.0356 89.44)",
+          "oklch(49% 0.0356 89.44)",
+          "oklch(61% 0.0356 89.44)",
+          "oklch(72% 0.0356 89.44)",
+          "oklch(84% 0.0356 89.44)",
+          "oklch(95% 0.0356 89.44)"
+        ]
+      },
+      "pink": {
+        "role": "secondary",
+        "displayName": "pink",
+        "tonalRamp": [
+          "oklch(15% 0.0880 7.59)",
+          "oklch(26% 0.0880 7.59)",
+          "oklch(38% 0.0880 7.59)",
+          "oklch(49% 0.0880 7.59)",
+          "oklch(61% 0.0880 7.59)",
+          "oklch(72% 0.0880 7.59)",
+          "oklch(84% 0.0880 7.59)",
+          "oklch(95% 0.0880 7.59)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "t1": {
+        "displayName": "큰 제목",
+        "purpose": "기본 iOS 패밀리 Wanted Sans. Android는 WantedSans, iOS medium은 Wanted Sans Medium."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0px 1px 3px rgba(0, 0, 0, 0.04)",
+        "purpose": "낮은 카드 깊이"
+      },
+      {
+        "name": "elevated",
+        "value": "0px 4px 12px rgba(0, 0, 0, 0.08)",
+        "purpose": "플로팅 요소"
+      },
+      {
+        "name": "bottomSheet",
+        "value": "0px -2px 8px rgba(0, 0, 0, 0.06)",
+        "purpose": "바텀시트"
+      },
+      {
+        "name": "segmentedIndicator",
+        "value": "0px 1px 2px rgba(0, 0, 0, 0.09)",
+        "purpose": "선택 인디케이터"
+      }
+    ],
+    "motion": [
+      {
+        "name": "foil-sweep",
+        "value": "7000ms ease-in-out alternate",
+        "purpose": "전체 발행 카드와 첫 컬렉션 타일. spent/reduced-motion/unfocused/background 상태에서는 정적."
+      },
+      {
+        "name": "tilt-hold",
+        "value": "120ms",
+        "purpose": "컬렉션 스크롤 보호용 hold 지연."
+      },
+      {
+        "name": "tilt-return",
+        "value": "500ms cubic-bezier(0.2, 1.25, 0.4, 1)",
+        "purpose": "터치 해제 시 기울기 복귀."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "collection-two-columns",
+        "value": "380px; fontScale <= 1.25"
+      },
+      {
+        "name": "full-ticket-compact",
+        "value": "width < 290px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "description": "React Native large Button의 시각 미리보기.",
+      "html": "<button class=\"ds-btn-primary\">촬영지 찾기</button>",
+      "css": ".ds-btn-primary{font:600 16px \"Wanted Sans\",sans-serif;min-height:52px;padding:2px 16px;border-radius:14px;cursor:pointer;background:#B83265;color:#FFFFFF;border:none}.ds-btn-primary:hover{filter:brightness(.95)}.ds-btn-primary:focus-visible{outline:2px solid #B83265;outline-offset:3px}.ds-btn-primary:active{transform:scale(.96)}",
+      "refersTo": "button-primary-large"
+    },
+    {
+      "name": "Weak Button",
+      "kind": "button",
+      "description": "React Native large weak Button의 시각 미리보기.",
+      "html": "<button class=\"ds-btn-weak\">응모하러 가기</button>",
+      "css": ".ds-btn-weak{font:600 16px \"Wanted Sans\",sans-serif;min-height:52px;padding:2px 16px;border-radius:14px;cursor:pointer;background:#FCECF2;color:#B83265;border:none}.ds-btn-weak:hover{filter:brightness(.95)}.ds-btn-weak:focus-visible{outline:2px solid #B83265;outline-offset:3px}.ds-btn-weak:active{transform:scale(.96)}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "description": "React Native large Button의 시각 미리보기.",
+      "html": "<button class=\"ds-btn-outline\">촬영지 찾기</button>",
+      "css": ".ds-btn-outline{font:600 16px \"Wanted Sans\",sans-serif;min-height:52px;padding:2px 16px;border-radius:14px;cursor:pointer;background:transparent;color:#492C3B;border:1px solid #ECDCE3}.ds-btn-outline:hover{filter:brightness(.95)}.ds-btn-outline:focus-visible{outline:2px solid #B83265;outline-offset:3px}.ds-btn-outline:active{transform:scale(.96)}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "description": "연분홍 검색 입력. 웹 포커스는 문서 미리보기용이다.",
+      "html": "<label class=\"ds-search\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><circle cx=\"10\" cy=\"10\" r=\"6\"/><path d=\"m15 15 5 5\"/></svg><input aria-label=\"검색\" placeholder=\"촬영지 검색\"/></label>",
+      "css": ".ds-search{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:#FCECF2;color:#8A6878;border-radius:12px}.ds-search input{min-width:0;width:100%;border:0;background:transparent;color:#321C29;font:15px sans-serif}.ds-search:focus-within{outline:2px solid #B83265;outline-offset:2px}",
+      "refersTo": "search-field"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "description": "기존 small Badge의 상태 라벨.",
+      "html": "<span class=\"ds-badge\">사용 가능</span>",
+      "css": ".ds-badge{display:inline-block;background:#FCECF2;color:#725564;padding:2px 6px;border-radius:6px;font:700 13px/19.5px \"Wanted Sans\",sans-serif}"
+    },
+    {
+      "name": "Ticket Balance Surface",
+      "kind": "card",
+      "description": "홈의 보유 티켓 표면. 숫자는 예시 데이터.",
+      "html": "<section class=\"ds-balance\"><span>보유 티켓</span><strong>3 <small>장</small></strong><p>방문 기록을 티켓으로 모아요</p></section>",
+      "css": ".ds-balance{padding:20px;border-radius:16px;background:#FCECF2;color:#604452;font:15px/22.5px \"Wanted Sans\",sans-serif}.ds-balance strong{display:block;font-size:40px;line-height:48px;color:#321C29;margin-top:14px}.ds-balance small{font-size:20px}.ds-balance p{font-size:13px;color:#725564}",
+      "refersTo": "ticket-balance"
+    },
+    {
+      "name": "Tab Navigation",
+      "kind": "nav",
+      "description": "다섯 목적지와 활성 로즈 상태의 문서 미리보기.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"주 메뉴\"><button>지도</button><button>커뮤니티</button><button aria-current=\"page\">홈</button><button>티켓</button><button>마이</button></nav>",
+      "css": ".ds-nav{display:flex;background:#fff;border-top:1px solid #ECDCE3}.ds-nav button{flex:1;min-height:52px;border:0;background:transparent;color:#795C6A;font:600 12px sans-serif}.ds-nav [aria-current]{color:#B83265}.ds-nav button:hover{background:#FFF7FA}.ds-nav button:focus-visible{outline:2px solid #B83265;outline-offset:-3px}.ds-nav button:active{background:#FCECF2}"
+    },
+    {
+      "name": "Holographic Ticket",
+      "kind": "custom",
+      "description": "정적인 포일·절취선 미리보기. 날짜와 일련번호는 예시 데이터.",
+      "html": "<article class=\"ds-ticket\"><div class=\"ds-ticket-main\"><b>PINDOM TICKET</b><h3>방문한 촬영지</h3><small>2026.09.19 · GPS ✓<br/>PINDOM-0001</small></div><aside>ADMIT ONE</aside></article>",
+      "css": ".ds-ticket{display:flex;width:300px;max-width:100%;aspect-ratio:300/200;overflow:hidden;border-radius:14px;background:linear-gradient(135deg,#F8C8DB,#D9D0FA 28%,#C7EEE6 46%,#FFF5DB 62%,#F8AEBB 80%,#D9D0FA);color:#3D1720;font-family:\"Wanted Sans\",sans-serif}.ds-ticket-main{flex:1;min-width:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between}.ds-ticket b{font-size:11px;letter-spacing:1.5px}.ds-ticket h3{font-size:20px;line-height:29px;margin:8px 0}.ds-ticket small{font-size:11px;line-height:18px;font-variant-numeric:tabular-nums}.ds-ticket aside{width:94px;flex-shrink:0;border-left:1px dashed #3D172040;writing-mode:vertical-rl;text-align:center;align-content:center;font-size:11px;letter-spacing:1.5px}",
+      "refersTo": "ticket"
+    }
+  ],
+  "narrative": {
+    "northStar": "분홍빛 여행 티켓",
+    "overview": "연분홍 바탕과 흰 표면 위에 로즈색 액션을 놓고, 수집한 티켓에는 파스텔 홀로그램 포일을 사용한다. 팬이 좋아하는 장소를 찾아가고 방문 기록을 모으는 경험을 하트가 든 위치 핀으로 연결한다.\n\n촘촘한 장부보다 읽기 편한 여백을 우선한다. 화면 전체에 장식을 늘리지 않고 티켓의 재질과 PindomMark에 개성을 모은다.",
+    "keyCharacteristics": [
+      "연분홍·흰 표면과 읽기 쉬운 로즈 액션",
+      "본문 아래에서 반짝이는 파스텔 티켓",
+      "하트와 위치 핀을 합친 PindomMark",
+      "좁은 화면과 큰 글씨에서 한 열로 바뀌는 컬렉션"
+    ],
+    "rules": [],
+    "dos": [
+      "Do 공통 색상·간격을 기존 토큰에서 읽고 액션은 theme의 accent를 사용한다.",
+      "Do 티켓의 장소명·날짜·일련번호·사용 상태를 장식보다 먼저 읽히게 한다.",
+      "Do 작은 화면, 큰 글씨, 모션 감소, 비활성 화면을 함께 확인한다."
+    ],
+    "donts": [
+      "Don't 블랙·애시드 장부 스타일을 앱 전체의 기본값으로 되돌린다.",
+      "Don't 컬렉션의 모든 티켓에 자동 반짝임을 추가한다.",
+      "Don't HTML 미리보기나 번들 내보내기 성공을 네이티브 실기기 검증으로 기록한다."
+    ]
+  }
+}

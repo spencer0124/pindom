@@ -9,15 +9,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { SdsColors } from '@/design-system';
+import { useMotionEnabled } from './useMotionEnabled';
 
 /** 1a's hologram constants: `MAX_TILT = 20`, `INTENSITY = .45`, `scale(1.04)`. */
 const MAX_TILT_DEG = 20;
 const HELD_SCALE = 0.04;
 const PERSPECTIVE = 800;
-const SHINE_HELD = 0.45;
-const SHINE_IDLE = SHINE_HELD * 0.5;
-const GLARE_HELD = 0.45;
-const GLARE_IDLE = GLARE_HELD * 0.35;
+const SHINE_HELD = 0.12;
+const SHINE_IDLE = 0;
+const GLARE_HELD = 0.08;
+const GLARE_IDLE = 0;
 /** The shine band's canvas, as a multiple of the card — 1a's `background-size: 220%`. */
 const SHINE_CANVAS = 2.2;
 /** How far the band slides across the card for a full swing of the finger. */
@@ -43,25 +44,9 @@ interface HoloTiltProps {
   disabled?: boolean;
 }
 
-/**
- * Hold a card and it tilts under the finger — 1a's hologram gesture, on any
- * card that should feel like a print catching light.
- *
- * The prototype pairs the tilt with a rainbow shine; the rainbow is colour,
- * and colour is `2b`'s, so it is not here (Capture checklist row 1). The
- * gesture is interaction, which is `1a`'s, and the prototype's own `basic`
- * style — a white band and a white glare — is exactly the gesture without the
- * rainbow (fidelity decision 2). So: ±20° in perspective at 1.04 while held,
- * following the finger in 60 ms; a 500 ms overshoot back on release. The band
- * and the glare slide with the finger and brighten while held. White only, at
- * plain opacity — on the `2b` ground that reads as light, and React Native has
- * no blend modes to argue with.
- *
- * Wraps anything; 티켓 발행 and 컬렉션 wrap `TicketCard`. It is not a
- * design-system primitive because it carries no look of its own — it only
- * moves what it is given.
- */
+/** Finger-following foil reflection; a short hold preserves collection scrolling. */
 export function HoloTilt({ children, style, activateAfterLongPress, disabled = false }: HoloTiltProps) {
+  const motion = useMotionEnabled();
   // Two cards on one screen must not share a gradient id; `useId`'s own
   // punctuation is stripped because `url(#…)` does not take it.
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -81,7 +66,7 @@ export function HoloTilt({ children, style, activateAfterLongPress, disabled = f
   const lit = useSharedValue(0);
 
   let pan = Gesture.Pan()
-    .enabled(!disabled)
+    .enabled(!disabled && motion)
     .minDistance(0)
     .maxPointers(1)
     .onStart((e) => {
@@ -145,9 +130,9 @@ export function HoloTilt({ children, style, activateAfterLongPress, disabled = f
 
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View style={[style, tilt]} onLayout={onLayout}>
+      <Animated.View style={[style, motion && !disabled ? tilt : undefined]} onLayout={onLayout}>
         {children}
-        {size.width > 0 && (
+        {size.width > 0 && motion && !disabled && (
           <View style={styles.light} pointerEvents="none">
             <Animated.View
               style={[
@@ -161,7 +146,9 @@ export function HoloTilt({ children, style, activateAfterLongPress, disabled = f
                   {/* CSS `45deg` runs bottom-left to top-right. */}
                   <LinearGradient id={shineId} x1="0" y1="1" x2="1" y2="0">
                     <Stop offset="0" stopColor={SdsColors.ink} stopOpacity="0" />
+                    <Stop offset="0.3" stopColor={SdsColors.ticketMint} />
                     <Stop offset="0.5" stopColor={SdsColors.ink} stopOpacity="0.9" />
+                    <Stop offset="0.7" stopColor={SdsColors.pink} />
                     <Stop offset="1" stopColor={SdsColors.ink} stopOpacity="0" />
                   </LinearGradient>
                 </Defs>
@@ -208,6 +195,7 @@ const styles = StyleSheet.create({
   light: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
+    borderRadius: 14,
   },
   canvas: {
     position: 'absolute',

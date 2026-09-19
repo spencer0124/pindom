@@ -114,14 +114,14 @@ export const containerStylesBySize = StyleSheet.create({
   medium: {
     paddingHorizontal: 16,
     paddingVertical: 2,
-    minHeight: 38,
+    minHeight: 44,
     minWidth: 64,
     borderRadius: 10,
   },
   large: {
     paddingHorizontal: 16,
     paddingVertical: 2,
-    minHeight: 48,
+    minHeight: 52,
     minWidth: 80,
     borderRadius: 14,
   },

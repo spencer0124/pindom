@@ -3,11 +3,21 @@ title: Design Tokens
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-21
+last-updated: 2026-09-19
 audience: internal
 ---
 
 # Design Tokens
+
+> [!IMPORTANT]
+> **현재 토큰 기준 — 2026-09-19:** [DESIGN.md](../../DESIGN.md)와
+> [ADR 0007](../decisions/0007-pink-holographic-design.md)이 아래 팔레트·형태 기록보다 우선합니다.
+> 실행 원본은 `src/design-system/tokens/`와 `foundation/colors.ts`입니다.
+> 기본 테마는 연분홍·흰 표면과 로즈 액션이며, Wanted Sans를 계속 사용합니다.
+> 아래의 `2b` 색상표, 대비 수치, dark 전역 적용·컴포넌트 전환 현황은 **2026-08 당시 기록**입니다.
+> 현재 구현의 작업 목록이나 현재 대비 결과로 해석하지 않습니다.
+
+## Historical record — 2026-08
 
 > The token contract: what exists, how to read it, and the two places where the tokens currently disagree with the design. Read before styling anything.
 

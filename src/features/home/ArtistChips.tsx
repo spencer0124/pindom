@@ -24,20 +24,7 @@ interface ArtistChipsProps {
   onAdd: () => void;
 }
 
-/**
- * The 최애 row at the top of 홈.
- *
- * Structural rather than decorative: every section below is keyed to the
- * selection, so this is the screen's primary control. Chips are the one shape
- * 2b allows a radius on.
- *
- * The avatar is the artist's `initial`, not a photograph. The prototype uses
- * silhouette placeholders for people throughout and the fixtures name fictional
- * groups, so an initial is the honest fallback rather than a missing image.
- *
- * Selection is a 3px accent ring standing 2px off the chip, easing in over
- * 250 ms — a ring is weight, and weight is 1a's; the colour it takes is 2b's.
- */
+/** Selected artist controls discovery content. Initials are the existing photo fallback. */
 export function ArtistChips({ artists, selectedId, onSelect, onAdd }: ArtistChipsProps) {
   const adaptive = useAdaptive();
 
@@ -141,8 +128,9 @@ const styles = StyleSheet.create({
   track: {
     paddingHorizontal: Shape.gutter,
     // Chip to chip stays 14: the ring's room on either side is in the item.
-    gap: 14 - (RING + RING_GAP) * 2,
-    paddingBottom: 4,
+    gap: 12,
+    paddingTop: 4,
+    paddingBottom: 12,
   },
   item: {
     alignItems: 'center',

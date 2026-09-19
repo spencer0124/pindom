@@ -3,6 +3,7 @@ import type { AssistantMessage } from '@/lib/domain';
 
 interface AssistantState {
   messages: AssistantMessage[];
+  revision: number;
   /** The course the last route answer produced — the 지도에서 코스 보기 card. */
   courseId: string | null;
   loading: boolean;
@@ -31,6 +32,7 @@ interface AssistantState {
  */
 export const useAssistantStore = create<AssistantState>((set) => ({
   messages: [],
+  revision: 0,
   courseId: null,
   loading: false,
   failedQuestion: null,
@@ -38,5 +40,5 @@ export const useAssistantStore = create<AssistantState>((set) => ({
   setCourse: (courseId) => set({ courseId }),
   setLoading: (loading) => set({ loading }),
   setFailedQuestion: (failedQuestion) => set({ failedQuestion }),
-  clear: () => set({ messages: [], courseId: null, loading: false, failedQuestion: null }),
+  clear: () => set((s) => ({ messages: [], courseId: null, loading: false, failedQuestion: null, revision: s.revision + 1 })),
 }));

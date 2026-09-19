@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Artist, User } from '@/lib/domain';
 import { resetModeration } from '@/features/moderation';
+import { useAssistantStore } from '@/features/assistant/state';
+import { useCaptureStore } from '@/features/capture/state';
+import { useTicketsStore } from '@/features/tickets/state';
+import { useDiscoveryStore } from '@/features/discovery/state';
 import { artistRepository, authRepository, ticketRepository, userRepository } from '@/lib/repositories';
 
 export interface MyPageData {
@@ -73,7 +77,7 @@ export function useMyPage() {
 
   const signOut = useCallback(async () => {
     const result = await authRepository.signOut();
-    if (result.ok) resetModeration();
+    if (result.ok) clearAccountState();
     return result.ok;
   }, []);
 
@@ -90,7 +94,7 @@ export function useMyPage() {
   const deleteAccount = useCallback(async (): Promise<string | null> => {
     const result = await authRepository.deleteAccount();
     if (!result.ok) return failureMessage(result.failure);
-    resetModeration();
+    clearAccountState();
     return null;
   }, []);
 
@@ -98,4 +102,13 @@ export function useMyPage() {
   const refresh = useCallback(() => load(true), [load]);
 
   return { state, reload, refresh, signOut, deleteAccount };
+}
+
+/** Never show a previous account's photos, grants, raffle draft or chat. */
+function clearAccountState() {
+  resetModeration();
+  useAssistantStore.getState().clear();
+  useCaptureStore.getState().reset();
+  useTicketsStore.getState().reset();
+  useDiscoveryStore.getState().reconcile([]);
 }

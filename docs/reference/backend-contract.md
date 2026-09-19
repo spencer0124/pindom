@@ -3,7 +3,7 @@ title: Backend Contract
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-29
+last-updated: 2026-09-07
 audience: internal
 ---
 
@@ -684,8 +684,11 @@ outside `tickets/{uid}/`. `cooldown_active` also carries `details.nextAvailableA
 because 장소/상세 renders the date rather than a message.
 
 `grant_expired` covers three cases that look the same from the client: expired, owned by someone
-else, or never verified. `grant_consumed` is the retry case — one grant is one ticket, so a
-re-sent `grantToken` never mints a second.
+else, or never verified. On new issuances the server stores `issueResult` with the consumed
+session in the same transaction. Re-sending the same `grantToken` returns that original result,
+including when the first response was lost; it never mints a second ticket or changes its photo
+or visibility. `grant_consumed` remains possible for legacy sessions with no stored result.
+A consumed session cannot be reopened through `verifyLocation`.
 
 #### Cooldown
 
@@ -812,7 +815,7 @@ What it removes, in this order:
    entries, posts, reviews, raffle entries, verification sessions, and the `savedPlaces`
    subcollection. Reports are the exception: `reporterId` becomes `'deleted'` and the document
    stays.
-2. **Storage** — the originals under `tickets/{uid}/` and `posts/{uid}/`.
+2. **Storage** — the originals under `tickets/{uid}/`, `posts/{uid}/`, and `avatars/{uid}/`.
 3. **Auth** — the account, **last**.
 
 > [!NOTE]
@@ -835,16 +838,20 @@ data does not run to thousands of documents. If it starts to, this becomes a cur
 | --- | --- | --- |
 | `tickets/{uid}/{filename}` | Client, directly | `uid` must match the caller; `contentType` must be an image; **under 10 MB** |
 | `posts/{uid}/{filename}` | Client, directly | Same |
+| `avatars/{uid}/{filename}` | Client, directly | Same |
 
 **Deleting your own file is allowed**, on both paths — a deleted post or replaced photo should not
 leave an orphan in the bucket. This needed its own rule rather than falling out of the write rule:
 a delete request carries no `request.resource`, so the image-type and size checks throw on it
 unless delete is handled separately.
 
-**Listing is closed on both paths.** In Storage rules `read` grants `get` and `list` together, and
+**Listing is closed on all paths.** In Storage rules `read` grants `get` and `list` together, and
 a readable `list` would let anyone walk `tickets/{someone else}/` and pull down the photos behind
-their `private` tickets — the one thing 보관함 promises not to expose. Reading a single object
-still works for any signed-in user, which is what a download URL needs.
+their `private` tickets. SDK reads of `tickets/{uid}/` (including `getDownloadURL`) are owner-only.
+Other users view public ticket photos through the token URL supplied by the gallery. Token URLs
+bypass Storage rules, so the public-to-private transition still requires token rotation. A peer
+cannot use a known path to obtain the replacement token. Individual `posts` and `avatars` objects
+remain readable by signed-in users.
 
 The client uploads the photo itself and passes only the resulting path to `issueTicket`. Going
 through a function would mean the image crosses the function boundary twice for no benefit.

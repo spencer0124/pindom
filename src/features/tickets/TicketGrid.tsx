@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Txt, useAdaptive } from '@/design-system';
 import type { Ticket } from '@/lib/domain';
-import { HoloTilt, Shape, TicketCard } from '@/features/shared';
+import { HoloTilt, PindomMark, Shape, TicketCard } from '@/features/shared';
 
 /**
  * How long a finger rests on a tile before the hold takes it. A touch that
@@ -14,22 +14,17 @@ interface TicketGridProps {
   onSelect?: (ticketId: string) => void;
 }
 
-/**
- * 컬렉션's two-column grid of tiles, newest first.
- *
- * Each tile is the ticket at tile size — same component as 티켓 발행's card,
- * so a ticket looks like itself everywhere — and, like that card, it tilts
- * under a held finger through `HoloTilt` (fidelity decision 2). 1a gives
- * every tile a hologram kind (RAINBOW · BASIC · GALAXY); that is colour, and
- * under `2b` a ticket is a print. Spent tickets keep their place with the
- * stub reading USED.
- */
+/** Responsive foil tickets. Small screens and enlarged text use one column. */
 export function TicketGrid({ tickets, onSelect }: TicketGridProps) {
   const adaptive = useAdaptive();
+  const { width, fontScale } = useWindowDimensions();
+  const singleColumn = width < 380 || fontScale > 1.25;
+  const cellWidth = singleColumn ? width - Shape.gutter * 2 : (width - Shape.gutter * 2 - 14) / 2;
 
   if (tickets.length === 0) {
     return (
       <View style={styles.empty}>
+        <PindomMark size={42} color={adaptive.brand500} />
         <Txt typography="t6" color={adaptive.grey600} textAlign="center">
           아직 발행한 티켓이 없어요
         </Txt>
@@ -39,14 +34,17 @@ export function TicketGrid({ tickets, onSelect }: TicketGridProps) {
 
   return (
     <View style={styles.grid}>
-      {tickets.map((ticket) => (
-        <HoloTilt key={ticket.id} style={styles.cell} activateAfterLongPress={HOLD_MS}>
+      {tickets.map((ticket, index) => (
+        <HoloTilt key={ticket.id} style={{ width: cellWidth }} disabled={ticket.spent} activateAfterLongPress={HOLD_MS}>
           <Pressable
             onPress={onSelect ? () => onSelect(ticket.id) : undefined}
+            accessible
+            accessibilityLabel={`${ticket.placeName}, ${ticket.issuedAt.toLocaleDateString('ko-KR')}, ${ticket.spent ? '사용 완료' : '사용 가능'}, ${ticket.serial}`}
             accessibilityRole={onSelect ? 'button' : undefined}
           >
             <TicketCard
               size="tile"
+              animate={index === 0 && !ticket.spent}
               placeName={ticket.placeName}
               serial={ticket.serial}
               issuedAt={ticket.issuedAt}
@@ -63,16 +61,14 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 14,
     paddingHorizontal: Shape.gutter,
-    paddingTop: 14,
-  },
-  cell: {
-    // Two across with the 10px gap between; an odd last tile keeps its width.
-    width: '48.5%',
+    paddingTop: 8,
   },
   empty: {
     paddingHorizontal: Shape.gutter,
     paddingVertical: 40,
+    alignItems: 'center',
+    gap: 16,
   },
 });

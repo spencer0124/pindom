@@ -13,31 +13,12 @@ import {
   TicketBalanceCard,
   useHomeData,
 } from '@/features/home';
-import { PlaceList, Rule, SectionHeader, Shape, wordmark } from '@/features/shared';
+import { PindomMark, PlaceList, Rule, SectionHeader, Shape, wordmark } from '@/features/shared';
 
 /** 1a's `38px` avatar at the right of the greeting. No tap — 1a wires none. */
 const AVATAR = 38;
 
-/**
- * 홈 — the reference screen.
- *
- * Built from prototype block `1a` for layout, copy and flow, and block `2b` for
- * colour, type and corners. Where they disagree those are the two axes, and they
- * do not overlap — see design/README.md.
- *
- * Conventions later screens should match:
- *
- *   - Data comes from `src/lib/repositories/` through one hook per screen, never
- *     from `src/mocks/` or Firebase directly (ADR 0005).
- *   - Loading, failure and empty are three states, all rendered, none assumed.
- *     The fixture path is deliberately slow so the loading state is visible.
- *   - Colour is read from `useAdaptive()` for greys and surfaces and from
- *     `useTheme().token.accent` for the brand. A raw hex here is a bug.
- *   - Structure comes from rules and spacing. 2b's radius rule is chips only.
- *   - Sections are a `SectionHeader` plus a block, separated by a 2px rule.
- *   - The scroll ends with room for the assistant FAB, so the last row is never
- *     under it.
- */
+/** Artist-led discovery. Data and navigation retain the existing repository flow. */
 export default function HomeScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -116,6 +97,8 @@ export default function HomeScreen() {
       >
         <View style={styles.header}>
           <View style={styles.greeting}>
+            <View style={styles.brand}>
+              <PindomMark size={26} color={token.accent.fillColor} />
             <Txt
               typography="t7"
               fontWeight="bold"
@@ -124,6 +107,7 @@ export default function HomeScreen() {
             >
               PINDOM
             </Txt>
+            </View>
             <Txt typography="t2" fontWeight="bold" color={adaptive.grey900}>
               {artistName != null ? `${artistName}의 자리로` : '최애의 자리로'}
             </Txt>
@@ -174,7 +158,7 @@ export default function HomeScreen() {
         <Rule />
 
         <View style={styles.section}>
-          <SectionHeader title="마감 임박 응모" right="전체 보기" />
+          <SectionHeader title="마감 임박 응모" />
           <ClosingRaffles
             raffles={closingRaffles}
             now={now}
@@ -232,9 +216,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     paddingHorizontal: Shape.gutter,
-    paddingTop: 8,
-    paddingBottom: 18,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   greeting: {
     flex: 1,
     gap: 2,
@@ -250,7 +235,7 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     ...wordmark,
-    marginBottom: 6,
+    marginBottom: 0,
   },
   section: {
     gap: 2,

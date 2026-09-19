@@ -16,6 +16,8 @@ interface PhotoFrameProps {
   style?: StyleProp<ViewStyle>;
   /** 공개설정's thumbnail drops the caption — there is no room for it at 92px. */
   compact?: boolean;
+  /** Fit a stable photo ratio within the available space on every screen. */
+  aspectRatio?: number;
 }
 
 /**
@@ -29,34 +31,37 @@ interface PhotoFrameProps {
  * the radius.
  */
 export const PhotoFrame = forwardRef<View, PhotoFrameProps>(function PhotoFrame(
-  { placeName, date, children, style, compact = false },
+  { placeName, date, children, style, compact = false, aspectRatio },
   ref,
 ) {
   const adaptive = useAdaptive();
   const [stage, setStage] = useState<StageSize>({ width: 0, height: 0 });
+  const padding = compact ? 4 : 8;
+  const foot = compact ? 12 : 34;
+  const availableWidth = Math.max(0, stage.width - padding * 2);
+  const availableHeight = Math.max(0, stage.height - padding - foot);
+  const fittedWidth = aspectRatio ? Math.min(availableWidth, availableHeight * aspectRatio) : availableWidth;
+  const fittedHeight = aspectRatio ? fittedWidth / aspectRatio : availableHeight;
 
   return (
-    <View
-      ref={ref}
-      collapsable={false}
-      style={[styles.frame, compact && styles.frameCompact, { backgroundColor: adaptive.background }, style]}
-    >
-      <View
-        style={[styles.stage, { backgroundColor: adaptive.greyBackground }]}
-        onLayout={(e: LayoutChangeEvent) =>
-          setStage({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })
-        }
-      >
-        {stage.width > 0 ? children(stage) : null}
-      </View>
-      {!compact && (
-        <View style={styles.caption}>
-          <Txt typography="st13" fontWeight="bold" color={adaptive.grey900} style={styles.wordmark}>
-            PINDOM · {placeName}
-          </Txt>
-          <Txt typography="st13" color={adaptive.grey500} style={styles.mono}>
-            {formatStamp(date)} · GPS ✓
-          </Txt>
+    <View style={[styles.container, style]} onLayout={(e: LayoutChangeEvent) =>
+      setStage({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}>
+      {fittedWidth > 0 && fittedHeight > 0 && (
+        <View ref={ref} collapsable={false}
+          style={[styles.frame, compact && styles.frameCompact, { backgroundColor: adaptive.background }]}>
+          <View style={[styles.stage, { width: fittedWidth, height: fittedHeight, backgroundColor: adaptive.greyBackground }]}>
+            {children({ width: fittedWidth, height: fittedHeight })}
+          </View>
+          {!compact && (
+            <View style={styles.caption}>
+              <Txt typography="st13" fontWeight="bold" color={adaptive.grey900} numberOfLines={1} style={styles.wordmark}>
+                PINDOM · {placeName}
+              </Txt>
+              <Txt typography="st13" color={adaptive.grey500} style={styles.mono}>
+                {formatStamp(date)} · GPS ✓
+              </Txt>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -72,6 +77,7 @@ export function formatStamp(date: Date): string {
 }
 
 const styles = StyleSheet.create({
+  container: { alignItems: 'center', justifyContent: 'center' },
   frame: {
     padding: 8,
     paddingBottom: 0,
@@ -81,8 +87,9 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   stage: {
-    flex: 1,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   caption: {
     height: 34,
@@ -92,10 +99,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   wordmark: {
-    letterSpacing: 2,
+    flex: 1,
+    letterSpacing: 1,
   },
   mono: {
     fontVariant: ['tabular-nums'],
-    letterSpacing: 0.5,
+    letterSpacing: 0,
   },
 });

@@ -1,39 +1,12 @@
-import { SdsRadius, SdsSpacing, typographyMap } from '@/design-system';
+import { SdsRadius, SdsSpacing } from '@/design-system';
 
-/**
- * The shape rules `2b` imposes, in one place so every block on every screen
- * obeys the same ones.
- *
- * Direction 2b is 인쇄물 — 블랙 & 애시드: structure comes from rules and spacing,
- * not from cards. Its radius rule is literally "chips only, everything else
- * square", so a block here has square corners and a hairline, never a corner
- * radius and a shadow. See docs/reference/design-tokens.md.
- *
- * This started life as `HomeShape` inside the 홈 feature. It moved when 지도
- * needed the same gutter — two screens measuring their insets separately is how
- * the rules stop lining up between them.
- */
+/** Shared spacing keeps discovery, collection and profile aligned. */
 export const Shape = {
-  /** Horizontal page inset. Every section shares it so the rules line up. */
-  gutter: SdsSpacing.lg,
-  /** Between blocks. */
-  sectionRule: 2,
-  /** Between rows inside a block. */
-  rowRule: 1,
-  /** The only rounded thing on a screen: a chip. */
-  chipRadius: SdsRadius.xs,
+  gutter: SdsSpacing.xl,
+  sectionRule: 0,
+  rowRule: 0.5,
+  chipRadius: SdsRadius.md,
 } as const;
 
-/** Letter-spaced small caps for a section label — the typographic signature of 2b. */
-export const sectionLabel = {
-  letterSpacing: 1.4,
-} as const;
-
-/**
- * The wordmark's tracking — `.28em` at `t7`, the size every screen sets
- * `PINDOM` in. design-tokens.md samples it from 2b's `PINDOM / 002`; 1a tracks
- * the landing's wordmark wider (`.42em`) but type is 2b's axis.
- */
-export const wordmark = {
-  letterSpacing: Math.round(typographyMap.t7.fontSize * 0.28 * 100) / 100,
-} as const;
+export const sectionLabel = { letterSpacing: 0 } as const;
+export const wordmark = { letterSpacing: 2.4 } as const;

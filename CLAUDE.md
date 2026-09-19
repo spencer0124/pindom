@@ -9,16 +9,16 @@ not know what this app does. The docs index is [docs/README.md](docs/README.md).
 running the app on an emulator, and when a change needs a native rebuild rather than a
 reload. Bilingual (한국어 / English).
 
-**The design source is [design/README.md](design/README.md)** — an interactive prototype that
-outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md)).
+**The current visual source is [DESIGN.md](DESIGN.md)** — pink surfaces, rose actions and holographic tickets
+([ADR 0007](docs/decisions/0007-pink-holographic-design.md)). [design/README.md](design/README.md) preserves the prototype history.
 
 ## Build rules
 
 - **Check [docs/reference/design-system.md](docs/reference/design-system.md) before creating
   any component.** Reuse beats create. If nothing fits, ask before adding a primitive.
-- **The prototype beats Figma.** Read layout, copy and flow from block `1a`; read colour, type
-  and corners from `2b`. Where an old Figma frame disagrees, it is wrong. See
-  [design/README.md](design/README.md).
+- **Use the current pink design.** Preserve product flows from the prototype; read palette,
+  spacing, icons and ticket treatment from [DESIGN.md](DESIGN.md). The old `2b` black/acid
+  treatment is historical and must not be restored.
 - **Prototype output is layout intent and copy, never final code.** Same rule Figma had —
   always rebuild with flexbox, never absolute positioning, never copy its inline styles. For
   older frames see [docs/reference/figma-workflow.md](docs/reference/figma-workflow.md).
@@ -42,10 +42,8 @@ outranks Figma ([ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design
   and mock-provider checks are anti-spoofing and must be adjudicated server-side. The client
   submits a reading. On-screen distance is feedback, not the check. The exact gates are in
   [docs/reference/backend-contract.md](docs/reference/backend-contract.md).
-- **No theme toggle.** Every screen is dark under direction `2b`, and that is a property of
-  the build, not a user preference. The prototype's 마이페이지 has a toggle; it is **not**
-  adopted. See [ADR 0004](docs/decisions/0004-per-screen-theme-not-global-dark-mode.md) and
-  [ADR 0006](docs/decisions/0006-adopt-the-prototype-as-the-design-source-of-truth.md).
+- **No theme toggle.** The app defaults to light blush with rose actions. Dark tokens remain
+  available for photographic surfaces; see [ADR 0007](docs/decisions/0007-pink-holographic-design.md).
 - **The design system must not import from a screen.** Dependencies run one way:
   `app/` → `src/features/` → `src/components/` → `src/design-system/`.
 - **The backend is Firebase and the backend developer owns all of it** — project, schema,

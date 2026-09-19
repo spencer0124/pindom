@@ -15,10 +15,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAdaptive, useTheme } from '@/design-system';
 import type { Ticket } from '@/lib/domain';
-import { TICKET_STUB_WIDTH, TicketCard } from '@/features/shared';
+import { TICKET_ASPECT, TICKET_STUB_WIDTH, TicketCard } from '@/features/shared';
 
 /** The full card's own proportions, so the halves can be sized before layout. */
-const CARD_ASPECT = 300 / 168;
+const CARD_ASPECT = TICKET_ASPECT;
 
 /**
  * How far the torn panel's far corner travels past the card's edge at full
@@ -242,7 +242,7 @@ export function TearStage({ ticket, progress, dragging, width, subtitle, spent =
   );
 
   const card = (
-    <TicketCard
+    <TicketCard animate={false}
       placeName={ticket.placeName}
       subtitle={subtitle}
       serial={ticket.serial}

@@ -3,11 +3,21 @@ title: Design Source
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-08-23
+last-updated: 2026-09-19
 audience: internal
 ---
 
 # Design Source
+
+> [!IMPORTANT]
+> **현재 디자인 기준 — 2026-09-19:** [DESIGN.md](../DESIGN.md)와
+> [ADR 0007](../docs/decisions/0007-pink-holographic-design.md)을 먼저 읽습니다.
+> 연분홍·흰 표면, 로즈 액션, 둥근 표면, 파스텔 홀로그램 티켓이 현재 네이티브 구현입니다.
+> 아래 블랙·애시드 `2b`의 전역 팔레트·각진 형태 지침과 미결 티켓 선택은 **이전 결정 기록**입니다.
+> 기존 프로토타입의 흐름·콘텐츠 기록은 유지하되 새 색상·형태를 복원하는 근거로 사용하지 않습니다.
+> 실제 폰트는 Wanted Sans이며, 아래 Pretendard 교체 제안은 적용된 사실이 아닙니다.
+
+## Historical record — 2026-08
 
 > What the interactive prototype in this folder contains, which parts are decided, and which are still open. This is the design authority for PINDOM — it outranks Figma.
 

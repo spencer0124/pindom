@@ -383,12 +383,8 @@ function Tiles({
       // are the controls that remain.
       isShowZoomControls={false}
       isShowScaleBar={false}
-      // The app is pinned dark (SDSProvider colorPreference="dark") and Basic
-      // tiles have no dark styling, so the dark chips and pins floated on a
-      // light map. Navi is the SDK's one night-capable type; symbolScale
-      // shrinks the base map's own labels so the pins and captions lead.
-      mapType="Navi"
-      isNightModeEnabled
+      mapType="Basic"
+      isNightModeEnabled={false}
       symbolScale={0.8}
       locale="ko"
     >

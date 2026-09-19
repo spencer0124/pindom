@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { SdsColors, Txt, useAdaptive } from '@/design-system';
 import Svg, { Line } from 'react-native-svg';
 import { Code128 } from './Code128';
+import { PindomMark } from './PindomMark';
+import { TicketFoil } from './TicketFoil';
 
 /** The stub's width on the full card. 티켓 절취 tears along this boundary. */
 export const TICKET_STUB_WIDTH = 94;
-const TILE_STUB_WIDTH = 40;
+export const TICKET_ASPECT = 300 / 200;
+const TILE_STUB_WIDTH = 28;
 const NOTCH = 14;
 
 export interface TicketCardProps {
@@ -23,26 +26,12 @@ export interface TicketCardProps {
    * stub keeps only its word.
    */
   size?: 'full' | 'tile';
+  /** Disable independent sweeps when rendering the two synchronized tear halves. */
+  animate?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-/**
- * The ticket — 1c's layout on 2b's surface.
- *
- * The layout is `1c`-A's, the variant the prototype applied: a main panel with
- * the wordmark, the place and the stamp; a perforation with punched notches; a
- * stub with the barcode and ADMIT ONE. Its hologram is a colour treatment, and
- * colour is `2b`'s axis — so the card is a print on the chrome ground, acid for
- * the label and the serial, square corners, a hairline rather than a shadow.
- * That also answers most of design/README.md's open question 1: what was open
- * was the surface, and the direction had already decided it. The 반권 mechanic
- * `1c`-C adds is 티켓 절취's, built on this same perforation.
- *
- * Shared because 컬렉션 and 티켓 절취 draw the same object — a second ticket
- * component is how two screens end up with two tickets. The card itself is
- * still; the hold-and-tilt the prototype gives it is `HoloTilt`'s, wrapped
- * around this where a screen wants it.
- */
+/** Shared holographic souvenir ticket, including the original tear boundary. */
 export function TicketCard({
   placeName,
   subtitle,
@@ -50,13 +39,14 @@ export function TicketCard({
   issuedAt,
   spent = false,
   size = 'full',
+  animate = size === 'full',
   style,
 }: TicketCardProps) {
   const tile = size === 'tile';
   const adaptive = useAdaptive();
-  const { token } = useTheme();
-  const accent = token.accent.fillColor;
-  const [height, setHeight] = useState(0);
+  const accent = SdsColors.ticketInk;
+  const [{ width, height }, setLayout] = useState({ width: 0, height: 0 });
+  const compact = !tile && width > 0 && width < 290;
 
   // A 17-character serial is some 220 modules — far wider than the stub. The
   // code runs along the stub's height instead, which is what a real stub does.
@@ -64,50 +54,55 @@ export function TicketCard({
 
   return (
     <View
-      onLayout={(e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height)}
+      onLayout={(e: LayoutChangeEvent) => setLayout(e.nativeEvent.layout)}
+      accessible={!tile}
+      accessibilityLabel={`${placeName}, ${subtitle ?? ''}, ${formatStamp(issuedAt)}, ${serial}, ${spent ? '사용 완료' : '사용 가능'}`}
       style={[
         styles.card,
-        tile && styles.cardTile,
-        { backgroundColor: adaptive.background, borderColor: adaptive.grey200 },
+        tile ? styles.cardTile : styles.cardFull,
+        { backgroundColor: adaptive.grey100 },
         style,
       ]}
     >
-      <View style={[styles.main, tile && styles.mainTile]}>
-        <View style={styles.heading}>
+      <TicketFoil animate={animate} spent={spent} />
+      <View style={[styles.main, tile && styles.mainTile, compact && styles.mainCompact]}>
+        <View style={[styles.heading, compact && styles.headingCompact]}>
+          <View style={styles.brand}>
+            <PindomMark size={tile || compact ? 17 : 22} color={accent} />
           <Txt
             typography="st13"
             fontWeight="bold"
             color={accent}
-            style={[styles.label, tile && styles.labelTile]}
+            style={[styles.label, (tile || compact) && styles.labelTile]}
             numberOfLines={1}
           >
-            PINDOM TICKET
+            {tile || compact ? 'PINDOM' : 'PINDOM TICKET'}
           </Txt>
+          </View>
           <Txt
-            typography={tile ? 't7' : 't4'}
+            allowFontScaling={tile}
+            typography={compact ? 't7' : tile ? 't6' : 't4'}
             fontWeight="bold"
-            color={adaptive.grey900}
-            numberOfLines={tile ? 2 : 1}
+            color={SdsColors.ticketInk}
+            numberOfLines={2}
           >
             {placeName}
           </Txt>
-          {subtitle != null && !tile && (
-            <Txt typography="st13" color={adaptive.grey600} numberOfLines={1}>
+          {subtitle != null && !tile && !compact && (
+            <Txt typography="st13" color={SdsColors.ticketInk} numberOfLines={1}>
               {subtitle}
             </Txt>
           )}
         </View>
-        <View style={styles.stamp}>
-          {!tile && (
-            <Txt typography="st13" color={adaptive.grey700} style={styles.mono}>
-              {formatStamp(issuedAt)} · GPS ✓
-            </Txt>
-          )}
+        <View style={[styles.stamp, compact && styles.stampCompact]}>
+          <Txt typography="st13" color={SdsColors.ticketInk} style={styles.mono}>
+              {formatStamp(issuedAt)}{!tile && !compact ? ' · GPS ✓' : ''}
+          </Txt>
           <Txt
             typography="st13"
             fontWeight="medium"
-            color={spent ? adaptive.grey500 : accent}
-            style={[styles.mono, tile && styles.monoTile]}
+            color={accent}
+            style={[styles.mono, (tile || compact) && styles.monoTile]}
             numberOfLines={1}
           >
             {serial}
@@ -126,8 +121,9 @@ export function TicketCard({
               y1={0}
               x2={1}
               y2={height}
-              stroke={adaptive.grey300}
-              strokeWidth={1.5}
+              stroke={SdsColors.ticketInk}
+              strokeWidth={1}
+              strokeOpacity={0.25}
               strokeDasharray="4 4"
             />
           </Svg>
@@ -152,14 +148,14 @@ export function TicketCard({
         {barcodeLength > 0 && !tile && (
           <View style={[styles.barcode, { width: 30, height: barcodeLength }]}>
             <View style={{ transform: [{ rotate: '90deg' }] }}>
-              <Code128 value={serial} height={30} length={barcodeLength} color={adaptive.grey900} />
+              <Code128 value={serial} height={30} length={barcodeLength} color={SdsColors.ticketInk} />
             </View>
           </View>
         )}
         <Txt
           typography="st13"
           fontWeight="medium"
-          color={adaptive.grey500}
+          color={SdsColors.ticketInk}
           style={[styles.admit, tile && styles.admitTile]}
         >
           {spent ? 'USED' : tile ? 'STUB' : 'ADMIT ONE'}
@@ -179,30 +175,36 @@ function formatStamp(date: Date): string {
 const styles = StyleSheet.create({
   card: {
     alignSelf: 'stretch',
-    aspectRatio: 300 / 168,
     flexDirection: 'row',
-    borderWidth: 1,
+    borderRadius: 14,
     overflow: 'hidden',
   },
+  cardFull: { aspectRatio: TICKET_ASPECT },
   cardTile: {
-    aspectRatio: 170 / 104,
+    minHeight: 160,
   },
   main: {
     flex: 1,
+    minWidth: 0,
     padding: 16,
+    gap: 12,
     justifyContent: 'space-between',
   },
+  mainCompact: { padding: 10, gap: 8 },
+  headingCompact: { gap: 5 },
+  stampCompact: { gap: 3 },
   mainTile: {
     padding: 12,
   },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   heading: {
-    gap: 4,
+    gap: 8,
   },
   label: {
-    letterSpacing: 3,
+    letterSpacing: 1.5,
   },
   labelTile: {
-    letterSpacing: 1.2,
+    letterSpacing: 1,
   },
   stamp: {
     flexDirection: 'row',
@@ -217,6 +219,7 @@ const styles = StyleSheet.create({
   },
   monoTile: {
     letterSpacing: 0,
+    fontSize: 10,
   },
   perforation: {
     width: 0,
@@ -232,7 +235,6 @@ const styles = StyleSheet.create({
     width: NOTCH,
     height: NOTCH,
     borderRadius: NOTCH / 2,
-    borderWidth: 1,
     marginLeft: -NOTCH / 2,
   },
   notchTop: {
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stubSpent: {
-    opacity: 0.4,
+    backgroundColor: 'rgba(255,255,255,0.16)',
   },
   admit: {
     letterSpacing: 1.5,

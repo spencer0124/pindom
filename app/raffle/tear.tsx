@@ -13,7 +13,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Txt, useAdaptive, useTheme } from '@/design-system';
 import { TEAR_SWING, TearStage, useEnterRaffle, useTicketsStore } from '@/features/tickets';
-import { Shape, workKindLabel } from '@/features/shared';
+import { Shape, TICKET_ASPECT, workKindLabel } from '@/features/shared';
 
 /** Past this, lifting the finger finishes the tear instead of letting it heal. */
 const COMMIT_AT = 0.82;
@@ -64,7 +64,7 @@ export default function TearScreen() {
   }, [raffle]);
 
   const cardWidth = screenWidth - Shape.gutter * 2 - TEAR_SWING * 2;
-  const travel = cardWidth / (300 / 168);
+  const travel = cardWidth / TICKET_ASPECT;
 
   const finish = useCallback(async () => {
     if (finishing) return;

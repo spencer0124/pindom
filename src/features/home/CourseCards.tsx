@@ -16,17 +16,7 @@ interface CourseCardsProps {
   onSelect: (courseId: string) => void;
 }
 
-/**
- * {최애} 지역 코스 — curated itineraries, scrolled horizontally.
- *
- * The only horizontally scrolling content on 홈 besides the 최애 chips, and the
- * last block on the screen. Each card is a bounded rectangle rather than a
- * rounded tile, for the same reason as every other block here.
- *
- * While a switched 최애's 코스 load the row shows skeleton cards, never the
- * previous 최애's — 1a re-keys every block in one render, and a stale card
- * under the new title would say the wrong thing for as long as the read takes.
- */
+/** Selected artist itineraries. Loading placeholders replace stale artist content. */
 export function CourseCards({ courses, artistName, loading = false, onSelect }: CourseCardsProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -36,7 +26,7 @@ export function CourseCards({ courses, artistName, loading = false, onSelect }: 
       <Skeleton.Animate>
         <View style={[styles.track, styles.row]}>
           {Array.from({ length: SKELETON_CARDS }, (_, index) => (
-            <View key={index} style={[styles.card, { borderColor: adaptive.grey200 }]}>
+            <View key={index} style={[styles.card, { borderColor: adaptive.grey200, backgroundColor: adaptive.background }]}>
               <Skeleton width="70%" borderRadius={Shape.chipRadius} />
               <Skeleton width="100%" borderRadius={Shape.chipRadius} />
               <Skeleton width="40%" borderRadius={Shape.chipRadius} />
@@ -65,7 +55,7 @@ export function CourseCards({ courses, artistName, loading = false, onSelect }: 
           onPress={() => onSelect(course.id)}
           accessibilityRole="button"
           accessibilityLabel={course.name}
-          style={[styles.card, { borderColor: adaptive.grey200 }]}
+          style={[styles.card, { borderColor: adaptive.grey200, backgroundColor: adaptive.background }]}
         >
           <Txt typography="t6" fontWeight="bold" color={adaptive.grey900} numberOfLines={1}>
             {course.name}
@@ -93,8 +83,9 @@ const styles = StyleSheet.create({
   card: {
     width: CARD,
     borderWidth: 1,
-    padding: 14,
-    gap: 6,
+    borderRadius: 16,
+    padding: 18,
+    gap: 10,
   },
   desc: {
     flexGrow: 1,

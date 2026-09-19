@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { AppFailure } from '@/lib/api/types';
 import type { Ticket } from '@/lib/domain';
@@ -19,15 +19,18 @@ type IssueState =
  * choice. The grant comes from the store, never from a route param, and it is
  * spent on success — one verification mints one ticket, and a second press of
  * the button after a dropped response must not look like a second attempt to
- * the user when the server will answer `grant_consumed`.
+ * the user: the server replays the result stored against the consumed grant.
  */
 export function useIssueTicket() {
   const [state, setState] = useState<IssueState>({ status: 'idle' });
+  const inFlight = useRef(false);
+  const uploaded = useRef<{ uri: string; path: string; token: string } | null>(null);
   const grant = useCaptureStore((s) => s.grant);
   const composedUri = useCaptureStore((s) => s.composedUri);
   const visibility = useCaptureStore((s) => s.visibility);
 
   const issue = useCallback(async (): Promise<Ticket | null> => {
+    if (inFlight.current) return null;
     if (grant == null) {
       setState({ status: 'error', message: '인증이 만료됐어요. 다시 인증해 주세요.' });
       return null;
@@ -43,26 +46,35 @@ export function useIssueTicket() {
     }
     const localUri = composedUri;
 
-    setState({ status: 'uploading' });
-    const upload = await ticketRepository.uploadPhoto(localUri);
-    if (!upload.ok) {
-      setState({ status: 'error', message: failureMessage(upload.failure) });
+    inFlight.current = true;
+    try {
+      if (uploaded.current?.uri !== localUri || uploaded.current?.token !== grant.token) {
+        setState({ status: 'uploading' });
+        const upload = await ticketRepository.uploadPhoto(localUri);
+        if (!upload.ok) {
+          setState({ status: 'error', message: failureMessage(upload.failure) });
+          return null;
+        }
+        uploaded.current = { uri: localUri, path: upload.data, token: grant.token };
+      }
+      setState({ status: 'issuing' });
+      const minted = await ticketRepository.issue({
+        grantToken: grant.token,
+        photoPath: uploaded.current.path,
+        visibility,
+      });
+      if (!minted.ok) {
+        setState({ status: 'error', message: issueMessage(minted.failure) });
+        return null;
+      }
+      setState({ status: 'idle' });
+      return minted.data;
+    } catch {
+      setState({ status: 'error', message: '티켓을 발행하지 못했어요. 다시 시도해 주세요.' });
       return null;
+    } finally {
+      inFlight.current = false;
     }
-
-    setState({ status: 'issuing' });
-    const minted = await ticketRepository.issue({
-      grantToken: grant.token,
-      photoPath: upload.data,
-      visibility,
-    });
-    if (!minted.ok) {
-      setState({ status: 'error', message: issueMessage(minted.failure) });
-      return null;
-    }
-
-    setState({ status: 'idle' });
-    return minted.data;
   }, [grant, composedUri, visibility]);
 
   return { state, issue };

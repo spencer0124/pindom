@@ -12,6 +12,7 @@ interface SliderProps {
   min: number;
   max: number;
   onChange: (value: number) => void;
+  onChangeEnd?: () => void;
   accessibilityLabel: string;
 }
 
@@ -26,18 +27,20 @@ interface SliderProps {
  *
  * Square track, round knob — the knob is the one thing a thumb has to find.
  */
-export function Slider({ value, min, max, onChange, accessibilityLabel }: SliderProps) {
+export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLabel }: SliderProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const [width, setWidth] = useState(0);
 
-  const fraction = max > min ? (value - min) / (max - min) : 0;
+  const fraction = max > min ? clamp((value - min) / (max - min), 0, 1) : 0;
 
   const update = (x: number) => {
     if (width === 0) return;
     const next = min + clamp(x / width, 0, 1) * (max - min);
     onChange(Math.round(next));
   };
+
+  const finish = () => onChangeEnd?.();
 
   const gesture = Gesture.Pan()
     .minDistance(0)
@@ -46,7 +49,8 @@ export function Slider({ value, min, max, onChange, accessibilityLabel }: Slider
     })
     .onUpdate((e) => {
       runOnJS(update)(e.x);
-    });
+    })
+    .onFinalize(() => runOnJS(finish)());
 
   return (
     <GestureDetector gesture={gesture}>
@@ -55,7 +59,13 @@ export function Slider({ value, min, max, onChange, accessibilityLabel }: Slider
         onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
         accessibilityRole="adjustable"
         accessibilityLabel={accessibilityLabel}
-        accessibilityValue={{ text: String(value) }}
+        accessibilityValue={{ min, max, now: clamp(value, min, max) }}
+        accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+        onAccessibilityAction={({ nativeEvent }) => {
+          const step = Math.max(1, Math.round((max - min) / 20));
+          onChange(clamp(value + (nativeEvent.actionName === 'increment' ? step : -step), min, max));
+          onChangeEnd?.();
+        }}
       >
         <View style={[styles.track, { backgroundColor: adaptive.grey200 }]}>
           <View

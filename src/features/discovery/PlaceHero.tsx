@@ -46,7 +46,7 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
           hitSlop={8}
           style={[styles.back, { backgroundColor: SdsColors.ground }]}
         >
-          <CaretLeftIcon size={18} color={adaptive.grey900} />
+          <CaretLeftIcon size={18} color={SdsColors.ink} />
         </Pressable>
       </SafeAreaView>
 
@@ -59,7 +59,7 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
           </View>
         )}
         <View style={[styles.badge, { backgroundColor: SdsColors.ground }]}>
-          <Txt typography="t7" fontWeight="bold" color={adaptive.grey900}>
+          <Txt typography="t7" fontWeight="bold" color={SdsColors.ink}>
             {place.region}
           </Txt>
         </View>
@@ -78,8 +78,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   back: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },

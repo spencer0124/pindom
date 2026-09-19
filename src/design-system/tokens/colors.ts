@@ -1,32 +1,16 @@
-/**
- * PINDOM Color Tokens.
- *
- * Structure is inherited from TDS (Toss Design System) via SDS. Use these tokens
- * instead of hardcoded hex values.
- *
- * The live palette is the `2b` group at the bottom, sampled from
- * `design/2026-08-20-prototype.html` — 인쇄물, 블랙 & 애시드. It is a single dark
- * ground with one accent, and secondary tone comes from a **white-alpha ladder**
- * rather than a grey scale, which is why the TDS greys below have nothing to
- * contribute to a PINDOM screen.
- *
- * The `brand` violet ramp and the TDS grey ladder are **superseded**
- * (ADR 0006). They are kept because components still reference them directly and
- * removing them would be a 22-file change with no design review behind it; the
- * dark surface map in `foundation/colors.ts` is what actually reaches a screen.
- */
+/** Pindom: rose actions, blush surfaces, and a separate photographic dark palette. */
 export const SdsColors = {
-  // ── Grey Scale (TDS, blue-tinted — see KNOWN GAP above) ──
-  grey50: '#F9FAFB',
-  grey100: '#F2F4F6',
-  grey200: '#E5E8EB',
-  grey300: '#D1D6DB',
-  grey400: '#B0B8C1',
-  grey500: '#8B95A1',
-  grey600: '#6B7684',
-  grey700: '#4E5968',
-  grey800: '#333D4B',
-  grey900: '#191F28',
+  // ── Rose-tinted neutral scale ──
+  grey50: '#FFFAFC',
+  grey100: '#FCECF2',
+  grey200: '#ECDCE3',
+  grey300: '#D8BFCB',
+  grey400: '#8A6878',
+  grey500: '#795C6A',
+  grey600: '#725564',
+  grey700: '#604452',
+  grey800: '#492C3B',
+  grey900: '#321C29',
 
   // ── Grey Opacity (overlay/dim) ──
   greyOpacity50: 'rgba(0, 23, 51, 0.02)',
@@ -35,13 +19,13 @@ export const SdsColors = {
   greyOpacity800: 'rgba(0, 12, 30, 0.80)',
   greyOpacity900: 'rgba(2, 9, 19, 0.91)',
 
-  // ── Brand (action, link, accent) — hue 252.2°, replaces TDS blue ──
-  brand50: '#EFECFC', //  sampled — location icon chip tint
-  brand200: '#AB97F8', //  interpolated
-  brand400: '#8B70F5', //  sampled — ticket progress-bar gradient
-  brand500: '#6541F2', //  sampled — primary CTA, active tab, distance text
-  brand600: '#5129F0', //  interpolated — pressed
-  brand700: '#3F12EF', //  interpolated — deep
+  // ── Pink brand: pale pink for surfaces, deep rose for readable actions ──
+  brand50: '#FCECF2', // light tint
+  brand200: '#F8AEBB', // reference pink
+  brand400: '#DC7899', // soft rose
+  brand500: '#B83265', // readable primary action
+  brand600: '#A22656', //  interpolated — pressed
+  brand700: '#861C46', //  interpolated — deep
 
   // ── Red (error, danger) ──
   red50: '#FFEEEE',
@@ -71,16 +55,16 @@ export const SdsColors = {
 
   // ── Surface (sampled from the PINDOM home screen) ──
   background: '#FFFFFF',
-  greyBackground: '#F7F7F8', //  page ground
+  greyBackground: '#FFF7FA', //  page ground
   layeredBackground: '#FFFFFF', //  cards
   floatedBackground: '#FFFFFF',
 
-  // ── Dark surfaces — the ticket-balance card on 홈 ──
+  // ── Dark photo/overlay surfaces ──
   darkSurface: '#171719',
   darkSurfaceRaised: '#2F2F30',
   darkSurfaceRaisedAlt: '#383839',
 
-  // ══ 2b — the live palette ══════════════════════════════════════════════
+  // ── Dark/photo surfaces and legacy palette ──
   // Sampled from block `2b` of design/2026-08-20-prototype.html. See
   // docs/reference/design-tokens.md for where each value appears.
 
@@ -89,12 +73,17 @@ export const SdsColors = {
   groundRaised: '#131313', //  the screen canvas
   groundChrome: '#171719', //  bars and frames
 
-  // ── Accent. One value, used sparingly: section labels and the single most
-  //    important number on screen. A five-stop ramp would undo the restraint ──
-  acid500: '#58CF04',
+  // ── Compatibility alias and holographic ticket stops ──
+  acid500: '#B83265', // Compatibility alias; new code uses brand500.
+  pink: '#F8AEBB',
+  ticketInk: '#3D1720',
+  ticketPink: '#F8C8DB',
+  ticketLilac: '#D9D0FA',
+  ticketMint: '#C7EEE6',
+  ticketPearl: '#FFF5DB',
 
   // ── Alert. 마감 임박 and other urgency ──
-  alert500: '#FF5E00',
+  alert500: '#B74814',
 
   // ── Ink. `2b` has no grey scale — secondary tone is white at an opacity ──
   ink: '#FFFFFF',

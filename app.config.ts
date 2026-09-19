@@ -174,9 +174,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     versionCode: 2,
     ...(androidFirebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
-      // The ground the icon is drawn on. `#6541F2` here was the violet brand
-      // the prototype superseded — see docs/reference/design-tokens.md.
-      backgroundColor: '#0B0B0B',
+      // Matches the generated rose heart-pin launcher artwork.
+      backgroundColor: '#F8AEBB',
       foregroundImage: './assets/images/android-icon-foreground.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
@@ -220,9 +219,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         image: './assets/images/splash-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        // Every screen is dark under direction 2b (ADR 0004, ADR 0006), so a
-        // white splash flashes light for a beat before the app paints black.
-        backgroundColor: '#0B0B0B',
+        // Match the light blush screen before React mounts.
+        backgroundColor: '#FFF7FA',
       },
     ],
     [

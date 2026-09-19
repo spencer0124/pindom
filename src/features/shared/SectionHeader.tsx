@@ -1,5 +1,5 @@
 import { View, StyleSheet } from 'react-native';
-import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { Txt, useAdaptive } from '@/design-system';
 import { Shape, sectionLabel } from './shape';
 
 interface SectionHeaderProps {
@@ -20,30 +20,22 @@ interface SectionHeaderProps {
   inset?: boolean;
 }
 
-/**
- * A section label.
- *
- * 2b paints these in the accent and tracks them out; that is the one place the
- * acid appears besides the single most important number on screen, so the
- * restraint is the point. The words themselves stay Korean — 2b's mockup writes
- * them in English, but copy comes from 1a and Korean UI copy is final.
- */
+/** Readable section heading with optional count and supporting metadata. */
 export function SectionHeader({ title, count, right, inset = true }: SectionHeaderProps) {
   const adaptive = useAdaptive();
-  const { token } = useTheme();
 
   return (
     <View style={[styles.row, inset && { paddingHorizontal: Shape.gutter }]}>
       <Txt
-        typography="t7"
+        typography="t5"
         fontWeight="bold"
-        color={token.accent.fillColor}
+        color={adaptive.grey900}
         style={sectionLabel}
       >
         {count != null && count > 0 ? `${title} ${count}` : title}
       </Txt>
       {right != null && (
-        <Txt typography="t7" color={adaptive.grey400} style={sectionLabel}>
+        <Txt typography="t7" color={adaptive.grey500} style={sectionLabel}>
           {right}
         </Txt>
       )}
@@ -56,6 +48,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: 12,
+    paddingBottom: 16,
+    gap: 12,
+    flexWrap: 'wrap',
   },
 });
