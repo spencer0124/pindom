@@ -9,6 +9,7 @@ import { PhotoEditor } from '@/features/capture/PhotoEditor';
 export default function EditScreen() {
   const adaptive = useAdaptive();
   const place = useCaptureStore((s) => s.place);
+  const grant = useCaptureStore((s) => s.grant);
   const photoUri = useCaptureStore((s) => s.photoUri);
   const setComposed = useCaptureStore((s) => s.setComposed);
   useFocusEffect(useCallback(() => {
@@ -17,7 +18,7 @@ export default function EditScreen() {
   if (!place || !photoUri) return null;
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: adaptive.greyBackground }]}>
-      <PhotoEditor key={photoUri} uri={photoUri} placeName={place.name} onBack={() => router.back()}
+      <PhotoEditor key={photoUri} uri={photoUri} placeName={place.name} testMode={grant?.testMode} onBack={() => router.back()}
         onNext={(uri) => { setComposed(uri); router.push('/capture/visibility' as never); }} />
     </SafeAreaView>
   );

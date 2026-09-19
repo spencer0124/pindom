@@ -52,7 +52,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — server verdict; server-enabled camera tests skip GPS and show no location verdict |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; camera-test status and TEST photo stamp |
-| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export |
+| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export preserving TEST |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles with TEST markers |
