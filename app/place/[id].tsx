@@ -137,7 +137,14 @@ export default function PlaceDetailScreen() {
 
         <Rule />
 
-        <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name} hasCutout={Boolean(place.cutoutImageUrl)} />
+        {place.archived ? (
+          <View style={styles.title}>
+            <Txt typography="t7" color={adaptive.grey600}>운영이 종료된 촬영지예요. 기존 기록은 계속 볼 수 있어요.</Txt>
+          </View>
+        ) : (
+          <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name}
+            hasCutout={Boolean(place.cutoutImageUrl)} testMode={place.cameraTestEnabled} />
+        )}
       </ScrollView>
 
       <SafeAreaView
@@ -151,9 +158,10 @@ export default function PlaceDetailScreen() {
           size="large"
           type="primary"
           display="block"
+          disabled={place.archived}
           onPress={() => router.push(`/verify/gps?placeId=${place.id}` as never)}
         >
-          GPS 인증하기
+          {place.archived ? '운영 종료' : place.cameraTestEnabled ? '카메라 테스트' : 'GPS 인증하기'}
         </Button>
       </SafeAreaView>
     </View>
