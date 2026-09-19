@@ -55,7 +55,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // to be written to both — the same trap as ios.buildNumber below. A new
   // version string also opens a fresh TestFlight version train, which is a
   // fresh Beta App Review.
-  version: '1.0.1',
+  version: '1.0.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'pindom',
@@ -140,10 +140,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // `plutil -p ios/PINDOM/Info.plist`, not a green build.
     // Build 14 (2026-09-07) carries: no new commits from main.
     // Build 15 (2026-09-08) carries: no new commits from main.
+    // Build 16 (2026-09-19) carries: the photo editor (crop, mosaic, stickers)
+    // and the pink holographic redesign (ADR 0007). First build of 1.0.2, so a
+    // fresh TestFlight train and therefore a fresh Beta App Review.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '15',
+    buildNumber: '16',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
