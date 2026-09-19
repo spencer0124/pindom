@@ -54,7 +54,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; camera-test status and TEST photo stamp |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export preserving TEST |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
-| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
+| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with Code 128; test tickets carry TEST |
 | `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles with TEST markers |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
 | `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — 반권 mechanic preserving TEST; one `enterRaffle` at the end |
