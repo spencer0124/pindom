@@ -148,10 +148,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // that skips the GPS gate, marks the capture as a test, and keeps that
     // label on the ticket through 마이 and 프로필 so test issuances never
     // inflate real counts. Same 1.0.2 train as build 16.
+    // Build 18 (2026-09-21) carries: Merge remote-tracking branch 'origin/main' into dev;feat(camera): add selfie camera switching fix(camera): rename cutout toggle label;fix(camera): keep cutouts visible and stable.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '17',
+    buildNumber: '18',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
