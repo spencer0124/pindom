@@ -143,10 +143,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Build 16 (2026-09-19) carries: the photo editor (crop, mosaic, stickers)
     // and the pink holographic redesign (ADR 0007). First build of 1.0.2, so a
     // fresh TestFlight train and therefore a fresh Beta App Review.
+    // Build 17 (2026-09-20) carries: Merge remote-tracking branch 'origin/main' into dev;fix(my): label counts that include test tickets fix(profile): preserve test photo labels;fix(tickets): display test issuance label fix(editor): retain test photo stamp;feat(camera): mark test captures feat(verify): open test camera without GPS;feat(place): expose camera test access feat: support server-controlled camera testing;fix: use English contributor initials feat: add cutout camera and photo pins.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '16',
+    buildNumber: '17',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
