@@ -51,7 +51,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — 갤러리·촬영 팁; archived places retain history and disable capture; server-enabled camera test entry |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — server verdict; server-enabled camera tests skip GPS and show no location verdict |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
-| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; TEST stamp; stable cutout frame and overlay while camera pauses |
+| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; TEST stamp; stable cutout frame and overlay while camera pauses; 인물 켜짐/꺼짐 toggle |
 | `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export preserving TEST |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
 | `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with Code 128; test tickets carry TEST |

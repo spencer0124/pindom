@@ -109,7 +109,7 @@ export default function CameraScreen() {
             <Button size="medium" style={cutoutEnabled ? 'weak' : 'outline'}
               accessibilityState={{ selected: cutoutEnabled }}
               onPress={() => setCutoutEnabled((value) => !value)} disabled={shooting}>
-              {cutoutEnabled ? '누끼 켜짐' : '누끼 꺼짐'}
+              {cutoutEnabled ? '인물 켜짐' : '인물 꺼짐'}
             </Button>
             <Button size="medium" style="outline" disabled={!cutoutEnabled || shooting}
               onPress={() => setCutoutPose((pose) => ({ ...pose, mirrored: !pose.mirrored }))}>좌우 반전</Button>
