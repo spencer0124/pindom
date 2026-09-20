@@ -57,7 +57,7 @@ export default function CameraScreen() {
   );
 
   const shoot = useCallback(async () => {
-    if (shooting) return;
+    if (shooting || !active) return;
     setShooting(true);
     try {
       // A real camera gives a file; the simulator gives the stand-in rendered
@@ -69,7 +69,7 @@ export default function CameraScreen() {
     } finally {
       setShooting(false);
     }
-  }, [shooting, setPhoto]);
+  }, [shooting, active, setPhoto]);
 
   if (place == null) return null;
 
@@ -95,7 +95,7 @@ export default function CameraScreen() {
       </SafeAreaView>
 
       <PhotoFrame placeName={place.name} date={now} testMode={grant?.testMode} style={styles.frame} aspectRatio={3 / 4}>
-        {() => focused && active ? <CameraStage ref={stage} previewImageUrl={place.coverImageUrl}
+        {(viewport) => focused ? <CameraStage ref={stage} viewport={viewport} active={active} previewImageUrl={place.coverImageUrl}
           cutout={place.cutoutImageUrl && cutoutEnabled ? { uri: place.cutoutImageUrl, aspectRatio: place.cutoutAspectRatio ?? 0.5, pose: cutoutPose } : undefined}
           onCutoutChange={setCutoutPose} /> : null}
       </PhotoFrame>
@@ -116,14 +116,15 @@ export default function CameraScreen() {
             <Button size="medium" style="outline" disabled={!cutoutEnabled || shooting}
               onPress={() => setCutoutPose(DEFAULT_CUTOUT_POSE)}>초기화</Button>
           </View>
-          {cutoutEnabled && <>
+          <View style={[styles.cutoutAdjustments, !cutoutEnabled && styles.cutoutDisabled]}>
             <View style={styles.cutoutScale}>
               <Txt typography="st13" color={adaptive.grey600}>누끼 크기</Txt>
               <Slider accessibilityLabel="누끼 크기" value={Math.round(cutoutPose.height * 100)} min={20} max={95}
+                disabled={!cutoutEnabled || shooting}
                 onChange={(height) => setCutoutPose((pose) => ({ ...pose, height: height / 100 }))} />
             </View>
             <Txt typography="st13" color={adaptive.grey600}>누끼를 드래그해 옮기면, 보이는 구도대로 함께 저장돼요.</Txt>
-          </>}
+          </View>
         </View>}
         <View style={styles.shutterRow}>
           <Pressable onPress={() => router.back()} disabled={shooting} accessibilityRole="button" style={styles.side}>
@@ -133,14 +134,14 @@ export default function CameraScreen() {
           </Pressable>
           <Pressable
             onPress={shoot}
-            disabled={shooting}
+            disabled={shooting || !active}
             accessibilityRole="button"
             accessibilityLabel={shooting ? '사진 저장 중' : '촬영'}
-            accessibilityState={{ disabled: shooting, busy: shooting }}
+            accessibilityState={{ disabled: shooting || !active, busy: shooting }}
             style={[
               styles.shutter,
               { backgroundColor: token.accent.fillColor, borderColor: adaptive.grey900 },
-              shooting && styles.shutterBusy,
+              (shooting || !active) && styles.shutterBusy,
             ]}
           />
           <Txt typography="st13" color={adaptive.grey500} style={[styles.side, styles.sideRight]}>
@@ -193,6 +194,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   cutoutControls: { gap: SdsSpacing.xs },
+  cutoutAdjustments: { gap: SdsSpacing.xs },
+  cutoutDisabled: { opacity: 0.5 },
   cutoutActions: { flexDirection: 'row', flexWrap: 'wrap', gap: SdsSpacing.sm },
   cutoutScale: { flexDirection: 'row', alignItems: 'center', gap: SdsSpacing.base, paddingRight: SdsSpacing.sm },
   side: {
