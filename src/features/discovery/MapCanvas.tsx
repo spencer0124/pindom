@@ -12,7 +12,7 @@ import Svg, { Polyline } from 'react-native-svg';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { AppConfig } from '@/lib/config';
 import { Shape } from '@/features/shared';
-import { MAP_PIN_ANCHOR, MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MAP_POI_ANCHOR, MapPin } from './MapPin';
+import { MAP_PIN_ANCHOR, MAP_PIN_MIN_ZOOM, MAP_PIN_HEIGHT, MAP_PIN_WIDTH, MAP_POI_ANCHOR, MapPin } from './MapPin';
 import { KOREA_CENTRE, type Position } from './position';
 
 /**
@@ -25,6 +25,10 @@ import { KOREA_CENTRE, type Position } from './position';
  * screen. Used only when there is nothing to fit.
  */
 const COUNTRY_ZOOM = 6;
+const PLACE_NAME_MIN_ZOOM = 15;
+/** Count badges use the SDK’s native proximity grouping. */
+const CLUSTER_SIZE = 36;
+const OVERVIEW_DOT_SIZE = 12;
 /** Breathing room around the fitted region, in points. */
 const REGION_BREATH = 8;
 /**
@@ -130,7 +134,7 @@ interface MapCanvasProps {
    * `places` are a course's stops in walk order: each pin is numbered, the
    * first in the accent fill and the rest in the soft accent, and captioned
    * with the place's name (fidelity A-15). Unset, 지도's visited/unvisited
-   * pins captioned with the region.
+   * pins show the actual place name only at close zoom.
    */
   ordered?: boolean;
   /**
@@ -241,13 +245,13 @@ export function MapCanvas({
   );
 }
 
-/** What a pin reads for a place: its number and caption under `ordered`, 지도's region otherwise. */
+/** Place names are shared by accessibility labels and close-zoom captions. */
 function pinProps(
   place: MapPlace,
   index: number,
   ordered: boolean | undefined,
 ): { order?: number; label: string } {
-  return ordered ? { order: index + 1, label: place.name } : { label: place.region };
+  return { label: place.name, ...(ordered && { order: index + 1 }) };
 }
 
 type TilesProps = Omit<MapCanvasProps, 'origin'>;
@@ -285,8 +289,7 @@ function regionOf(places: Position[], field: Field | null, inset: MapInset = {})
   const latSpan = Math.max(maxLat - minLat, SINGLE_PLACE_SPAN);
   const lngSpan = Math.max(maxLng - minLng, SINGLE_PLACE_SPAN);
 
-  // The tip anchor splits a pin at the head's base: the head rises above its
-  // coordinate, the caption hangs below it.
+  // Fit the pin above its geographic anchor; close-zoom captions are native.
   const cap = (room: number, extent: number) => Math.min(room, extent * MAX_ROOM);
   const roomTop = cap(
     (inset.top ?? 0) + MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y + REGION_BREATH,
@@ -336,6 +339,23 @@ function Tiles({
     return () => clearTimeout(timer);
   }, [dropKey]);
 
+  const [showIndividualPins, setShowIndividualPins] = useState(false);
+  const clusters = useMemo(() => [{
+    width: CLUSTER_SIZE,
+    height: CLUSTER_SIZE,
+    minZoom: 0,
+    maxZoom: MAP_PIN_MIN_ZOOM,
+    animate: true,
+    markers: places.map((place) => ({
+      identifier: place.id,
+      latitude: place.lat,
+      longitude: place.lng,
+      width: OVERVIEW_DOT_SIZE,
+      height: OVERVIEW_DOT_SIZE,
+      image: { symbol: 'lowDensityCluster' as const },
+    })),
+  }], [places]);
+
   const routeCoords = useMemo(
     () => (path ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
     [path],
@@ -375,6 +395,11 @@ function Tiles({
                 zoom: COUNTRY_ZOOM,
               },
             })}
+      clusters={revealed && !showIndividualPins ? clusters : []}
+      onCameraChanged={({ zoom }) => {
+        if (zoom != null) setShowIndividualPins(zoom >= MAP_PIN_MIN_ZOOM);
+      }}
+      onTapClusterLeaf={({ markerIdentifier }) => onSelect(markerIdentifier)}
       mapPadding={inset}
       isShowLocationButton={hasPosition}
       // 1a's map carries no chrome of the SDK's own: the pins and their
@@ -399,13 +424,17 @@ function Tiles({
             width={MAP_PIN_WIDTH}
             height={MAP_PIN_HEIGHT}
             anchor={MAP_PIN_ANCHOR}
-            isHidden={!revealed}
+            minZoom={MAP_PIN_MIN_ZOOM}
+            isMinZoomInclusive
+            caption={{
+              text: place.name, minZoom: PLACE_NAME_MIN_ZOOM,
+              color: adaptive.grey900, haloColor: adaptive.background,
+            }}
+            isHidden={!revealed || !showIndividualPins}
             onTap={() => onSelect(place.id)}
           >
-            {/* The SDK redraws a custom child only when the top child's key
-                changes, so everything the pin's look depends on is in it. */}
             <View
-              key={`${place.id}/${visited}/${pin.order ?? ''}/${pin.label}`}
+              key={`${place.id}/${visited}/${pin.order ?? ''}`}
               collapsable={false}
               style={styles.markerChild}
             >
@@ -573,7 +602,7 @@ function StandIn({
                 style={[
                   styles.pinSlot,
                   // Tip-anchored like the tile markers: the head's base sits on the coordinate.
-                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_PIN_ANCHOR.y },
+                  { left: x - MAP_PIN_WIDTH / 2, top: y - MAP_PIN_HEIGHT * MAP_POI_ANCHOR.y },
                 ]}
               >
                 <Pressable
@@ -582,7 +611,7 @@ function StandIn({
                   accessibilityLabel={place.name}
                   hitSlop={6}
                 >
-                  <MapPin visited={visitedPlaceIds.includes(place.id)} {...pinProps(place, index, ordered)} />
+                  <MapPin compact visited={visitedPlaceIds.includes(place.id)} {...pinProps(place, index, ordered)} />
                 </Pressable>
               </Animated.View>
             );

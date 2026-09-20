@@ -41,7 +41,9 @@ describe('camera test repository access', () => {
     const active = await repo.places.listAll(0, 0);
     assert.equal(active.ok, true);
     assert.deepEqual(new Set(active.data.map((place) => place.id)), new Set(catalog.map((place) => place.id)));
-    assert.ok(active.data.every((place) => !place.archived && place.cameraTestEnabled));
+    assert.ok(active.data.every((place) => !place.archived));
+    assert.deepEqual(active.data.filter((place) => !place.cameraTestEnabled).map((place) => place.id), ['place-gdg-ljw-03']);
+    assert.equal((await repo.verification.startCameraTest('place-gdg-ljw-03')).ok, false);
     assert.equal((await repo.places.getById('place-jumunjin')).data.archived, true);
     assert.equal((await repo.courses.listForArtist('artist-lumina')).data.length, 0);
     assert.ok((await repo.tickets.listMine()).data.length > 0);

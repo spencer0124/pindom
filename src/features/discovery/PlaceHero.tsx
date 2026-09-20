@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import { CaretLeftIcon } from 'phosphor-react-native';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import type { Place } from '@/lib/domain';
@@ -32,12 +34,7 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
   return (
     <View style={[styles.hero, { backgroundColor: adaptive.background }]}>
       {place.coverImageUrl ? (
-        <Image
-          source={{ uri: place.coverImageUrl }}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-        />
+        <PlaceCover key={place.coverImageUrl} uri={place.coverImageUrl} />
       ) : (
         <View style={[StyleSheet.absoluteFill, styles.placeholder]}>
           <Txt typography="t6" color={adaptive.grey600}>장소 사진 준비 중</Txt>
@@ -74,7 +71,32 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
   );
 }
 
+/** Keep slow or failed downloads visible instead of leaving a blank hero. */
+function PlaceCover({ uri }: { uri: string }) {
+  const adaptive = useAdaptive();
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [attempt, setAttempt] = useState(0);
+  return (
+    <>
+      <Image key={attempt} source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover"
+        onLoad={() => setStatus('ready')} onError={() => setStatus('error')}
+        accessibilityLabel="장소 기본사진" />
+      {status !== 'ready' && (
+        <View style={[StyleSheet.absoluteFill, styles.placeholder]}>
+          {status === 'error' ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="장소 사진 다시 불러오기"
+              style={styles.retry} onPress={() => { setStatus('loading'); setAttempt((value) => value + 1); }}>
+              <Txt typography="t6" color={adaptive.grey600}>사진을 불러오지 못했어요. 다시 시도</Txt>
+            </Pressable>
+          ) : <Txt typography="t6" color={adaptive.grey600}>사진을 불러오는 중이에요…</Txt>}
+        </View>
+      )}
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
+  retry: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Shape.gutter },
   hero: {
     height: HERO_HEIGHT,
   },

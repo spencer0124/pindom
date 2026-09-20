@@ -89,6 +89,7 @@ export const verificationRepository: VerificationRepository = {
 };
 
 export const ticketRepository: TicketRepository = {
+  deletePhoto: async (ticketId) => (await impl()).tickets.deletePhoto(ticketId),
   listMine: async () => (await impl()).tickets.listMine(),
   listVault: async () => (await impl()).tickets.listVault(),
   setVisibility: async (ticketId, visibility) =>

@@ -293,6 +293,7 @@ function toTicket(id: string, d: DocData): Ticket {
     ...(artistId && { artistId }),
     placeName: str(d, 'placeName', at),
     photoUrl: str(d, 'photoUrl', at),
+    photoDeleted: d.photoDeleted === true,
     serial: str(d, 'serial', at),
     visibility: oneOf(d.visibility, ['public', 'private'] as const, 'private'),
     issuedAt: date(d, 'issuedAt', at),
@@ -311,6 +312,7 @@ function toRaffle(id: string, d: DocData): Raffle {
     prizeDescription: str(d, 'prizeDescription', at),
     imageUrl: str(d, 'imageUrl', at),
     ticketCost: num(d, 'ticketCost', at),
+    ...(optNum(d, 'order') !== undefined && { order: optNum(d, 'order') }),
     closesAt: date(d, 'closesAt', at),
     entryCount: num(d, 'entryCount', at),
     ...(capacity !== undefined && { capacity }),
@@ -492,7 +494,8 @@ export const firebaseRepositories: Repositories = {
         // Filtered client-side: the roster is small and Firestore has no substring search.
         // If it grows, this needs a search index, not a bigger `getDocs`.
         const snap = await getDocs(collection(db(), 'artists'));
-        const all = snap.docs.map((d_) => toArtist(d_.id, d_.data() as DocData));
+        const all = snap.docs.filter((d_) => d_.data().archived !== true)
+          .map((d_) => toArtist(d_.id, d_.data() as DocData));
         const q = (queryText ?? '').trim();
         return q ? all.filter((a) => a.name.includes(q) || a.initial.includes(q.toUpperCase())) : all;
       }),
@@ -517,7 +520,7 @@ export const firebaseRepositories: Repositories = {
         // Ordered by the user's own list, not by document order — the first followed artist
         // is the one 홈 opens on.
         return docs
-          .filter((d_) => d_.exists())
+          .filter((d_) => d_.exists() && d_.data()?.archived !== true)
           .map((d_) => toArtist(d_.id, d_.data() as DocData));
       }),
 
@@ -799,6 +802,9 @@ export const firebaseRepositories: Repositories = {
   },
 
   tickets: {
+    deletePhoto: (ticketId) => attempt(async () => {
+      await httpsCallable(fns(), 'deleteTicketPhoto')({ ticketId });
+    }),
     listMine: () => listTicketsByVisibility('public'),
 
     listVault: () => listTicketsByVisibility('private'),

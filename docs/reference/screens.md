@@ -48,7 +48,7 @@ profile, language and vault sit at the root rather than under `/my`.
 | `artistSearch` | 최애 찾기 | — | `/artist/search` | **built** — a follow selects the 최애 |
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
-| `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — 갤러리·촬영 팁; archived places retain history and disable capture; server-enabled camera test entry |
+| `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — 기본사진 로딩·실패 재시도; 갤러리·촬영 팁; archived places retain history and disable capture; server-enabled camera test entry |
 | `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — server verdict; server-enabled camera tests skip GPS and show no location verdict |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
 | `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; TEST stamp; stable cutout frame and overlay while camera pauses; 인물 켜짐/꺼짐 toggle; front/back selfie switching |

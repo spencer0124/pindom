@@ -68,7 +68,7 @@ export default function PublicProfileScreen() {
     }
     const profile = result.data;
     if (!isSelf) {
-      const cuts = profile.tickets.map((t) => ({
+      const cuts = profile.tickets.filter((t) => t.photoUrl).map((t) => ({
         key: t.ticketId,
         placeId: t.placeId,
         placeName: t.placeName,
@@ -87,6 +87,7 @@ export default function PublicProfileScreen() {
       ticketRepository.listVault(),
     ]);
     const owned = [...(mine.ok ? mine.data : []), ...(vault.ok ? vault.data : [])]
+      .filter((t) => !t.photoDeleted)
       .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime())
       .map((t) => ({
         key: t.id,

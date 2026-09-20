@@ -3,16 +3,16 @@ import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 const text = readFileSync(new URL('../src/mocks/gwandegong-catalog.json', import.meta.url), 'utf8');
-const { artist, places } = JSON.parse(text);
+const { artists, places } = JSON.parse(text);
 
 describe('supplied Gwandegong catalog', () => {
   it('retains all 23 distinct pins and associates them with the searchable collection', () => {
-    assert.equal(artist.name, '관데공');
+    assert.deepEqual(artists.map((artist) => artist.name), ['HJ', 'SY', 'JW', 'MJ']);
     assert.equal(places.length, 23);
-    assert.equal(artist.placeCount, places.length);
+    assert.deepEqual(artists.map((artist) => artist.placeCount), [4, 3, 3, 13]);
     assert.equal(new Set(places.map((place) => place.id)).size, places.length);
     for (const place of places) {
-      assert.deepEqual(place.artistIds, [artist.id]);
+      assert.deepEqual(place.artistIds, ['artist-' + place.id.split('-')[2]]);
       assert.ok(Number.isFinite(place.lat) && Math.abs(place.lat) <= 90);
       assert.ok(Number.isFinite(place.lng) && Math.abs(place.lng) <= 180);
       assert.ok(place.lat !== 0 && place.lng !== 0, `${place.id}: real coordinates required`);
@@ -22,7 +22,7 @@ describe('supplied Gwandegong catalog', () => {
   });
 
   it('uses English initials for all contributors and public image URLs for cutouts', () => {
-    const initials = new Set(['YHJ', 'JSY', 'LJW', 'KMJ']);
+    const initials = new Set(['HJ', 'SY', 'JW', 'MJ']);
     assert.equal(new Set(places.map((place) => place.contributorInitials)).size, initials.size);
     assert.doesNotMatch(text, /\/Users\/|file:\/\/|sourceKey|Downloads/);
     for (const place of places) {
@@ -32,16 +32,16 @@ describe('supplied Gwandegong catalog', () => {
     }
   });
 
-  it('keeps the unavailable background empty and credits the replacement representative photo', () => {
-    const missing = places.filter((place) => !place.coverImageUrl);
-    assert.equal(missing.length, 1);
-    assert.equal(missing[0].id, 'place-gdg-yhj-03');
-    for (const place of places.filter((entry) => entry.coverImageUrl)) {
-      assert.equal(new URL(place.coverImageUrl).protocol, 'https:');
+  it('uses supplied originals for every cover and restores only Marronnier GPS', () => {
+    for (const place of places) {
+      const url = new URL(place.coverImageUrl);
+      assert.equal(url.protocol, 'https:');
+      assert.match(decodeURIComponent(url.pathname), /gwandegong-originals-20260921/);
+      assert.equal(place.coverImageCredit, undefined);
+      assert.equal(place.coverImageSourceUrl, undefined);
+      assert.doesNotMatch(place.description, /원본 배경사진은 아직|촬영 당시 사진이 아닌/);
+      assert.equal(place.cameraTestEnabled, place.id !== 'place-gdg-ljw-03');
+      assert.equal(place.radiusMeters, 50);
     }
-    const representative = places.find((place) => place.id === 'place-gdg-jsy-01');
-    assert.match(representative.coverImageCredit, /대표 사진.*한국관광공사.*제1유형/);
-    assert.equal(new URL(representative.coverImageSourceUrl).hostname, 'data.visitkorea.or.kr');
-    assert.match(representative.description, /촬영 당시 사진이 아닌/);
   });
 });

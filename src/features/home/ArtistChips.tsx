@@ -20,7 +20,7 @@ const SELECT_MS = 250;
 interface ArtistChipsProps {
   artists: Artist[];
   selectedId?: string;
-  onSelect: (artistId: string) => void;
+  onSelect: (artistId: string | null) => void;
   onAdd: () => void;
 }
 
@@ -34,6 +34,11 @@ export function ArtistChips({ artists, selectedId, onSelect, onAdd }: ArtistChip
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.track}
     >
+      <ArtistChip
+        artist={{ id: 'all', name: '전체', initial: '전체', placeCount: 0 }}
+        selected={selectedId == null}
+        onSelect={() => onSelect(null)}
+      />
       {artists.map((artist) => (
         <ArtistChip
           key={artist.id}

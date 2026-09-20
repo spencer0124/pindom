@@ -8,60 +8,60 @@ const hoursFromNow = (h: number) => new Date(Date.now() + h * 60 * 60 * 1000);
 
 export const mockRaffles: Raffle[] = [
   {
-    id: 'raffle-fansign',
-    title: '팬사인회 응모권',
-    prizeDescription: '9월 서울 팬사인회 입장 2인',
-    imageUrl: 'https://picsum.photos/seed/raffle1/1200/800',
-    ticketCost: 3,
-    closesAt: hoursFromNow(18),
-    entryCount: 842,
-    capacity: 1000,
-    status: 'open',
+    "id": "raffle-mj-concert",
+    "title": "MJ 콘서트 티켓",
+    "prizeDescription": "MJ 콘서트 티켓",
+    "imageUrl": "",
+    "ticketCost": 10,
+    "order": 0,
+    "entryCount": 0,
+    "status": "open"
   },
   {
-    id: 'raffle-album',
-    title: '친필 사인 앨범',
-    prizeDescription: '멤버 전원 사인 정규 3집',
-    imageUrl: 'https://picsum.photos/seed/raffle2/1200/800',
-    ticketCost: 2,
-    closesAt: hoursFromNow(96),
-    entryCount: 311,
-    capacity: 500,
-    status: 'open',
+    "id": "raffle-hj-fansign",
+    "title": "HJ 팬사인회 티켓",
+    "prizeDescription": "HJ 팬사인회 티켓",
+    "imageUrl": "",
+    "ticketCost": 8,
+    "order": 1,
+    "entryCount": 0,
+    "status": "open"
   },
   {
-    id: 'raffle-concert',
-    title: '단독 콘서트 티켓',
-    prizeDescription: '10월 고척돔 지정석 1매',
-    imageUrl: 'https://picsum.photos/seed/raffle3/1200/800',
-    ticketCost: 8,
-    closesAt: hoursFromNow(240),
-    entryCount: 1290,
-    status: 'open',
+    "id": "raffle-jw-cd",
+    "title": "JW 사인 CD",
+    "prizeDescription": "JW 사인 CD",
+    "imageUrl": "",
+    "ticketCost": 5,
+    "order": 2,
+    "entryCount": 0,
+    "status": "open"
   },
   {
-    id: 'raffle-demo',
-    title: '혜화 테스트 굿즈',
-    prizeDescription: '기능 확인용 혜화 굿즈 응모',
-    imageUrl: 'https://picsum.photos/seed/raffle-demo/1200/800',
-    ticketCost: 1,
-    closesAt: hoursFromNow(720),
-    entryCount: 0,
-    capacity: 1000,
-    status: 'open',
+    "id": "raffle-sy-album",
+    "title": "SY 3집 앨범",
+    "prizeDescription": "SY 3집 앨범",
+    "imageUrl": "",
+    "ticketCost": 3,
+    "order": 3,
+    "entryCount": 0,
+    "status": "open"
   },
   {
-    id: 'raffle-closed',
-    title: '포토카드 세트',
-    prizeDescription: '미공개 컷 12종',
-    imageUrl: 'https://picsum.photos/seed/raffle4/1200/800',
-    ticketCost: 1,
-    closesAt: hoursFromNow(-24),
-    entryCount: 2044,
-    capacity: 2000,
-    status: 'closed',
-  },
-];
+    "id": "raffle-mj-photocard",
+    "title": "MJ 포토카드",
+    "prizeDescription": "MJ 포토카드",
+    "imageUrl": "",
+    "ticketCost": 1,
+    "order": 4,
+    "entryCount": 0,
+    "status": "open"
+  }
+].map((raffle) => ({ ...raffle, status: 'open' as const, closesAt: hoursFromNow(240) }));
+
+// Keep the title of an already-spent fixture entry; closed prizes never appear in the active catalog.
+mockRaffles.push({ id: 'raffle-album', title: '친필 사인 앨범', prizeDescription: '기존 응모 기록',
+  imageUrl: '', ticketCost: 2, closesAt: hoursFromNow(-24), entryCount: 1, status: 'closed' });
 
 /** Matches the two spent fixture tickets so 응모 내역 is visible on first launch. */
 export const mockRaffleEntries: RaffleEntry[] = [

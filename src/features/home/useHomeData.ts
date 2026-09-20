@@ -93,7 +93,6 @@ export function useHomeData() {
   const [coursesLoading, setCoursesLoading] = useState(false);
 
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
-  const seed = useDiscoveryStore((s) => s.seed);
   const reconcile = useDiscoveryStore((s) => s.reconcile);
 
   const load = useCallback(async (silent = false) => {
@@ -109,7 +108,7 @@ export function useHomeData() {
     const [userResult, artistsResult, rafflesResult, allPlacesResult, visitedPlaceIds] =
       await Promise.all([
         userRepository.me(),
-        artistRepository.listMine(),
+        artistRepository.search(),
         raffleRepository.list(),
         // Every place, once. A ranked subset would have to be whole for the
         // 인증 count anyway, and its order does not survive the 거리순 label.
@@ -127,13 +126,6 @@ export function useHomeData() {
       return setBase({ status: 'error', message: failureMessage(allPlacesResult.failure) });
 
     const artists = artistsResult.data;
-    // A default, not a decision — `seed` is a no-op once the user has picked.
-    seed(
-      artists.find((a) => a.id === userResult.data.followedArtistIds[0])?.id ??
-        artists[0]?.id ??
-        null,
-    );
-    // And a correction when the pick is no longer followed.
     reconcile(artists.map((a) => a.id));
 
     setBase({
@@ -149,7 +141,7 @@ export function useHomeData() {
         hasPosition: position != null,
       },
     });
-  }, [seed, reconcile]);
+  }, [reconcile]);
 
   useEffect(() => {
     void load();

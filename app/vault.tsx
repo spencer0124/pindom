@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ErrorPage, Loader, TextButton, Txt, useAdaptive, useTheme } from '@/design-system';
 import { useVault } from '@/features/profile';
@@ -37,7 +37,7 @@ const PHOTO_ASPECT = 3 / 4;
 export default function VaultScreen() {
   const adaptive = useAdaptive();
   const { token } = useTheme();
-  const { state, reload, toggle } = useVault();
+  const { state, reload, toggle, remove, busyId } = useVault();
 
   const count = state.status === 'ready' ? state.tickets.length : null;
 
@@ -68,7 +68,7 @@ export default function VaultScreen() {
               찍은 사진이 모두 여기 있습니다
             </Txt>
             <Txt typography="st13" color={adaptive.grey600}>
-              공개한 컷과 나만 보는 컷이 함께 모입니다. 사진마다 공개 여부를 언제든 바꿀 수 있고, 비공개로 바꾸면 장소 갤러리·커뮤니티에서 내려갑니다. 티켓과 응모 자격은 공개 여부와 무관하게 그대로 유지됩니다.
+              공개한 컷과 나만 보는 컷이 함께 모입니다. 사진마다 공개 여부를 바꾸거나 삭제할 수 있고, 비공개로 바꾸면 장소 갤러리·커뮤니티에서 내려갑니다. 사진을 삭제해도 티켓과 응모 이력은 그대로 유지됩니다.
             </Txt>
           </View>
 
@@ -143,9 +143,21 @@ export default function VaultScreen() {
                         typography="st13"
                         fontWeight="bold"
                         color={token.accent.fillColor}
+                        disabled={busyId != null}
                         onPress={() => void toggle(ticket)}
                       >
                         {isPublic ? '비공개 전환' : '공개 전환'}
+                      </TextButton>
+                      <TextButton
+                        typography="st13"
+                        color={adaptive.grey600}
+                        disabled={busyId != null}
+                        onPress={() => Alert.alert('사진을 삭제할까요?', '사진은 보관함과 공개 갤러리에서 삭제되며 복구할 수 없습니다. 티켓과 응모 이력은 유지됩니다.', [
+                          { text: '취소', style: 'cancel' },
+                          { text: '사진 삭제', style: 'destructive', onPress: () => void remove(ticket) },
+                        ])}
+                      >
+                        {busyId === ticket.id ? '삭제 중…' : '사진 삭제'}
                       </TextButton>
                     </View>
                   </View>
@@ -234,13 +246,12 @@ const styles = StyleSheet.create({
     opacity: 0.94,
   },
   caption: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     gap: 8,
     padding: 10,
   },
   copy: {
-    flex: 1,
+    width: '100%',
     gap: 3,
   },
   serial: {

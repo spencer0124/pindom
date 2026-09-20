@@ -375,6 +375,13 @@ export const mockRepositories: Repositories = {
   },
 
   tickets: {
+    async deletePhoto(ticketId) {
+      if (!session) return mockDelay(unauthenticated<void>());
+      const found = tickets.find((t) => t.id === ticketId && t.userId === user.id);
+      if (!found) return mockDelay(notFound<void>('사진'));
+      tickets = tickets.map((t) => t.id === ticketId ? { ...t, photoUrl: '', photoDeleted: true } : t);
+      return mockDelay(ResultHelper.ok(undefined));
+    },
     async listMine() {
       if (!session) return mockDelay(unauthenticated<Ticket[]>());
       const mine = tickets
@@ -626,7 +633,7 @@ export const mockRepositories: Repositories = {
         placesVisited: user.placesVisited,
         tier: user.tier,
         tickets: tickets
-          .filter((t) => t.visibility === 'public')
+          .filter((t) => t.visibility === 'public' && !t.photoDeleted)
           .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime())
           .slice(0, 30)
           .map((t) => ({
