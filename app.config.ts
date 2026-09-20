@@ -153,7 +153,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // because NSCameraUsageDescription already covers both — and two cutout
     // fixes: the overlay no longer drifts or vanishes mid-capture, and its
     // toggle is renamed. Same 1.0.2 train as build 17.
-    // Build 19 (2026-09-21) carries: Merge remote-tracking branch 'origin/main' into dev;feat: update artists, map clusters and photo vault fix(places): shrink covers and show load status;fix(places): sync originals and Marronnier GPS.
+    // Build 19 (2026-09-21) carries: the discovery and 보관함 round — map pins
+    // cluster when they crowd and name their place at close zoom, 홈 lists every
+    // artist with contributor initials, the raffle screens match the new
+    // catalog, and a 보관함 photo can be deleted without losing the ticket it
+    // earned or its 응모 이력. Place covers load through expo-image, which says
+    // it is loading and offers a retry instead of leaving the hero blank. The
+    // originals themselves and the camera-test flags — open everywhere but
+    // 마로니에공원, which is back on 50m GPS — are backend data this build only
+    // reads. Same 1.0.2 train as build 18.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
