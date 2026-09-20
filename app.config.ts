@@ -143,7 +143,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Build 16 (2026-09-19) carries: the photo editor (crop, mosaic, stickers)
     // and the pink holographic redesign (ADR 0007). First build of 1.0.2, so a
     // fresh TestFlight train and therefore a fresh Beta App Review.
-    // Build 17 (2026-09-20) carries: Merge remote-tracking branch 'origin/main' into dev;fix(my): label counts that include test tickets fix(profile): preserve test photo labels;fix(tickets): display test issuance label fix(editor): retain test photo stamp;feat(camera): mark test captures feat(verify): open test camera without GPS;feat(place): expose camera test access feat: support server-controlled camera testing;fix: use English contributor initials feat: add cutout camera and photo pins.
+    // Build 17 (2026-09-20) carries: the cutout camera and photo pins, plus
+    // server-controlled camera testing — a capture path the backend can open
+    // that skips the GPS gate, marks the capture as a test, and keeps that
+    // label on the ticket through 마이 and 프로필 so test issuances never
+    // inflate real counts. Same 1.0.2 train as build 16.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
