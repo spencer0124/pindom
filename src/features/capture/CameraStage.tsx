@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import { Image } from 'expo-image';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Linking, PixelRatio, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -7,10 +7,12 @@ import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { AppConfig } from '@/lib/config';
 import { cameraLensOptions, preferredLens } from './camera-lenses';
 import { CutoutOverlay } from './CutoutOverlay';
-import type { CutoutDraft, CutoutPose } from './cutout-model';
+import type { CutoutDraft, CutoutPose, Viewport } from './cutout-model';
 
 export interface CameraStageHandle { capture: () => Promise<string | null> }
 interface CameraStageProps {
+  active: boolean;
+  viewport: Viewport;
   cutout?: CutoutDraft;
   onCutoutChange: (pose: CutoutPose) => void;
   previewImageUrl?: string;
@@ -18,12 +20,11 @@ interface CameraStageProps {
 // Keep native-discovered names intact; see camera-lenses for the version-specific contract.
 
 /** WideAngle is Apple's name for the normal 1× camera, not the 0.5× lens. */
-export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(function CameraStage({ cutout, onCutoutChange, previewImageUrl }, ref) {
+export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(function CameraStage({ active, viewport, cutout, onCutoutChange, previewImageUrl }, ref) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const camera = useRef<CameraView>(null);
   const root = useRef<View>(null);
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [frozen, setFrozen] = useState<string | null>(null);
   const [capturing, setCapturing] = useState(false);
   const [loadedCutout, setLoadedCutout] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
   const [permission, requestPermission] = useCameraPermissions();
   const [available, setAvailable] = useState<boolean | null>(Platform.OS === 'web' ? null : true);
   const [ready, setReady] = useState(false);
+  const [facing, setFacing] = useState<CameraType>('back');
   const [lens, setLens] = useState<string | undefined>(undefined);
   const [lenses, setLenses] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,7 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
   useEffect(() => () => { pendingImage.current?.reject(new Error('camera closed')); }, []);
   useEffect(() => { setLoadedCutout(null); }, [cutout?.uri]);
   useEffect(() => { setLoadedPreview(null); }, [previewImageUrl]);
+  useEffect(() => { if (!active) setReady(false); }, [active]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -59,6 +62,7 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
       setCapturing(true);
       setError(null);
       try {
+        if (!active) return null;
         if (cutout && loadedCutout !== cutout.uri) {
           setError('누끼를 불러오는 중이에요. 잠시 후 촬영하거나 누끼를 꺼 주세요.');
           return null;
@@ -113,27 +117,42 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
     }
   };
 
-  const options = Platform.OS === 'ios' ? cameraLensOptions(lenses) : [{ id: 'default', label: '일반 1×' }];
+  const switchCamera = () => {
+    if (busy.current || !active) return;
+    setReady(false);
+    setLens(undefined);
+    setLenses([]);
+    setError(null);
+    setFacing((current) => current === 'back' ? 'front' : 'back');
+  };
+
+  const options = facing === 'front' ? [] : Platform.OS === 'ios' ? cameraLensOptions(lenses) : [{ id: 'default', label: '일반 1×' }];
   const discoverLenses = (names: string[]) => {
+    if (facing === 'front') return;
     setLenses(names);
     if (lens && names.includes(lens)) return;
     const normal = preferredLens(names);
-    if (normal !== lens) { setReady(false); setLens(normal); }
+    // selectedLens updates the existing native capture session. Remounting a
+    // keyed CameraView can reorder it above the cutout; no new ready event is
+    // emitted for a normal lens update, so retain the session's ready state.
+    if (normal !== lens) setLens(normal);
   };
 
   return (
     <View style={StyleSheet.absoluteFill}>
       {/* Keep camera textures OUTSIDE the snapshot root: Android view-shot's
           TextureView pass can otherwise draw them over the PNG overlay. */}
-      {!mockCamera && available && permission?.granted && (
-        <CameraView key={lens} ref={camera} style={StyleSheet.absoluteFill} facing="back" mute zoom={0}
-          selectedLens={Platform.OS === 'ios' ? lens : undefined} ratio="4:3"
+      {!mockCamera && active && available && permission?.granted && (
+        <CameraView key={facing} ref={camera} style={styles.camera} facing={facing} mirror={facing === 'front'} mute zoom={0}
+          selectedLens={Platform.OS === 'ios' && facing === 'back' ? lens : undefined} ratio="4:3"
           onCameraReady={() => { setReady(true); setError(null); }}
           onMountError={() => { setReady(false); setError('카메라를 열지 못했어요. 촬영 화면을 다시 열어 주세요.'); }}
           onAvailableLensesChanged={({ lenses: next }) => discoverLenses(next)} />
       )}
-      <View ref={root} collapsable={false} onLayout={(event) => setViewport(event.nativeEvent.layout)}
-        style={[StyleSheet.absoluteFill, { backgroundColor: mockCamera || frozen ? adaptive.greyBackground : 'transparent' }]}>
+      {/* Use PhotoFrame's measured viewport immediately. The transparent native
+          snapshot view must stay above the camera, including after lens changes. */}
+      <View ref={root} collapsable={false} pointerEvents="box-none"
+        style={[styles.composition, { backgroundColor: mockCamera || frozen ? adaptive.greyBackground : 'transparent' }]}>
       {mockCamera && previewImageUrl && <Image source={previewImageUrl} contentFit="cover" transition={0}
         style={StyleSheet.absoluteFill} onDisplay={() => setLoadedPreview(previewImageUrl)}
         onError={() => setError('미리보기 사진을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')} />}
@@ -144,7 +163,9 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
         onError={() => { setLoadedCutout(null); setError('누끼를 불러오지 못했어요. 인터넷 연결을 확인하거나 누끼를 꺼 주세요.'); }} />}
       </View>
       <View style={styles.top}>
-        {mockCamera ? (
+        {!active ? (
+          <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>카메라가 잠시 멈췄어요. 이 화면을 눌러 계속하세요.</Txt>
+        ) : mockCamera ? (
           <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>샘플 사진으로 촬영 연습 중</Txt>
         ) : available === false ? (
           <Txt typography="st13" color={adaptive.grey900}>이 기기에는 카메라가 없어요</Txt>
@@ -153,14 +174,22 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
             <Txt typography="t7" color={adaptive.grey900}>{permission?.canAskAgain === false ? '설정에서 카메라 허용' : '카메라 사용 허용'}</Txt>
           </Pressable>
         ) : null}
+        {cutout && loadedCutout !== cutout.uri && !error && (
+          <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>누끼를 불러오는 중이에요…</Txt>
+        )}
         {error && <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>{error}</Txt>}
       </View>
-      {!mockCamera && permission?.granted && available && (
+      {!mockCamera && active && permission?.granted && available && (
         <View style={styles.lenses}>
           <ScrollView horizontal contentContainerStyle={styles.lensRow} showsHorizontalScrollIndicator={false}>
+            <Pressable accessibilityRole="button" accessibilityLabel={facing === 'back' ? '전면 카메라로 전환' : '후면 카메라로 전환'}
+              accessibilityState={{ disabled: capturing }} disabled={capturing} onPress={switchCamera}
+              style={[styles.lens, { backgroundColor: adaptive.background, borderColor: token.accent.fillColor }]}>
+              <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>{facing === 'back' ? '셀카로 전환' : '후면으로 전환'}</Txt>
+            </Pressable>
             {options.map((option) => (
               <Pressable key={option.id} accessibilityRole="button" accessibilityState={{ selected: Platform.OS !== 'ios' || lens === option.id }}
-                disabled={busy.current} onPress={() => { if (Platform.OS === 'ios' && lens !== option.id) { setReady(false); setLens(option.id); } }}
+                disabled={busy.current} onPress={() => { if (Platform.OS === 'ios' && lens !== option.id) setLens(option.id); }}
                 style={[styles.lens, { backgroundColor: adaptive.background, borderColor: Platform.OS !== 'ios' || lens === option.id ? token.accent.fillColor : adaptive.grey200 }]}>
                 <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>{option.label}</Txt>
               </Pressable>
@@ -173,9 +202,11 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
 });
 
 const styles = StyleSheet.create({
-  top: { position: 'absolute', top: 12, left: 12, right: 12, gap: 8 },
+  camera: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  composition: { ...StyleSheet.absoluteFillObject, zIndex: 1 },
+  top: { position: 'absolute', top: 12, left: 12, right: 12, gap: 8, zIndex: 2 },
   permission: { minHeight: 44, padding: 12, justifyContent: 'center' },
-  lenses: { position: 'absolute', bottom: 12, left: 12, right: 12, alignItems: 'center' },
+  lenses: { position: 'absolute', bottom: 12, left: 12, right: 12, alignItems: 'center', zIndex: 2 },
   lensRow: { flexDirection: 'row', gap: 8 },
   lens: { borderWidth: 1, minHeight: 44, paddingHorizontal: 12, justifyContent: 'center' },
 });

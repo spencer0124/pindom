@@ -8,6 +8,7 @@ const KNOB = 18;
 const TRACK = 4;
 
 interface SliderProps {
+  disabled?: boolean;
   value: number;
   min: number;
   max: number;
@@ -27,7 +28,7 @@ interface SliderProps {
  *
  * Square track, round knob — the knob is the one thing a thumb has to find.
  */
-export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLabel }: SliderProps) {
+export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLabel, disabled = false }: SliderProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const [width, setWidth] = useState(0);
@@ -35,7 +36,7 @@ export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLa
   const fraction = max > min ? clamp((value - min) / (max - min), 0, 1) : 0;
 
   const update = (x: number) => {
-    if (width === 0) return;
+    if (disabled || width === 0) return;
     const next = min + clamp(x / width, 0, 1) * (max - min);
     onChange(Math.round(next));
   };
@@ -43,6 +44,7 @@ export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLa
   const finish = () => onChangeEnd?.();
 
   const gesture = Gesture.Pan()
+    .enabled(!disabled)
     .minDistance(0)
     .onBegin((e) => {
       runOnJS(update)(e.x);
@@ -59,10 +61,12 @@ export function Slider({ value, min, max, onChange, onChangeEnd, accessibilityLa
         accessible
         onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
         accessibilityRole="adjustable"
+        accessibilityState={{ disabled }}
         accessibilityLabel={accessibilityLabel}
         accessibilityValue={{ min, max, now: clamp(value, min, max), text: `${Math.round(clamp(value, min, max))}%` }}
-        accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+        accessibilityActions={disabled ? [] : [{ name: 'increment' }, { name: 'decrement' }]}
         onAccessibilityAction={({ nativeEvent }) => {
+          if (disabled) return;
           const step = Math.max(1, Math.round((max - min) / 20));
           onChange(clamp(value + (nativeEvent.actionName === 'increment' ? step : -step), min, max));
           onChangeEnd?.();
