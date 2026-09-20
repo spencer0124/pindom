@@ -22,7 +22,7 @@
       "lat": 34.800072598618605,
       "lng": 128.03854804056576,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F4a67b170bc3447a518409aed39f4ba8777a707de406bb6863951b0c0fa622e07.jpg?alt=media&token=9aa858ed-54a5-48da-8716-a65c40484b5e",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F5ca55a464920103107e3386493039bc8ed36c61fc0bce763664661511420d00a.png?alt=media&token=63c68544-4f1e-4ec6-8be9-6d6770f34acf",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F116637fe3623f8c3a151383c195614ebdba2768406a86b133c9f6b781ce26db0.png?alt=media&token=b6abe98c-fc73-4f60-aa6e-305aad6fde0e",
       "cutoutAspectRatio": 0.33015873015873015,
       "contributorInitials": "YHJ",
@@ -30,7 +30,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-02",
@@ -47,7 +48,7 @@
       "lat": 36.5016873730712,
       "lng": 126.367114705763,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F4f2ca8abb0a72b0ebf31168590711b7b02b91bb19bc8122abc83b5e34461fb81.jpg?alt=media&token=bf12b90d-089a-44b9-bbd3-7b511ed46c5a",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fdd532c9b8f597e1a42a725379d6fc99409f399721c4a2d34bd25ea56fd109b8a.png?alt=media&token=2e32e210-d9ef-45fd-8a76-5eb1aaebcf27",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fe47eecb6089c3f19bca59f9bdf86fa34605a4cf73a8b43c502416321abfcd57a.png?alt=media&token=5f4a9163-b022-472d-8621-fc70b74de6b6",
       "cutoutAspectRatio": 0.602880658436214,
       "contributorInitials": "YHJ",
@@ -55,13 +56,14 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-03",
       "name": "몰리또 대학로점",
       "roman": "Molito Daehangno",
-      "description": "관데공 YHJ의 사진과 함께 찍는 포토 스팟입니다. 핀은 장소의 대표 위치이며 실제 촬영 지점과 다를 수 있어요. 원본 배경사진은 아직 없으며 인물 누끼만 제공됩니다.",
+      "description": "관데공 YHJ의 사진과 함께 찍는 포토 스팟입니다. 핀은 장소의 대표 위치이며 실제 촬영 지점과 다를 수 있어요.",
       "address": "서울 종로구 대학로9길 29",
       "region": "서울 종로구",
       "workTitle": "관데공",
@@ -72,7 +74,7 @@
       "lat": 37.5817466057294,
       "lng": 127.000253597472,
       "radiusMeters": 50,
-      "coverImageUrl": "",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F72dbbc8349bcf19a622ad828dee2f79bbc6a058ed24fb96ff9860dccf0b4bc75.jpg?alt=media&token=1c90cf1b-3e98-42da-b250-0a9fe1ec00c1",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F1e594929d73a09564016abebe900147aec4bc0c4d53aa456442dd6f25ac5b139.png?alt=media&token=654ab746-d8a5-4fe4-973e-10b1fd5d00a8",
       "cutoutAspectRatio": 0.6005555555555555,
       "contributorInitials": "YHJ",
@@ -80,7 +82,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-04",
@@ -97,7 +100,7 @@
       "lat": 37.3388190707775,
       "lng": 127.270129579647,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fcc342302ab297d76e227ddaf11e619e33123fcba4d7366216f084d6628a0e939.jpg?alt=media&token=0bdb01eb-3fed-48f2-a7bb-23f3765f6c07",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F9d7818691ac800bbaeb71274f5e7264a211e95ea12e38ca297a17b4f38e6c107.png?alt=media&token=82a7ffae-9035-49c4-b140-318b9e33800f",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Ff5880031bd79a6dfa2b7c1edf5fd3fcc4fc3c8864344c55f5671afef7b5ec33b.png?alt=media&token=74209545-68ab-4720-8ce7-9689dde18fbc",
       "cutoutAspectRatio": 0.7637630662020906,
       "contributorInitials": "YHJ",
@@ -105,13 +108,14 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-01",
       "name": "아르떼뮤지엄 부산",
       "roman": "ARTE MUSEUM BUSAN",
-      "description": "관데공 JSY의 사진과 함께 찍는 포토 스팟입니다. 핀은 장소의 대표 위치이며 실제 촬영 지점과 다를 수 있어요. 배경은 촬영 당시 사진이 아닌 장소 외관 대표사진입니다. 사진: 한국관광공사(TourAPI) · 공공누리 제1유형.",
+      "description": "관데공 JSY의 사진과 함께 찍는 포토 스팟입니다. 핀은 장소의 대표 위치이며 실제 촬영 지점과 다를 수 있어요.",
       "address": "부산 영도구 해양로247번길 29",
       "region": "부산 영도구",
       "workTitle": "관데공",
@@ -122,17 +126,16 @@
       "lat": 35.086479711108055,
       "lng": 129.07591442192535,
       "radiusMeters": 50,
-      "coverImageUrl": "https://tong.visitkorea.or.kr/cms/resource/02/3430702_image2_1.JPG",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fc0cb12d07c033219a8f5de01799b7919c5a00197e90cc9dc0fb2f1469c4080fe.jpg?alt=media&token=04802b14-7753-41e8-a04e-e67a06805dd6",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fc1df6ea238eec06d5608eadf08e884805e15ef6f4b9501eab0da40282b847175.png?alt=media&token=0b63ec20-9d56-4eaf-a7d0-77ee83047eb4",
       "cutoutAspectRatio": 1.0596685082872928,
       "contributorInitials": "JSY",
-      "coverImageCredit": "대표 사진: 한국관광공사(TourAPI) · 공공누리 제1유형",
-      "coverImageSourceUrl": "https://data.visitkorea.or.kr/linkedview/3410658",
       "ticketCount": 0,
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-02",
@@ -149,7 +152,7 @@
       "lat": 35.1585232170784,
       "lng": 129.159854668484,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fa89f084ed10471b0c56004e2a47a67686a836bcc0c4e73b7838d020c63f3fca1.jpg?alt=media&token=b6a1f9d4-fab9-4e36-b4e8-0f9e87520314",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F2a916473cdd5202dc864f7f15dbb6ca8e62eb7c6c101e90061389d80907dfea9.jpg?alt=media&token=2425eb38-3370-4da7-853f-7cc2cdd9a745",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fa62815fa40b1001ba1381a07ee1be15c6dd0677b51b35ad59055e1a38dabf558.png?alt=media&token=2d7a8914-3b09-4e65-bb64-ee31c3bfcf3a",
       "cutoutAspectRatio": 1.5454545454545454,
       "contributorInitials": "JSY",
@@ -157,7 +160,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-03",
@@ -174,7 +178,7 @@
       "lat": 37.5880155131684,
       "lng": 126.993075302644,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fe6de514cc73b59278aa53d36762ca99368a8ff8135491965c3cedda45a0f6497.jpg?alt=media&token=325dffcf-0a84-4b00-8068-d407be3d5f52",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F46488d6d679e3e484fa54b984aa8425e975e6063e34f098db7715aaf6bfd51d8.jpg?alt=media&token=678cc6b5-43a3-489c-9264-646bb6a748f0",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fb9fe517cc7d7601fc8c747f9e0e9a56788eb4db992fb29eeb540d35a1ce065d2.png?alt=media&token=728f33de-85f8-4b13-be44-01583914986f",
       "cutoutAspectRatio": 0.33875338753387535,
       "contributorInitials": "JSY",
@@ -182,7 +186,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-01",
@@ -199,7 +204,7 @@
       "lat": 38.2111194141576,
       "lng": 128.600794386102,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F4364a7b759b97d530b7e1e151e4a1f1a0ceee5f1bfb3635051d310dccca95939.jpg?alt=media&token=0acb1c67-5fa6-40a0-a741-a494fd690857",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F18c1e71d30bcf9bdbf0da35ea2057309f8256c70d576d3b32a7bc01f2d0b39ea.jpg?alt=media&token=3bd81ac3-2311-4725-8b39-eb8e9d9f2aba",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F0ce542a236027e9aaa19f14a78932d4173e800c66186eb5a014cd475c9a340f9.png?alt=media&token=a0e3041c-0734-4664-be01-28cf4cbc5cc5",
       "cutoutAspectRatio": 1.012280701754386,
       "contributorInitials": "LJW",
@@ -207,7 +212,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-02",
@@ -224,7 +230,7 @@
       "lat": 36.498643720527014,
       "lng": 127.26811764846035,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F8496be8ca78bce4d39ecf94101b6189bd745c88725cac2781a9552047b71e131.jpg?alt=media&token=76d9b9c6-186e-4e85-ba94-db059371edfb",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fcb1f3905893a7b36058500253d69f37c6afab62f451331ec8b6a50fca856e628.jpg?alt=media&token=d6e3688f-4802-4564-bc87-335bffd15693",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F54bd6b6bc4d60c8b18e3aab5613b51c67d24b2e36bd5d46191354c0293ff3764.png?alt=media&token=1de222d6-c039-42dc-a6b8-123275aa9b36",
       "cutoutAspectRatio": 0.5461111111111111,
       "contributorInitials": "LJW",
@@ -232,7 +238,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-03",
@@ -249,7 +256,7 @@
       "lat": 37.5802887643268,
       "lng": 127.002825745303,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F3e7e3dbbbd7adf444da90e360773d0924a7057fa86e5ce39ab1205742c7aaf7a.jpg?alt=media&token=aee3e7a9-5f70-4677-9001-23a5309706d2",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F5b06afaed1cd09dc21805167e0af2a04378bd7abf9792d80406e88f813fa20f8.png?alt=media&token=6250bafe-3032-4321-b1a6-dad37886abc4",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F0d09e53be981fc923568da5692a2c22cbb99a167acf02500d903f039591395e4.png?alt=media&token=857dc1b4-f058-41af-a847-975c0b8a6360",
       "cutoutAspectRatio": 0.5648414985590778,
       "contributorInitials": "LJW",
@@ -257,7 +264,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": false
     },
     {
       "id": "place-gdg-kmj-01",
@@ -274,7 +282,7 @@
       "lat": 37.5861848244185,
       "lng": 126.995806335701,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F1b65958f776d093314e27d6932abe1ee14b2710c74409c81b036bfcd8c178956.jpg?alt=media&token=2c26a440-56b1-4be6-b2a2-e0bb5a2e3a9f",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F7558e92c76147ecf94bf32dbe52a61e42f57b0ca4218c56e218f2f167b85d1cf.jpg?alt=media&token=04e0adfb-f1f9-443b-a9bd-2c143f7884a2",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F641c8973ee7935cd1246ce3c4d1ad804bd76a26888cd0b2bd3936c85ebf96d8e.png?alt=media&token=1fea82cd-edfb-4311-b07a-3f9bb5d59020",
       "cutoutAspectRatio": 0.39666666666666667,
       "contributorInitials": "KMJ",
@@ -282,7 +290,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-02",
@@ -299,7 +308,7 @@
       "lat": 35.9908860869511,
       "lng": 128.6948337640703,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F552190b8024953f462a60c0b09ec9ca541f5d1d4f1e9a9d0c5481f0d5602e1ad.jpg?alt=media&token=1d943ff5-5760-4993-8cc7-8e1b3ed5b05e",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F1c2ca93c504e78e611e1de66bb448b3a38f9164e02d4648600d41b5208b731b5.jpg?alt=media&token=5ef5c0f4-b6bb-4b07-a2b5-d8c29eb4fee9",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F1bee2d383fe336c31d6db607f5e21062c71f4049999028cd30fa996c502afe6f.png?alt=media&token=d16561d1-b963-4246-af20-ca55042533f6",
       "cutoutAspectRatio": 1.1428571428571428,
       "contributorInitials": "KMJ",
@@ -307,7 +316,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-03",
@@ -324,7 +334,7 @@
       "lat": 34.74459824794542,
       "lng": 127.76628877710922,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fb43d0cdbbcb8796a0aafc503bafd5f5baffffceba5ec3bd80ef5b5791f22105a.jpg?alt=media&token=f9f96cc4-6716-47ce-a353-ed6533686ba6",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F1987fa6adb4325d01be96d3e7951e71760da90fcbd4bc7ed7b57c0a5d4525885.jpg?alt=media&token=aab15c62-4f9b-4786-93d5-8ed4fafbd2b7",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F875a5361eccfa6a3844841000b1fd349d48022c206c3d4e8a9ef780be8b395f4.png?alt=media&token=b6435a92-bf37-4b67-adb8-eb6d5cd9d562",
       "cutoutAspectRatio": 0.8772222222222222,
       "contributorInitials": "KMJ",
@@ -332,7 +342,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-04",
@@ -349,7 +360,7 @@
       "lat": 33.5141507975417,
       "lng": 126.957648164245,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F0c4419e73372d043a7d5b5c22fe419c000a6d852d57711e9fd38ece134e8530e.jpg?alt=media&token=0b4b6dad-6a20-45c6-9ac4-fa215f280d2b",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F7cc43080369a7bbde508d891074afbe1a0e59002831994aaa60970c3566dc08d.jpg?alt=media&token=ae3693e0-1177-4652-992a-a3da34970b1c",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F95793ed8beada1b4d8554436b42680329fa664f07742a0ee7f69b8af85ada2b2.png?alt=media&token=077513bd-e64e-4035-9e6b-eabedb3ff55b",
       "cutoutAspectRatio": 0.5288888888888889,
       "contributorInitials": "KMJ",
@@ -357,7 +368,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-05",
@@ -374,7 +386,7 @@
       "lat": 37.2341514661953,
       "lng": 126.53125963775,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F5359a30e5d42e9d48db7947fa2c39b2216f4bc0a83f9616d8fe1c648ec2fcf86.jpg?alt=media&token=b4f1b96a-28b7-4273-ad75-1345fedc751e",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F701d75597eed0763b830808d360aa26f1985374c965ca475f778deecfbec7e93.jpg?alt=media&token=f29a4cd6-31be-4550-9f23-19ad07fe363a",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F7d44175f9288845edfc5faf5a981648d7052c14e82b0efa633d952abf41e62ea.png?alt=media&token=8abe6e6b-fa58-4be6-8d32-6cd275e4e867",
       "cutoutAspectRatio": 0.3827777777777778,
       "contributorInitials": "KMJ",
@@ -382,7 +394,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-06",
@@ -399,7 +412,7 @@
       "lat": 37.50350635538343,
       "lng": 126.76602942027812,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F6d8b7295cb91633a5f38a7a1375d7a633112f56440b8e6a2449973d3b09f4864.jpg?alt=media&token=900b7a16-76f6-4536-b521-1174d461a1b3",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fb4dbb7ee5835324c87a6b11836e90d5976dbc10b4445132acfd10404759b57d4.png?alt=media&token=cf25f212-d05f-49b3-9b64-d9a0e4e891a7",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F0d25ed3e78391769b121fc448f610a030a98bc70e31c5f47db14b24b5e7f0f80.png?alt=media&token=f6e32850-9a17-46e8-ad59-a0cf5515042b",
       "cutoutAspectRatio": 0.5288888888888889,
       "contributorInitials": "KMJ",
@@ -407,7 +420,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-07",
@@ -424,7 +438,7 @@
       "lat": 36.7727907007097,
       "lng": 126.984416833246,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F40fd3a4ff46e031298abc2411cfc5653dcf0fee9765a6ff5b75d68b833ab9de4.jpg?alt=media&token=073019fd-4941-423f-84ec-ba751c79fb22",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F81f76d4d68feabab07ff38dbbd79a642fc862998248146098dbbc30cc4d7b19d.jpg?alt=media&token=42079493-0d39-49bb-8d6c-18d4d6a261e8",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F6e9d2b917c1a5f1751bade54bcdcc4082b7b24ed9a3cd2958c0a156ce0133319.png?alt=media&token=ee15aafb-f69d-4c2c-a599-98bc0b518e93",
       "cutoutAspectRatio": 0.625,
       "contributorInitials": "KMJ",
@@ -432,7 +446,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-08",
@@ -449,7 +464,7 @@
       "lat": 37.0035417628837,
       "lng": 126.452790265696,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fcd45b8f10bd22b9016202779787deb9ccc6482ecc0333d7ae293d0f0d0a2eec9.jpg?alt=media&token=59820643-3418-4dd9-8e6f-ed48ead3a874",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fcc0881aa7584165375d4055c2746a2e93848c6656a84949745ce655f52014434.jpg?alt=media&token=0b1efc1a-c6c8-49f1-9634-6b3b8dcfddab",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Feecb023417492a1218b65a93b151f254e8ff303deae92cfd81652bf1f84fbffa.png?alt=media&token=c2be1918-5a1d-43c4-9b1a-78f41798bbf8",
       "cutoutAspectRatio": 0.35555555555555557,
       "contributorInitials": "KMJ",
@@ -457,7 +472,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-09",
@@ -474,7 +490,7 @@
       "lat": 37.1731310529255,
       "lng": 127.048184059595,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F860bdd44f2f03329f85fbe6ce1191768ff43ea86e6a35aaa84e76b705676ee53.jpg?alt=media&token=d8cf05c0-9841-43c6-8e95-517fe62f2ec1",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F9c68e0de125fdeb74d31375ee294c54c73da34d851d328d63858c81aed7198e2.jpg?alt=media&token=9ac1431f-974e-4d56-92e1-d41ed5f405cd",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F76253b67d7ad0ccddb1fbd42faa87a1b29d872525cec7abd11227c883a504508.png?alt=media&token=2c17528f-caed-4218-9048-ce05fc378b40",
       "cutoutAspectRatio": 0.5538888888888889,
       "contributorInitials": "KMJ",
@@ -482,7 +498,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-10",
@@ -499,7 +516,7 @@
       "lat": 34.787532306488664,
       "lng": 126.38208646508214,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F025b65d5a3b7e586725d75067642ed16ad280e85e8b7e7b2f280fe4d8884053d.jpg?alt=media&token=386b0b97-0b48-440b-a71a-8d25eba3bff2",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2F991fff06ef50c59038f159d0580abe913e609ef5c4281d2cac9971207e1029d5.jpg?alt=media&token=b66e1e2a-019e-4434-9143-25515e91114a",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Facab78973dc1eeee549773e1186e0c27300fbf60c416f9e2c635567331b367a3.png?alt=media&token=d5b3505d-e4d1-4d90-ad81-2b33edc32e7d",
       "cutoutAspectRatio": 0.39222222222222225,
       "contributorInitials": "KMJ",
@@ -507,7 +524,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-11",
@@ -524,7 +542,7 @@
       "lat": 35.147333715652636,
       "lng": 126.92135353457694,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Feeda8fa187ab728b1d5a1c566818533e404244fa31b14105afc05b6485323c97.jpg?alt=media&token=83b2895f-3bc0-41f6-981d-e16b97b782a2",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fea99cc82a875a962eac118a5817e20cff5782e9f3247d50945cd9a93d6fe59dd.jpg?alt=media&token=2a86930e-4fb7-4179-a727-dcfcc46909f2",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F1a2d86c903b5ee241eacda497fb9e5fa919fae0f07312097cdda6f5eb1d1d889.png?alt=media&token=749f4d1c-e6ce-4ccb-9b70-81a1fcab3197",
       "cutoutAspectRatio": 0.6661111111111111,
       "contributorInitials": "KMJ",
@@ -532,7 +550,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-12",
@@ -549,7 +568,7 @@
       "lat": 37.29503950633725,
       "lng": 126.97742215615531,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F56d92d40057f4a02d8e5475d5e2a5a791e8469e1026de267e3e1c3cfec74f4ec.jpg?alt=media&token=1e9c5c31-cd3b-4255-a73c-42f1a6610b6f",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fbe204209653d07b44abb56409ef71554cdace229a2111ed6e188e3fb241850e3.jpg?alt=media&token=eb91b53d-85f3-4e52-8d93-8360c68a895e",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2Fa2cd6ac471aeeb39ceb2238c7d4dc9cf1db3a529f2267c487001d44b7e3c171a.png?alt=media&token=84cded53-55d3-4210-a6d3-47308cddb8cd",
       "cutoutAspectRatio": 0.3572222222222222,
       "contributorInitials": "KMJ",
@@ -557,7 +576,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-13",
@@ -574,7 +594,7 @@
       "lat": 37.587380383101475,
       "lng": 126.99438986529432,
       "radiusMeters": 50,
-      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F291fd8996ea2c86de0a730577aaf447f9bf541d9e1aa3306bc5648c0ad8edcd0.jpg?alt=media&token=33f1ad00-5e09-439a-89d7-2def5c36b6f8",
+      "coverImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-originals-20260921%2Fef7f0e39be2febd85ee1eae95c7c33ac619d6a8b7c371c7f765e202a829bde96.jpg?alt=media&token=c46a50fd-054d-4f9f-bbeb-9d77f467e19b",
       "cutoutImageUrl": "https://firebasestorage.googleapis.com/v0/b/pindom-1234.firebasestorage.app/o/place-assets%2Fgwandegong-20260919%2F59121028c859c09af6cc4366ac711fc4cb111e89b7943d91bb2028524b2f8a71.png?alt=media&token=85d49941-a843-4b49-8c26-23411c881c24",
       "cutoutAspectRatio": 0.75,
       "contributorInitials": "KMJ",
@@ -582,7 +602,8 @@
       "verifyCount": 0,
       "photoCount": 0,
       "reviewCount": 0,
-      "createdAt": "2026-09-19T14:46:08.024Z"
+      "createdAt": "2026-09-19T14:46:08.024Z",
+      "cameraTestEnabled": true
     }
   ]
 }

@@ -32,16 +32,16 @@ describe('supplied Gwandegong catalog', () => {
     }
   });
 
-  it('keeps the unavailable background empty and credits the replacement representative photo', () => {
-    const missing = places.filter((place) => !place.coverImageUrl);
-    assert.equal(missing.length, 1);
-    assert.equal(missing[0].id, 'place-gdg-yhj-03');
-    for (const place of places.filter((entry) => entry.coverImageUrl)) {
-      assert.equal(new URL(place.coverImageUrl).protocol, 'https:');
+  it('uses supplied originals for every cover and restores only Marronnier GPS', () => {
+    for (const place of places) {
+      const url = new URL(place.coverImageUrl);
+      assert.equal(url.protocol, 'https:');
+      assert.match(decodeURIComponent(url.pathname), /gwandegong-originals-20260921/);
+      assert.equal(place.coverImageCredit, undefined);
+      assert.equal(place.coverImageSourceUrl, undefined);
+      assert.doesNotMatch(place.description, /원본 배경사진은 아직|촬영 당시 사진이 아닌/);
+      assert.equal(place.cameraTestEnabled, place.id !== 'place-gdg-ljw-03');
+      assert.equal(place.radiusMeters, 50);
     }
-    const representative = places.find((place) => place.id === 'place-gdg-jsy-01');
-    assert.match(representative.coverImageCredit, /대표 사진.*한국관광공사.*제1유형/);
-    assert.equal(new URL(representative.coverImageSourceUrl).hostname, 'data.visitkorea.or.kr');
-    assert.match(representative.description, /촬영 당시 사진이 아닌/);
   });
 });
