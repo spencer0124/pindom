@@ -153,10 +153,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // because NSCameraUsageDescription already covers both — and two cutout
     // fixes: the overlay no longer drifts or vanishes mid-capture, and its
     // toggle is renamed. Same 1.0.2 train as build 17.
+    // Build 19 (2026-09-21) carries: Merge remote-tracking branch 'origin/main' into dev;feat: update artists, map clusters and photo vault fix(places): shrink covers and show load status;fix(places): sync originals and Marronnier GPS.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '18',
+    buildNumber: '19',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
