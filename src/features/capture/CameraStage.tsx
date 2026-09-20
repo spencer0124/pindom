@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import { Image } from 'expo-image';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Linking, PixelRatio, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -33,6 +33,7 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
   const [permission, requestPermission] = useCameraPermissions();
   const [available, setAvailable] = useState<boolean | null>(Platform.OS === 'web' ? null : true);
   const [ready, setReady] = useState(false);
+  const [facing, setFacing] = useState<CameraType>('back');
   const [lens, setLens] = useState<string | undefined>(undefined);
   const [lenses, setLenses] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -116,8 +117,18 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
     }
   };
 
-  const options = Platform.OS === 'ios' ? cameraLensOptions(lenses) : [{ id: 'default', label: '일반 1×' }];
+  const switchCamera = () => {
+    if (busy.current || !active) return;
+    setReady(false);
+    setLens(undefined);
+    setLenses([]);
+    setError(null);
+    setFacing((current) => current === 'back' ? 'front' : 'back');
+  };
+
+  const options = facing === 'front' ? [] : Platform.OS === 'ios' ? cameraLensOptions(lenses) : [{ id: 'default', label: '일반 1×' }];
   const discoverLenses = (names: string[]) => {
+    if (facing === 'front') return;
     setLenses(names);
     if (lens && names.includes(lens)) return;
     const normal = preferredLens(names);
@@ -132,8 +143,8 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
       {/* Keep camera textures OUTSIDE the snapshot root: Android view-shot's
           TextureView pass can otherwise draw them over the PNG overlay. */}
       {!mockCamera && active && available && permission?.granted && (
-        <CameraView ref={camera} style={styles.camera} facing="back" mute zoom={0}
-          selectedLens={Platform.OS === 'ios' ? lens : undefined} ratio="4:3"
+        <CameraView key={facing} ref={camera} style={styles.camera} facing={facing} mirror={facing === 'front'} mute zoom={0}
+          selectedLens={Platform.OS === 'ios' && facing === 'back' ? lens : undefined} ratio="4:3"
           onCameraReady={() => { setReady(true); setError(null); }}
           onMountError={() => { setReady(false); setError('카메라를 열지 못했어요. 촬영 화면을 다시 열어 주세요.'); }}
           onAvailableLensesChanged={({ lenses: next }) => discoverLenses(next)} />
@@ -171,6 +182,11 @@ export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(funct
       {!mockCamera && active && permission?.granted && available && (
         <View style={styles.lenses}>
           <ScrollView horizontal contentContainerStyle={styles.lensRow} showsHorizontalScrollIndicator={false}>
+            <Pressable accessibilityRole="button" accessibilityLabel={facing === 'back' ? '전면 카메라로 전환' : '후면 카메라로 전환'}
+              accessibilityState={{ disabled: capturing }} disabled={capturing} onPress={switchCamera}
+              style={[styles.lens, { backgroundColor: adaptive.background, borderColor: token.accent.fillColor }]}>
+              <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>{facing === 'back' ? '셀카로 전환' : '후면으로 전환'}</Txt>
+            </Pressable>
             {options.map((option) => (
               <Pressable key={option.id} accessibilityRole="button" accessibilityState={{ selected: Platform.OS !== 'ios' || lens === option.id }}
                 disabled={busy.current} onPress={() => { if (Platform.OS === 'ios' && lens !== option.id) setLens(option.id); }}

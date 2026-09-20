@@ -86,3 +86,63 @@ test('inactive Mac window keeps the camera composition mounted and disables the 
   assert.equal(stages[0].cutout.uri, cutout.uri);
   assert.equal(buttons.find((props) => props.accessibilityLabel === '촬영').disabled, true);
 });
+
+test('selfie switching clears rear lens selection and preserves the cutout', () => {
+  const slots = [];
+  let cursor = 0;
+  const cameras = [], overlays = [], buttons = [];
+  const hooks = {
+    ...React,
+    useEffect: () => {},
+    useImperativeHandle: () => {},
+    useRef: (initial) => {
+      const index = cursor++;
+      slots[index] ??= { current: initial };
+      return slots[index];
+    },
+    useState: (initial) => {
+      const index = cursor++;
+      if (!(index in slots)) slots[index] = initial;
+      return [slots[index], (value) => { slots[index] = typeof value === 'function' ? value(slots[index]) : value; }];
+    },
+  };
+  const { CameraStage } = load('../src/features/capture/CameraStage.tsx', {
+    react: hooks,
+    'react-native': { ...native, Pressable: (props) => { buttons.push(props); return host(props); } },
+    'expo-camera': {
+      CameraView: (props) => { cameras.push(props); return null; },
+      useCameraPermissions: () => [{ granted: true }, () => {}],
+    },
+    'expo-image': { Image: host },
+    'react-native-view-shot': { captureRef: () => {} },
+    '@/design-system': design,
+    '@/lib/config': { AppConfig: { useMocks: false, isProduction: true } },
+    './camera-lenses': {
+      cameraLensOptions: (names) => names.map((id) => ({ id, label: '일반 1×' })),
+      preferredLens: (names) => names[0],
+    },
+    './CutoutOverlay': { CutoutOverlay: (props) => { overlays.push(props); return null; } },
+  });
+  const render = () => {
+    cursor = 0;
+    cameras.length = overlays.length = buttons.length = 0;
+    return renderToStaticMarkup(React.createElement(CameraStage, { active: true, viewport, cutout, onCutoutChange: () => {} }));
+  };
+  render();
+  cameras[0].onAvailableLensesChanged({ lenses: ['rear camera'] });
+  render();
+  assert.equal(cameras[0].selectedLens, 'rear camera');
+  buttons.find((button) => button.accessibilityLabel === '전면 카메라로 전환').onPress();
+  const selfie = render();
+  assert.equal(cameras[0].facing, 'front');
+  assert.equal(cameras[0].mirror, true);
+  assert.equal(cameras[0].selectedLens, undefined);
+  assert.doesNotMatch(selfie, /일반 1×/);
+  assert.equal(overlays[0].cutout, cutout);
+  buttons.find((button) => button.accessibilityLabel === '후면 카메라로 전환').onPress();
+  render();
+  assert.equal(cameras[0].facing, 'back');
+  assert.equal(cameras[0].mirror, false);
+  assert.equal(cameras[0].selectedLens, undefined);
+  assert.equal(overlays[0].cutout, cutout);
+});
