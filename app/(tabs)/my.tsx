@@ -175,8 +175,8 @@ export default function MyScreen() {
 
         <View style={styles.stats}>
           {[
-            { k: '방문 인증', v: String(user.ticketsIssued) },
-            { k: '지역', v: `${user.placesVisited}곳` },
+            { k: '발행 티켓', v: String(user.ticketsIssued) },
+            { k: '기록한 장소', v: `${user.placesVisited}곳` },
             { k: '보유 티켓', v: `${user.ticketBalance}장` },
           ].map((stat, index) => (
             <View
@@ -283,7 +283,7 @@ export default function MyScreen() {
                     not, and the difference is the whole decision — a generic
                     "모든 데이터가 삭제됩니다" makes the user guess what they have. */}
                 <Txt typography="t7" color={adaptive.grey600}>
-                  방문 인증 {user.ticketsIssued}회, 보유 티켓 {user.ticketBalance}장, 사진 보관함 {vaultCount}장과 작성한 글·촬영 팁·사진이 모두 삭제됩니다. 삭제된 계정과 기록은 되돌릴 수 없어요.
+                  발행 티켓 {user.ticketsIssued}장, 보유 티켓 {user.ticketBalance}장, 사진 보관함 {vaultCount}장과 작성한 글·촬영 팁·사진이 모두 삭제됩니다. 삭제된 계정과 기록은 되돌릴 수 없어요.
                 </Txt>
                 {leaveError != null && (
                   <Txt typography="st13" color={SdsColors.alert500}>

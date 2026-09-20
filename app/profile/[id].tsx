@@ -25,6 +25,7 @@ interface Cut {
   photoUrl: string;
   issuedAt: Date;
   isPrivate: boolean;
+  testMode?: boolean;
 }
 
 /** 인증 촬영지 — one row per place, however many cuts were shot there. */
@@ -73,6 +74,7 @@ export default function PublicProfileScreen() {
         placeName: t.placeName,
         photoUrl: t.photoUrl,
         issuedAt: t.issuedAt,
+        testMode: t.testMode,
         isPrivate: false,
       }));
       setState({ status: 'ready', profile, cuts });
@@ -92,6 +94,7 @@ export default function PublicProfileScreen() {
         placeName: t.placeName,
         photoUrl: t.photoUrl,
         issuedAt: t.issuedAt,
+        testMode: t.testMode,
         isPrivate: t.visibility === 'private',
       }));
     setState({ status: 'ready', profile, cuts: owned });
@@ -133,13 +136,13 @@ export default function PublicProfileScreen() {
         </View>
         {profile.bio ? <Txt typography="t6" color={adaptive.grey700} style={styles.bio}>{profile.bio}</Txt> : null}
         <View style={styles.stats}>
-          <Txt typography="st13" color={adaptive.grey600}>방문 인증 {profile.ticketsIssued}</Txt>
-          <Txt typography="st13" color={adaptive.grey600}>방문 지역 {profile.placesVisited}곳</Txt>
+          <Txt typography="st13" color={adaptive.grey600}>발행 티켓 {profile.ticketsIssued}</Txt>
+          <Txt typography="st13" color={adaptive.grey600}>기록한 장소 {profile.placesVisited}곳</Txt>
         </View>
 
         {places.length > 0 ? (
           <View style={styles.section}>
-            <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>인증 촬영지</Txt>
+            <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>기록한 장소</Txt>
             <View style={styles.chips}>
               {places.map((place) => (
                 <Pressable
@@ -164,10 +167,17 @@ export default function PublicProfileScreen() {
           ) : (
             <View style={styles.grid}>
               {cuts.map((cut) => (
-                <View key={cut.key} style={[styles.tile, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
+                <View key={cut.key} accessible
+                  accessibilityLabel={`${cut.placeName}${cut.testMode ? ', 카메라 테스트' : ''}${cut.isPrivate ? ', 비공개 사진' : ', 공개 사진'}`}
+                  style={[styles.tile, { backgroundColor: adaptive.background, borderColor: adaptive.grey200 }]}>
                   <Image source={{ uri: cut.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
-                  {cut.isPrivate ? (
+                  {cut.testMode ? (
                     <View style={[styles.badge, { backgroundColor: adaptive.background }]}>
+                      <Txt typography="st13" fontWeight="semiBold" color={adaptive.grey900}>TEST</Txt>
+                    </View>
+                  ) : null}
+                  {cut.isPrivate ? (
+                    <View style={[styles.badge, cut.testMode && styles.privateBadge, { backgroundColor: adaptive.background }]}>
                       <Txt typography="st13" fontWeight="semiBold" color={adaptive.grey900}>비공개</Txt>
                     </View>
                   ) : null}
@@ -194,5 +204,6 @@ const styles = StyleSheet.create({
   // Three across with the 6px gaps between; a short last row keeps its tiles' width.
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tile: { width: '31.7%', aspectRatio: 1, borderWidth: Shape.rowRule, overflow: 'hidden' },
+  privateBadge: { top: undefined, bottom: 6 },
   badge: { position: 'absolute', left: 6, top: 6, paddingHorizontal: 6, paddingVertical: 3, borderRadius: Shape.chipRadius, opacity: 0.94 },
 });

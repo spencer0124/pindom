@@ -10,6 +10,10 @@ export type PlaceWorkKind = 'mv' | 'drama' | 'self';
  */
 export interface Place {
   id: string;
+  /** Server-managed: hidden from discovery; retained for historical tickets. */
+  archived?: boolean;
+  /** Server-managed camera test access; remains enabled until explicitly restored. */
+  cameraTestEnabled?: boolean;
   name: string;
   /** Latin caption shown under the Korean name — `Jumunjin Breakwater` */
   roman: string;
@@ -27,6 +31,15 @@ export interface Place {
   /** Verification radius. Per-place so it stays tunable without a deploy */
   radiusMeters: number;
   coverImageUrl: string;
+  /** Transparent original cut, available after location verification. */
+  cutoutImageUrl?: string;
+  /** Original cut width / height; preserves proportions during composition. */
+  cutoutAspectRatio?: number;
+  /** Public contributor credit. Only initials are stored for this collection. */
+  contributorInitials?: string;
+  /** Attribution when a representative photo comes from an external source. */
+  coverImageCredit?: string;
+  coverImageSourceUrl?: string;
   /** How many tickets have been minted here. Feeds 홈 recommendations */
   ticketCount: number;
   /** 인증 · 사진 · 리뷰 stats on 장소/상세 */

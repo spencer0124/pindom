@@ -13,8 +13,8 @@ import { ToolStrip, type ToolId } from './ToolStrip';
 const STICKERS = ['❤️', '⭐', '✨', '🌸', '😊', '🎵'];
 const RATIOS = [{ label: '원본', value: 0 }, { label: '1:1', value: 1 }, { label: '3:4', value: 3 / 4 }, { label: '4:3', value: 4 / 3 }];
 
-export function PhotoEditor({ uri, placeName, onBack, onNext }: {
-  uri: string; placeName: string; onBack: () => void; onNext: (uri: string) => void;
+export function PhotoEditor({ uri, placeName, testMode = false, onBack, onNext }: {
+  uri: string; placeName: string; testMode?: boolean; onBack: () => void; onNext: (uri: string) => void;
 }) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
@@ -85,7 +85,7 @@ export function PhotoEditor({ uri, placeName, onBack, onNext }: {
       });
       await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const composed = await captureRef(frame, { format: 'jpg', quality: 0.95 });
-      onNext(composed);
+      onNext(composed.startsWith('/') ? `file://${composed}` : composed);
     } catch {
       setError('편집한 사진을 저장하지 못했어요. 다시 시도해 주세요.');
     } finally {
@@ -125,7 +125,7 @@ export function PhotoEditor({ uri, placeName, onBack, onNext }: {
         <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>편집</Txt>
         {action(busy ? '저장 중…' : '다음', () => void next(), !image || busy)}
       </View>
-      <PhotoFrame ref={frame} placeName={placeName} date={date} style={styles.frame} aspectRatio={cropRatio}>
+      <PhotoFrame ref={frame} placeName={placeName} date={date} testMode={testMode} style={styles.frame} aspectRatio={cropRatio}>
         {(stage) => image ? <PhotoCanvas image={image} stage={stage} edits={edits} tool={tool} selected={selected}
           canvasRef={canvas} flattened={flattened} onFlattened={() => readyToCapture.current?.()} onChange={change} onTap={tap} /> : null}
       </PhotoFrame>

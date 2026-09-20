@@ -6,6 +6,8 @@ interface ConditionsNoteProps {
   /** From `place.radiusMeters` — per-place so it stays tunable without a deploy. */
   radiusMeters: number;
   artistName?: string;
+  hasCutout: boolean;
+  testMode?: boolean;
 }
 
 /**
@@ -22,21 +24,24 @@ interface ConditionsNoteProps {
  * contract makes it per-place. Every other number in the sentence is fixed by
  * the function.
  */
-export function ConditionsNote({ radiusMeters, artistName }: ConditionsNoteProps) {
+export function ConditionsNote({ radiusMeters, artistName, hasCutout, testMode = false }: ConditionsNoteProps) {
   const adaptive = useAdaptive();
 
-  const overlay =
-    artistName != null
-      ? `인증되면 ${artistName}의 원본 컷이 카메라에 겹쳐집니다`
-      : '인증되면 원본 컷이 카메라에 겹쳐집니다';
+  const capture = hasCutout
+    ? artistName != null
+      ? `인증되면 ${artistName}의 누끼와 함께 사진을 찍을 수 있어요`
+      : '인증되면 누끼와 함께 사진을 찍을 수 있어요'
+    : '인증되면 현장에서 사진을 찍고 티켓을 만들 수 있어요';
 
   return (
     <View style={styles.block}>
       <Txt typography="t6" fontWeight="bold" color={adaptive.grey900}>
-        인증 조건
+        {testMode ? '위치 제한 해제 · 카메라 테스트' : '인증 조건'}
       </Txt>
       <Txt typography="t7" color={adaptive.grey600}>
-        {`반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${overlay}`}
+        {testMode
+          ? '현재 위치와 관계없이 촬영할 수 있어요. 사진과 티켓에는 TEST가 표시되며, 티켓 발행 한도는 그대로 적용돼요.'
+          : `반경 ${radiusMeters}m 이내 · 이동속도 검증 통과 · 하루 1회 · ${capture}`}
       </Txt>
     </View>
   );

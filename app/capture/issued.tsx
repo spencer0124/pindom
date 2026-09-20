@@ -89,6 +89,7 @@ export default function IssuedScreen() {
               subtitle={subtitle}
               serial={ticket.serial}
               issuedAt={ticket.issuedAt}
+              testMode={ticket.testMode}
             />
           </HoloTilt>
         </Animated.View>

@@ -137,14 +137,15 @@ export function useVerification(placeId: string | undefined): VerificationView {
     }
     setState({ status: 'loading' });
 
-    const [placeResult, position] = await Promise.all([
-      placeRepository.getById(placeId),
-      readPosition(),
-    ]);
+    const placeResult = await placeRepository.getById(placeId);
     if (!placeResult.ok) {
       return setState({ status: 'error', message: failureMessage(placeResult.failure) });
     }
     const place = placeResult.data;
+    if (place.archived) {
+      return setState({ status: 'error', message: '운영이 종료된 촬영지예요. 다른 장소를 선택해 주세요.' });
+    }
+    const position = place.cameraTestEnabled ? null : await readPosition();
 
     const artistId =
       selectedArtistId != null && place.artistIds.includes(selectedArtistId)
@@ -158,7 +159,10 @@ export function useVerification(placeId: string | undefined): VerificationView {
     // 장소/상세 prints — unless the server has already measured this session,
     // in which case its figure is the one 인증 실패 just showed, and it stays.
     const remembered = useCaptureStore.getState().lastDistance;
-    if (remembered != null) {
+    if (place.cameraTestEnabled) {
+      setDistance(null);
+      setAccuracy(null);
+    } else if (remembered != null) {
       setDistance(remembered);
     } else if (position != null) {
       setDistance(Math.round(distanceMeters(position, { lat: place.lat, lng: place.lng })));
@@ -176,6 +180,9 @@ export function useVerification(placeId: string | undefined): VerificationView {
     if (grant != null) {
       setPhase('verified');
       setRevealed(2);
+    } else {
+      setPhase('idle');
+      setRevealed(0);
     }
   }, [grant]);
 
@@ -197,10 +204,30 @@ export function useVerification(placeId: string | undefined): VerificationView {
     if (state.status !== 'ready') return null;
     const { place } = state;
 
-    setPhase('reading');
+    setPhase(place.cameraTestEnabled ? 'judging' : 'reading');
     setResult(null);
     setRevealed(0);
     setError(null);
+
+    if (place.cameraTestEnabled) {
+      const verdict = await verificationRepository.startCameraTest(place.id);
+      if (!verdict.ok) {
+        setPhase('idle');
+        setError(failureMessage(verdict.failure));
+        return null;
+      }
+      const data = verdict.data;
+      if (!data.verified || !data.grant?.testMode) {
+        setPhase('idle');
+        setError('카메라 테스트를 열지 못했어요. 장소 상세에서 다시 시도해 주세요.');
+        return null;
+      }
+      setSessionId(data.sessionId);
+      setResult(data);
+      setGrant(data.grant);
+      setPhase('verified');
+      return data;
+    }
 
     let fix: Location.LocationObject;
     try {
@@ -257,6 +284,14 @@ export function useVerification(placeId: string | undefined): VerificationView {
     const data = verdict.data;
     setSessionId(data.sessionId);
     setResult(data);
+    // A flag enabled after the place loaded can also turn an ordinary reading into a test.
+    if (data.verified && data.grant?.testMode) {
+      setDistance(null);
+      setAccuracy(null);
+      setGrant(data.grant);
+      setPhase('verified');
+      return data;
+    }
     // `poor_accuracy` is the one verdict whose distance means nothing. The gate
     // fires before the radius is ever considered, and the server reports the
     // distance with the error radius already subtracted — so a reading too blurry

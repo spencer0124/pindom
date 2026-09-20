@@ -2,14 +2,17 @@ import type { AssistantAsk, AssistantReply, AssistantSuggestion } from '../lib/d
 import { mockCourses } from './courses';
 import { mockPlaces } from './places';
 
+const activePlaces = mockPlaces.filter((place) => !place.archived);
+const activeCourses = mockCourses.filter((course) => !course.archived);
+
 function mapFor(
   input: AssistantAsk,
   placeIds?: string[],
   suggestions: AssistantSuggestion[] = [],
 ): NonNullable<AssistantReply['map']> {
   const places = placeIds
-    ? placeIds.map((id) => mockPlaces.find((place) => place.id === id)).filter((place) => place != null)
-    : mockPlaces.filter((place) => input.artistId == null || place.artistIds.includes(input.artistId)).slice(0, 3);
+    ? placeIds.map((id) => activePlaces.find((place) => place.id === id)).filter((place) => place != null)
+    : activePlaces.filter((place) => input.artistId == null || place.artistIds.includes(input.artistId)).slice(0, 3);
   return {
     stops: places.map(({ id, name, region, lat, lng }) => ({ placeId: id, name, region, lat, lng })),
     suggestions,
@@ -51,8 +54,8 @@ function suggestionsNear(place: { name: string; region: string; lat: number; lng
  */
 export function mockAssistantReply(input: AssistantAsk): AssistantReply {
   const q = input.message;
-  const course = mockCourses.find((c) => c.artistId === input.artistId)
-    ?? (!input.artistId ? mockCourses[0] : undefined);
+  const course = activeCourses.find((c) => c.artistId === input.artistId)
+    ?? (!input.artistId ? activeCourses[0] : undefined);
 
   if (/동선|코스|1박/.test(q)) {
     if (course == null) {
@@ -73,8 +76,8 @@ export function mockAssistantReply(input: AssistantAsk): AssistantReply {
   }
   if (/맛집|밥집|카페|먹/.test(q)) {
     const anchor =
-      mockPlaces.find((place) => input.artistId == null || place.artistIds.includes(input.artistId))
-      ?? mockPlaces[0];
+      activePlaces.find((place) => input.artistId == null || place.artistIds.includes(input.artistId))
+      ?? activePlaces[0];
     return {
       text:
         '아침 일찍 여는 곳은 촬영지 반경 1km 안에 보통 두세 곳 있어요.\n' +

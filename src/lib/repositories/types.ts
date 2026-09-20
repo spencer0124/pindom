@@ -122,6 +122,8 @@ export interface PlaceRepository {
 }
 
 export interface VerificationRepository {
+  /** Request a camera-test grant without GPS; the server must enable the place. */
+  startCameraTest(placeId: string): Promise<Result<VerificationResult>>;
   /**
    * Submit one GPS reading and get the server's verdict.
    *

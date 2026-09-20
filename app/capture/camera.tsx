@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Txt, useAdaptive, useTheme } from '@/design-system';
+import { Button, SdsSpacing, Txt, useAdaptive, useTheme } from '@/design-system';
 import {
   CameraStage,
   PhotoFrame,
@@ -12,6 +12,8 @@ import {
   type CameraStageHandle,
 } from '@/features/capture';
 import { Shape } from '@/features/shared';
+import { DEFAULT_CUTOUT_POSE, type CutoutPose } from '@/features/capture/cutout-model';
+import { Slider } from '@/features/capture/Slider';
 
 /** 1a's `fadeUp .4s both` on the 인증 완료 chip: 14px up from below, CSS `ease`. */
 const chipRise = FadeInDown.duration(400)
@@ -29,6 +31,12 @@ export default function CameraScreen() {
 
   const stage = useRef<CameraStageHandle>(null);
   const [shooting, setShooting] = useState(false);
+  const [cutoutEnabled, setCutoutEnabled] = useState(true);
+  const [cutoutPose, setCutoutPose] = useState<CutoutPose>(DEFAULT_CUTOUT_POSE);
+  useEffect(() => {
+    setCutoutEnabled(true);
+    setCutoutPose(DEFAULT_CUTOUT_POSE);
+  }, [place?.id]);
   const focused = useIsFocused();
   const [active, setActive] = useState(AppState.currentState === 'active');
   useEffect(() => {
@@ -42,7 +50,7 @@ export default function CameraScreen() {
   // switch with a replace to 지도. An unfocused screen is popped, not redirected.
   useFocusEffect(
     useCallback(() => {
-      if (grant == null || place == null) {
+      if (grant == null || grant.expiresAt.getTime() <= Date.now() || place == null || place.archived) {
         router.replace(place != null ? (`/verify/gps?placeId=${place.id}` as never) : ('/map' as never));
       }
     }, [grant, place]),
@@ -81,21 +89,44 @@ export default function CameraScreen() {
             </Txt>
           </View>
           <Txt typography="st13" fontWeight="bold" color={adaptive.grey900}>
-            GPS 인증 완료 · 촬영 준비
+            {grant?.testMode ? '위치 제한 해제 · 카메라 테스트' : 'GPS 인증 완료 · 촬영 준비'}
           </Txt>
         </Animated.View>
       </SafeAreaView>
 
-      <PhotoFrame placeName={place.name} date={now} style={styles.frame} aspectRatio={3 / 4}>
-        {() => focused && active ? <CameraStage ref={stage} /> : null}
+      <PhotoFrame placeName={place.name} date={now} testMode={grant?.testMode} style={styles.frame} aspectRatio={3 / 4}>
+        {() => focused && active ? <CameraStage ref={stage} previewImageUrl={place.coverImageUrl}
+          cutout={place.cutoutImageUrl && cutoutEnabled ? { uri: place.cutoutImageUrl, aspectRatio: place.cutoutAspectRatio ?? 0.5, pose: cutoutPose } : undefined}
+          onCutoutChange={setCutoutPose} /> : null}
       </PhotoFrame>
 
       <SafeAreaView
         edges={['bottom']}
         style={[styles.bar, { backgroundColor: adaptive.background, borderTopColor: adaptive.grey200 }]}
       >
+        {place.cutoutImageUrl && <View style={styles.cutoutControls} pointerEvents={shooting ? 'none' : 'auto'}>
+          <View style={styles.cutoutActions}>
+            <Button size="medium" style={cutoutEnabled ? 'weak' : 'outline'}
+              accessibilityState={{ selected: cutoutEnabled }}
+              onPress={() => setCutoutEnabled((value) => !value)} disabled={shooting}>
+              {cutoutEnabled ? '누끼 켜짐' : '누끼 꺼짐'}
+            </Button>
+            <Button size="medium" style="outline" disabled={!cutoutEnabled || shooting}
+              onPress={() => setCutoutPose((pose) => ({ ...pose, mirrored: !pose.mirrored }))}>좌우 반전</Button>
+            <Button size="medium" style="outline" disabled={!cutoutEnabled || shooting}
+              onPress={() => setCutoutPose(DEFAULT_CUTOUT_POSE)}>초기화</Button>
+          </View>
+          {cutoutEnabled && <>
+            <View style={styles.cutoutScale}>
+              <Txt typography="st13" color={adaptive.grey600}>누끼 크기</Txt>
+              <Slider accessibilityLabel="누끼 크기" value={Math.round(cutoutPose.height * 100)} min={20} max={95}
+                onChange={(height) => setCutoutPose((pose) => ({ ...pose, height: height / 100 }))} />
+            </View>
+            <Txt typography="st13" color={adaptive.grey600}>누끼를 드래그해 옮기면, 보이는 구도대로 함께 저장돼요.</Txt>
+          </>}
+        </View>}
         <View style={styles.shutterRow}>
-          <Pressable onPress={() => router.back()} accessibilityRole="button" style={styles.side}>
+          <Pressable onPress={() => router.back()} disabled={shooting} accessibilityRole="button" style={styles.side}>
             <Txt typography="t7" fontWeight="medium" color={adaptive.grey600}>
               취소
             </Txt>
@@ -104,7 +135,8 @@ export default function CameraScreen() {
             onPress={shoot}
             disabled={shooting}
             accessibilityRole="button"
-            accessibilityLabel="촬영"
+            accessibilityLabel={shooting ? '사진 저장 중' : '촬영'}
+            accessibilityState={{ disabled: shooting, busy: shooting }}
             style={[
               styles.shutter,
               { backgroundColor: token.accent.fillColor, borderColor: adaptive.grey900 },
@@ -160,6 +192,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 8,
   },
+  cutoutControls: { gap: SdsSpacing.xs },
+  cutoutActions: { flexDirection: 'row', flexWrap: 'wrap', gap: SdsSpacing.sm },
+  cutoutScale: { flexDirection: 'row', alignItems: 'center', gap: SdsSpacing.base, paddingRight: SdsSpacing.sm },
   side: {
     width: 70,
   },

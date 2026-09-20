@@ -3,7 +3,7 @@ title: Screen Inventory
 type: reference
 status: accepted
 owner: zoyoong124@gmail.com
-last-updated: 2026-09-07
+last-updated: 2026-09-20
 audience: internal
 ---
 
@@ -48,23 +48,24 @@ profile, language and vault sit at the root rather than under `/my`.
 | `artistSearch` | 최애 찾기 | — | `/artist/search` | **built** — a follow selects the 최애 |
 | `home` | 홈 | `33:2617` | `/(tabs)/index` | **built** — the reference screen; match it |
 | `map` | 지도 | `33:2460` | `/(tabs)/map` | **built** — pins + 촬영지 목록; needs a Naver client id |
-| `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — with 갤러리 and 촬영 팁 |
-| `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — `1b`-A 레이더; the verdict is the server's |
+| `place` | 장소/상세 | `33:2381` | `/place/[id]` | **built** — 갤러리·촬영 팁; archived places retain history and disable capture; server-enabled camera test entry |
+| `verify` | GPS인증 | `33:2330`, `33:2856` | `/verify/gps` | **built** — server verdict; server-enabled camera tests skip GPS and show no location verdict |
 | `fail` | 인증 실패 | `33:2293` | `/verify/failed` | **built** — four reasons onto `1a`'s two kinds |
-| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; 0.5× on supported iOS devices; no placeholder silhouette |
-| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export |
+| `camera` | 카메라 | `33:2230` | `/capture/camera` | **built** — normal 1×; supported iOS 0.5×; camera-test status and TEST photo stamp |
+| `edit` | 편집 | `33:2166` | `/capture/edit` | **built** — pixel mosaic, stickers, ratio/zoom/pan crop, undo and composed export preserving TEST |
 | `publish` | 공개설정 | `33:2120` | `/capture/visibility` | **built** — no caption field in the contract |
-| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with a real Code 128 |
-| `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles |
+| `issued` | 티켓 발행 | `33:2072` | `/capture/issued` | **built** — `TicketCard` with Code 128; test tickets carry TEST |
+| `collection` | 컬렉션 | `33:1961` | `/(tabs)/tickets` | **built** — balance, tier gauge, ticket tiles with TEST markers |
 | `raffle` | 응모 | `33:1871` | `/raffle/[id]` | **built** — every open raffle, `[id]` selected |
-| `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — the 반권 mechanic; one `enterRaffle` at the end |
+| `tear` | 티켓 절취 | — | `/raffle/tear` | **built** — 반권 mechanic preserving TEST; one `enterRaffle` at the end |
 | `done` | 응모완료 | `33:1830` | `/raffle/done` | **built** — torn halves, entry number |
 | `community` | 커뮤니티 | `33:1717`, `33:2922` | `/(tabs)/community` | **built** — 자유게시판 pinned first, then per-artist boards; a paged feed; no 전체 |
 | `write` | 글쓰기 | `33:1686` | `/post/write` | **built** — the pin is the newest ticket |
 | `chat` | Pindom AI | — | `/chat` | **built** — against a fixture; the model call is the backend's, see below |
 | `course` | 추천 코스 | — | `/course` | **built** — from `chat`'s card and 홈's 지역 코스 |
-| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
+| `my` | 마이페이지 | `33:1597` | `/(tabs)/my` | **built** — no theme row; issue/place counts include tests; 로그아웃 lands on 온보딩; 차단한 사용자·응모 공식 규정·문의하기·개인정보처리방침·회원 탈퇴 added for App Store review |
 | `profile` | 프로필 편집 | — | `/profile` | **built** — the four client-writable fields |
+| — | 공개 프로필 | — | `/profile/[id]` | **built** — public ticket projection preserves TEST; owner can also see private cuts; neutral issue/place counts |
 | `language` | 언어 | — | `/language` | **built** — ko · en |
 | `vault` | 보관함 | — | `/vault` | **built** — private tickets, 공개 전환 per row |
 | — | 차단한 사용자 | — | `/blocked` | **built** — App Store 1.2. Not the prototype's; nicknames are remembered locally because other users' documents are unreadable |

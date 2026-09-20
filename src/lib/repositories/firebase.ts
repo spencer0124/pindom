@@ -212,6 +212,11 @@ function toAssistantMap(d: DocData): AssistantMap | null {
 function toPlace(id: string, d: DocData): Place {
   const at = `places/${id}`;
   const { lat, lng } = geo(d, 'location', at);
+  const cutoutImageUrl = optStr(d, 'cutoutImageUrl');
+  const cutoutAspectRatio = optNum(d, 'cutoutAspectRatio');
+  const contributorInitials = optStr(d, 'contributorInitials');
+  const coverImageCredit = optStr(d, 'coverImageCredit');
+  const coverImageSourceUrl = optStr(d, 'coverImageSourceUrl');
   return {
     id,
     // A 촬영지 name is **not** translated, on purpose. 언어 says so in as many
@@ -231,7 +236,14 @@ function toPlace(id: string, d: DocData): Place {
     lat,
     lng,
     radiusMeters: optNum(d, 'radiusMeters') ?? 50,
+    archived: d.archived === true,
+    cameraTestEnabled: d.cameraTestEnabled === true,
     coverImageUrl: str(d, 'coverImageUrl', at),
+    ...(cutoutImageUrl && { cutoutImageUrl }),
+    ...(cutoutAspectRatio != null && Number.isFinite(cutoutAspectRatio) && cutoutAspectRatio > 0 && { cutoutAspectRatio }),
+    ...(contributorInitials && { contributorInitials }),
+    ...(coverImageCredit && { coverImageCredit }),
+    ...(coverImageSourceUrl && { coverImageSourceUrl }),
     ticketCount: num(d, 'ticketCount', at),
     verifyCount: num(d, 'verifyCount', at),
     photoCount: num(d, 'photoCount', at),
@@ -285,6 +297,7 @@ function toTicket(id: string, d: DocData): Ticket {
     visibility: oneOf(d.visibility, ['public', 'private'] as const, 'private'),
     issuedAt: date(d, 'issuedAt', at),
     spent: bool(d, 'spent'),
+    testMode: d.testMode === true,
     ...(spentOnEntryId && { spentOnEntryId }),
   };
 }
@@ -345,6 +358,40 @@ function toArtist(id: string, d: DocData): Artist {
   };
 }
 
+function toVerificationResult(d: DocData): VerificationResult {
+  const grant = d.grant as { token?: string; expiresAt?: string; testMode?: boolean } | undefined;
+  const result: VerificationResult = {
+    sessionId: String(d.sessionId ?? ''),
+    verified: d.verified === true,
+    distanceMeters: Number(d.distanceMeters ?? 0),
+    requiredRadiusMeters: Number(d.requiredRadiusMeters ?? 50),
+    accuracyMeters: Number(d.accuracyMeters ?? 0),
+    ...(typeof d.reason === 'string' && {
+      // Keep this list in step with `VerificationFailureReason`. A reason the
+      // server sends but this array omits does not throw — it silently becomes
+      // the fallback, and 인증 실패 then explains the wrong failure.
+      reason: oneOf(
+        d.reason,
+        [
+          'out_of_radius',
+          'implausible_speed',
+          'poor_accuracy',
+          'mock_location',
+        ] as const,
+        'out_of_radius',
+      ),
+    }),
+    ...(grant?.token && {
+      grant: {
+        token: grant.token,
+        expiresAt: isoDate(grant.expiresAt),
+        testMode: grant.testMode === true,
+      },
+    }),
+  };
+  return result;
+}
+
 function toCourse(id: string, d: DocData): Course {
   const at = `courses/${id}`;
   return {
@@ -353,6 +400,7 @@ function toCourse(id: string, d: DocData): Course {
     name: localized(d, 'name', at),
     description: localized(d, 'description', at),
     placeIds: strList(d, 'placeIds'),
+    archived: d.archived === true,
     placeCount: num(d, 'placeCount', at),
   };
 }
@@ -494,7 +542,7 @@ export const firebaseRepositories: Repositories = {
         const snap = await getDocs(
           query(collection(db(), 'courses'), where('artistId', '==', artistId)),
         );
-        return snap.docs.map((d_) => toCourse(d_.id, d_.data() as DocData));
+        return snap.docs.map((d_) => toCourse(d_.id, d_.data() as DocData)).filter((course) => !course.archived);
       }),
 
     route: (placeIds, origin) =>
@@ -632,6 +680,7 @@ export const firebaseRepositories: Repositories = {
         const snap = await getDocs(collection(db(), 'places'));
         return snap.docs
           .map((doc_) => toPlace(doc_.id, doc_.data() as DocData))
+          .filter((place) => !place.archived)
           .map<PlaceWithDistance>((p) => ({
             ...p,
             distanceMeters: distanceMeters({ lat, lng }, p),
@@ -722,6 +771,13 @@ export const firebaseRepositories: Repositories = {
   },
 
   verification: {
+    startCameraTest: (placeId) =>
+      attempt(async () => {
+        const call = httpsCallable(fns(), 'verifyLocation');
+        const res = await call({ placeId, cameraTest: true });
+        return toVerificationResult(res.data as DocData);
+      }),
+
     /**
      * A rejection resolves as `Result.ok` with `verified: false`. Only a
      * transport or auth fault becomes `Result.error` — see the contract.
@@ -738,37 +794,7 @@ export const firebaseRepositories: Repositories = {
           isMock: reading.isMock,
           ...(reading.sessionId && { sessionId: reading.sessionId }),
         });
-        const d = res.data as DocData;
-        const grant = d.grant as { token?: string; expiresAt?: string } | undefined;
-        const result: VerificationResult = {
-          sessionId: String(d.sessionId ?? ''),
-          verified: d.verified === true,
-          distanceMeters: Number(d.distanceMeters ?? 0),
-          requiredRadiusMeters: Number(d.requiredRadiusMeters ?? 50),
-          accuracyMeters: Number(d.accuracyMeters ?? 0),
-          ...(typeof d.reason === 'string' && {
-            // Keep this list in step with `VerificationFailureReason`. A reason the
-            // server sends but this array omits does not throw — it silently becomes
-            // the fallback, and 인증 실패 then explains the wrong failure.
-            reason: oneOf(
-              d.reason,
-              [
-                'out_of_radius',
-                'implausible_speed',
-                'poor_accuracy',
-                'mock_location',
-              ] as const,
-              'out_of_radius',
-            ),
-          }),
-          ...(grant?.token && {
-            grant: {
-              token: grant.token,
-              expiresAt: isoDate(grant.expiresAt),
-            },
-          }),
-        };
-        return result;
+        return toVerificationResult(res.data as DocData);
       }),
   },
 
@@ -1014,6 +1040,7 @@ export const firebaseRepositories: Repositories = {
             placeName: String(t.placeName ?? ''),
             photoUrl: String(t.photoUrl ?? ''),
             issuedAt: new Date(String(t.issuedAt ?? '')),
+            testMode: t.testMode === true,
             ...(typeof t.artistId === 'string' && { artistId: t.artistId }),
           })),
         };

@@ -31,12 +31,18 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
 
   return (
     <View style={[styles.hero, { backgroundColor: adaptive.background }]}>
-      <Image
-        source={{ uri: place.coverImageUrl }}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-        accessibilityIgnoresInvertColors
-      />
+      {place.coverImageUrl ? (
+        <Image
+          source={{ uri: place.coverImageUrl }}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+        />
+      ) : (
+        <View style={[StyleSheet.absoluteFill, styles.placeholder]}>
+          <Txt typography="t6" color={adaptive.grey600}>장소 사진 준비 중</Txt>
+        </View>
+      )}
 
       <SafeAreaView edges={['top']} style={styles.chrome} pointerEvents="box-none">
         <Pressable
@@ -71,6 +77,10 @@ export function PlaceHero({ place, artistName }: PlaceHeroProps) {
 const styles = StyleSheet.create({
   hero: {
     height: HERO_HEIGHT,
+  },
+  placeholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chrome: {
     paddingHorizontal: Shape.gutter,

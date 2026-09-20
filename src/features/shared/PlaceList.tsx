@@ -4,6 +4,7 @@ import { ListRow, SdsColors, Txt, useAdaptive, useTheme } from '@/design-system'
 import { formatDistance } from './formatDistance';
 import { Rule } from './Rule';
 import { workKindLabel } from './workKindLabel';
+import { PindomMark } from './PindomMark';
 
 // 1a's own thumbnail size. It is also the smallest square the 인증 완료 stamp
 // fits across on one line, which is why it is not smaller.
@@ -73,11 +74,17 @@ export function PlaceList({
               accessibilityLabel={place.name}
               left={
                 <View>
-                  <Image
-                    source={{ uri: place.coverImageUrl }}
-                    style={[styles.thumb, { backgroundColor: adaptive.background }]}
-                    accessibilityIgnoresInvertColors
-                  />
+                  {place.coverImageUrl ? (
+                    <Image
+                      source={{ uri: place.coverImageUrl }}
+                      style={[styles.thumb, { backgroundColor: adaptive.background }]}
+                      accessibilityIgnoresInvertColors
+                    />
+                  ) : (
+                    <View style={[styles.thumb, styles.placeholder, { backgroundColor: adaptive.background }]}>
+                      <PindomMark size={22} color={adaptive.grey400} />
+                    </View>
+                  )}
                   <View
                     style={[
                       styles.state,
@@ -157,6 +164,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
+  },
+  placeholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 14,
   },
   stack: {
     gap: 3,

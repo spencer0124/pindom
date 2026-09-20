@@ -64,8 +64,6 @@ export function usePlaceDetail(placeId: string | undefined) {
     }
     setState({ status: 'loading' });
 
-    const position = await readPosition();
-
     const [placeResult, galleryResult, reviewsResult, visitedPlaceIds] = await Promise.all([
       placeRepository.getById(placeId),
       placeRepository.gallery(placeId),
@@ -77,6 +75,7 @@ export function usePlaceDetail(placeId: string | undefined) {
       return setState({ status: 'error', message: failureMessage(placeResult.failure) });
     }
     const place = placeResult.data;
+    const position = place.cameraTestEnabled || place.archived ? null : await readPosition();
 
     const artistId =
       selectedArtistId != null && place.artistIds.includes(selectedArtistId)

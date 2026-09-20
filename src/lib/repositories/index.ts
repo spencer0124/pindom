@@ -83,6 +83,7 @@ export const placeRepository: PlaceRepository = {
 };
 
 export const verificationRepository: VerificationRepository = {
+  startCameraTest: async (placeId) => (await impl()).verification.startCameraTest(placeId),
   submitReading: async (reading) =>
     (await impl()).verification.submitReading(reading),
 };

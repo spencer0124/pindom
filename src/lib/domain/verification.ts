@@ -70,6 +70,8 @@ export interface VerificationGrant {
    */
   token: string;
   expiresAt: Date;
+  /** Set by the server when GPS checks were bypassed for a camera test. */
+  testMode?: boolean;
 }
 
 /**

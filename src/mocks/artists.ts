@@ -1,13 +1,15 @@
 import type { Artist } from '../lib/domain';
+import { gwandegongArtist } from './gwandegong';
+import { mockPlaces } from './places';
 
 /**
  * 최애 fixtures.
  *
- * Fictional groups on purpose — the prototype uses silhouette placeholders for people and
- * names no real artist, and seeding a real one into a public repo invites a rights problem
- * the product does not need.
+ * The user-supplied 관데공 collection comes first. The remaining groups are
+ * fictional fixtures retained for historical tickets and community boards.
  */
-export const mockArtists: Artist[] = [
+const artists: Artist[] = [
+  gwandegongArtist,
   {
     id: 'artist-lumina',
     name: '루미나',
@@ -21,8 +23,6 @@ export const mockArtists: Artist[] = [
     name: '에코라인',
     initial: 'EL',
     imageUrl: 'https://picsum.photos/seed/echoline/300/300',
-    // Counted from `places.ts` rather than guessed — this read 2 while only one
-    // 촬영지 named 에코라인, and 홈 prints the number next to the list.
     placeCount: 1,
     accentColor: '#FF5E00',
   },
@@ -33,3 +33,8 @@ export const mockArtists: Artist[] = [
     placeCount: 1,
   },
 ];
+
+export const mockArtists: Artist[] = artists.map((artist) => ({
+  ...artist,
+  placeCount: mockPlaces.filter((place) => !place.archived && place.artistIds.includes(artist.id)).length,
+}));

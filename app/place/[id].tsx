@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -90,6 +90,24 @@ export default function PlaceDetailScreen() {
           <Txt typography="t6" color={adaptive.grey700} style={styles.description}>
             {place.description}
           </Txt>
+          {place.contributorInitials && (
+            <Txt typography="t7" color={adaptive.grey600} style={styles.work}>
+              제공 · {place.contributorInitials}
+            </Txt>
+          )}
+          {place.coverImageCredit && (
+            place.coverImageSourceUrl ? (
+              <Link href={place.coverImageSourceUrl as Href} asChild>
+                <Txt typography="t7" color={adaptive.grey600} style={styles.source}>
+                  {place.coverImageCredit} ↗
+                </Txt>
+              </Link>
+            ) : (
+              <Txt typography="t7" color={adaptive.grey600} style={styles.work}>
+                {place.coverImageCredit}
+              </Txt>
+            )
+          )}
         </View>
 
         <Rule />
@@ -119,7 +137,14 @@ export default function PlaceDetailScreen() {
 
         <Rule />
 
-        <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name} />
+        {place.archived ? (
+          <View style={styles.title}>
+            <Txt typography="t7" color={adaptive.grey600}>운영이 종료된 촬영지예요. 기존 기록은 계속 볼 수 있어요.</Txt>
+          </View>
+        ) : (
+          <ConditionsNote radiusMeters={place.radiusMeters} artistName={artist?.name}
+            hasCutout={Boolean(place.cutoutImageUrl)} testMode={place.cameraTestEnabled} />
+        )}
       </ScrollView>
 
       <SafeAreaView
@@ -133,9 +158,10 @@ export default function PlaceDetailScreen() {
           size="large"
           type="primary"
           display="block"
+          disabled={place.archived}
           onPress={() => router.push(`/verify/gps?placeId=${place.id}` as never)}
         >
-          GPS 인증하기
+          {place.archived ? '운영 종료' : place.cameraTestEnabled ? '카메라 테스트' : 'GPS 인증하기'}
         </Button>
       </SafeAreaView>
     </View>
@@ -162,6 +188,10 @@ const styles = StyleSheet.create({
   },
   description: {
     marginTop: 10,
+  },
+  source: {
+    marginTop: 8,
+    textDecorationLine: 'underline',
   },
   section: {
     gap: 2,

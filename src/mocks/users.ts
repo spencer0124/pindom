@@ -6,7 +6,7 @@ export const mockUser: User = {
   nickname: '도민',
   avatarUrl: 'https://picsum.photos/seed/pindomuser/200/200',
   bio: '주말마다 촬영지 다니는 사람',
-  followedArtistIds: ['artist-lumina', 'artist-echoline'],
+  followedArtistIds: ['artist-gwandegong', 'artist-lumina', 'artist-echoline'],
   blockedUserIds: [],
   ticketBalance: 4,
   ticketsIssued: 6,

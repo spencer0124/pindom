@@ -1,20 +1,34 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Image } from 'expo-image';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, PixelRatio, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { Txt, useAdaptive, useTheme } from '@/design-system';
 import { AppConfig } from '@/lib/config';
 import { cameraLensOptions, preferredLens } from './camera-lenses';
+import { CutoutOverlay } from './CutoutOverlay';
+import type { CutoutDraft, CutoutPose } from './cutout-model';
 
 export interface CameraStageHandle { capture: () => Promise<string | null> }
+interface CameraStageProps {
+  cutout?: CutoutDraft;
+  onCutoutChange: (pose: CutoutPose) => void;
+  previewImageUrl?: string;
+}
 // Keep native-discovered names intact; see camera-lenses for the version-specific contract.
 
 /** WideAngle is Apple's name for the normal 1× camera, not the 0.5× lens. */
-export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_, ref) {
+export const CameraStage = forwardRef<CameraStageHandle, CameraStageProps>(function CameraStage({ cutout, onCutoutChange, previewImageUrl }, ref) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
   const camera = useRef<CameraView>(null);
   const root = useRef<View>(null);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [frozen, setFrozen] = useState<string | null>(null);
+  const [capturing, setCapturing] = useState(false);
+  const [loadedCutout, setLoadedCutout] = useState<string | null>(null);
+  const [loadedPreview, setLoadedPreview] = useState<string | null>(null);
+  const pendingImage = useRef<{ resolve: () => void; reject: (error: Error) => void } | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [available, setAvailable] = useState<boolean | null>(Platform.OS === 'web' ? null : true);
   const [ready, setReady] = useState(false);
@@ -23,6 +37,10 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
   const mockCamera = AppConfig.useMocks && !AppConfig.isProduction;
+
+  useEffect(() => () => { pendingImage.current?.reject(new Error('camera closed')); }, []);
+  useEffect(() => { setLoadedCutout(null); }, [cutout?.uri]);
+  useEffect(() => { setLoadedPreview(null); }, [previewImageUrl]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -38,17 +56,48 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
     capture: async () => {
       if (busy.current) return null;
       busy.current = true;
+      setCapturing(true);
       setError(null);
       try {
-        if (ready && camera.current) {
-          const shot = await camera.current.takePictureAsync({ quality: 0.9, shutterSound: false });
-          if (shot?.uri) return shot.uri;
+        if (cutout && loadedCutout !== cutout.uri) {
+          setError('누끼를 불러오는 중이에요. 잠시 후 촬영하거나 누끼를 꺼 주세요.');
+          return null;
         }
-        if (mockCamera && root.current) return await captureRef(root, { format: 'jpg', quality: 0.9 });
-        setError('카메라가 준비되지 않았어요. 권한을 확인하고 다시 시도해 주세요.');
+        if (!mockCamera && ready && camera.current) {
+          const shot = await camera.current.takePictureAsync({ quality: 0.9, shutterSound: false });
+          if (!shot?.uri) throw new Error('empty camera photo');
+          // Native camera textures are not captured by view-shot reliably.
+          // Replace the preview with the real shot before exporting the same
+          // cover crop and PNG overlay the user positioned on screen.
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('photo load timeout')), 10_000);
+            pendingImage.current = {
+              resolve: () => { clearTimeout(timeout); resolve(); },
+              reject: (cause) => { clearTimeout(timeout); reject(cause); },
+            };
+            setFrozen(shot.uri);
+          });
+        } else if (!mockCamera) {
+          setError('카메라가 준비되지 않았어요. 권한을 확인하고 다시 시도해 주세요.');
+          return null;
+        } else if (previewImageUrl && loadedPreview !== previewImageUrl) {
+          setError('미리보기 사진을 불러오는 중이에요. 잠시 후 다시 촬영해 주세요.');
+          return null;
+        }
+        await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        if (root.current && viewport.width > 0) {
+          // iOS view-shot sizes are points; Android sizes are physical pixels.
+          const width = 1200 / (Platform.OS === 'ios' ? PixelRatio.get() : 1);
+          const uri = await captureRef(root, { format: 'jpg', quality: 0.95, width, height: width * viewport.height / viewport.width });
+          // iOS view-shot returns a bare path; Skia requires a file URL.
+          return uri.startsWith('/') ? `file://${uri}` : uri;
+        }
       } catch {
         setError('사진을 촬영하지 못했어요. 다시 시도해 주세요.');
       } finally {
+        pendingImage.current = null;
+        setFrozen(null);
+        setCapturing(false);
         busy.current = false;
       }
       return null;
@@ -73,16 +122,31 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
   };
 
   return (
-    <View ref={root} collapsable={false} style={[StyleSheet.absoluteFill, { backgroundColor: adaptive.greyBackground }]}>
-      {available && permission?.granted && (
+    <View style={StyleSheet.absoluteFill}>
+      {/* Keep camera textures OUTSIDE the snapshot root: Android view-shot's
+          TextureView pass can otherwise draw them over the PNG overlay. */}
+      {!mockCamera && available && permission?.granted && (
         <CameraView key={lens} ref={camera} style={StyleSheet.absoluteFill} facing="back" mute zoom={0}
           selectedLens={Platform.OS === 'ios' ? lens : undefined} ratio="4:3"
           onCameraReady={() => { setReady(true); setError(null); }}
           onMountError={() => { setReady(false); setError('카메라를 열지 못했어요. 촬영 화면을 다시 열어 주세요.'); }}
           onAvailableLensesChanged={({ lenses: next }) => discoverLenses(next)} />
       )}
+      <View ref={root} collapsable={false} onLayout={(event) => setViewport(event.nativeEvent.layout)}
+        style={[StyleSheet.absoluteFill, { backgroundColor: mockCamera || frozen ? adaptive.greyBackground : 'transparent' }]}>
+      {mockCamera && previewImageUrl && <Image source={previewImageUrl} contentFit="cover" transition={0}
+        style={StyleSheet.absoluteFill} onDisplay={() => setLoadedPreview(previewImageUrl)}
+        onError={() => setError('미리보기 사진을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')} />}
+      {frozen && <Image key={frozen} source={frozen} contentFit="cover" transition={0} style={StyleSheet.absoluteFill}
+        onDisplay={() => pendingImage.current?.resolve()} onError={() => pendingImage.current?.reject(new Error('photo load failed'))} />}
+      {cutout && viewport.width > 0 && <CutoutOverlay cutout={cutout} viewport={viewport} disabled={capturing}
+        onChange={onCutoutChange} onLoad={() => setLoadedCutout(cutout.uri)}
+        onError={() => { setLoadedCutout(null); setError('누끼를 불러오지 못했어요. 인터넷 연결을 확인하거나 누끼를 꺼 주세요.'); }} />}
+      </View>
       <View style={styles.top}>
-        {available === false ? (
+        {mockCamera ? (
+          <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>샘플 사진으로 촬영 연습 중</Txt>
+        ) : available === false ? (
           <Txt typography="st13" color={adaptive.grey900}>이 기기에는 카메라가 없어요</Txt>
         ) : !permission?.granted ? (
           <Pressable onPress={enableCamera} accessibilityRole="button" style={[styles.permission, { backgroundColor: adaptive.background }]}>
@@ -91,7 +155,7 @@ export const CameraStage = forwardRef<CameraStageHandle>(function CameraStage(_,
         ) : null}
         {error && <Txt typography="st13" color={adaptive.grey900} style={{ backgroundColor: adaptive.background }}>{error}</Txt>}
       </View>
-      {permission?.granted && available && (
+      {!mockCamera && permission?.granted && available && (
         <View style={styles.lenses}>
           <ScrollView horizontal contentContainerStyle={styles.lensRow} showsHorizontalScrollIndicator={false}>
             {options.map((option) => (
