@@ -135,6 +135,8 @@ export interface VerificationRepository {
 }
 
 export interface TicketRepository {
+  /** Delete the photo while retaining the earned ticket and entry history. */
+  deletePhoto(ticketId: string): Promise<Result<void>>;
   /** 컬렉션 — public tickets. */
   listMine(): Promise<Result<Ticket[]>>;
   /** 보관함 — the same user's private tickets. Visibility is the only difference. */

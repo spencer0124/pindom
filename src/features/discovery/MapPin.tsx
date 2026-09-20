@@ -2,48 +2,24 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { SdsColors, Txt, useAdaptive, useTheme } from '@/design-system';
 import { readableOn } from '@/design-system/utils/color';
-import { Shape } from '@/features/shared';
 
 /** The pushpin graphic's box: head and collar on top, needle down to its point. */
 const PIN_W = 24;
 const PIN_H = 34;
 /** A recommendation's dot. Smaller than a 촬영지 pin: it is not a place you verify at. */
 const DOT = 12;
-/** Between the pin and its caption chip. */
-const GAP = 3;
-/** The caption chip's inner padding. */
-const CHIP_PAD_X = 5;
-const CHIP_PAD_Y = 3;
-/** `t7`'s line height plus the chip's vertical padding. */
-const CHIP_HEIGHT = 19.5 + CHIP_PAD_Y * 2;
-
-/**
- * The box a pin occupies, so the stand-in can place it and a tile marker can
- * size itself before the SDK rasterises the child. Wide enough for a two-word
- * region (`강원 강릉`) at `t7`; the chip centres inside it.
- */
-export const MAP_PIN_WIDTH = 96;
-export const MAP_PIN_HEIGHT = PIN_H + GAP + CHIP_HEIGHT;
-
-/**
- * Where the pushpin's needle point sits in the pin's box, as the SDK's anchor
- * fractions: centred horizontally, at the bottom of the graphic. The default
- * anchor is the box's bottom — the caption chip's underside — which planted
- * every pin below its coordinate and let it drift against the tiles on zoom.
- */
-export const MAP_PIN_ANCHOR = { x: 0.5, y: PIN_H / MAP_PIN_HEIGHT };
-
-/**
- * A poi's dot sits centred in the graphic box, not at its foot, so its anchor
- * is the dot's own centre — with the pin anchor it floated half the graphic
- * above its coordinate and slid against the tiles on zoom.
- */
-export const MAP_POI_ANCHOR = { x: 0.5, y: PIN_H / 2 / MAP_PIN_HEIGHT };
+/** Label-free marker bounds and geographic anchors. */
+export const MAP_PIN_WIDTH = PIN_W;
+export const MAP_PIN_HEIGHT = PIN_H;
+export const MAP_PIN_ANCHOR = { x: 0.5, y: 1 };
+export const MAP_POI_ANCHOR = { x: 0.5, y: 0.5 };
+/** Switch at neighbourhood scale; native overlays handle the zoom boundary. */
+export const MAP_PIN_MIN_ZOOM = 12;
 
 interface MapPinProps {
   /** A verified place takes the accent and a `✓`; an unverified one is surface and rule. */
   visited: boolean;
-  /** The caption under the pin — the place's region (fidelity decision 11). */
+  /** Actual place name, retained for accessibility. Native captions render it at close zoom. */
   label: string;
   /**
    * A stop's 1-based place in a course's walk order. Set, the head carries the
@@ -57,6 +33,7 @@ interface MapPinProps {
    * 들를 곳" — the two never carry the same weight on one map.
    */
   poi?: boolean;
+  compact?: boolean;
 }
 
 /**
@@ -91,7 +68,7 @@ function PushPin({ fill, stroke, needle }: { fill: string; stroke?: string; need
  * screen draws pins (fidelity decision 8). It is used twice: absolutely placed
  * on the stand-in canvas, and as the custom child of a tile marker.
  */
-export function MapPin({ visited, label, order, poi }: MapPinProps) {
+export function MapPin({ visited, label, order, poi, compact }: MapPinProps) {
   const adaptive = useAdaptive();
   const { token } = useTheme();
 
@@ -105,13 +82,13 @@ export function MapPin({ visited, label, order, poi }: MapPinProps) {
   const badgeInk = readableOn(fill, { onLight: SdsColors.ticketInk, onDark: SdsColors.ink });
 
   return (
-    <View style={styles.pin} pointerEvents="none">
-      {poi ? (
+    <View style={styles.pin} pointerEvents="none" accessibilityLabel={label}>
+      {poi || compact ? (
         <View style={styles.graphic}>
           <View
             style={[
               styles.dot,
-              { backgroundColor: adaptive.background, borderColor: adaptive.grey600 },
+              { backgroundColor: poi ? adaptive.background : token.accent.fillColor, borderColor: poi ? adaptive.grey600 : adaptive.background },
             ]}
           />
         </View>
@@ -136,11 +113,7 @@ export function MapPin({ visited, label, order, poi }: MapPinProps) {
           </View>
         </View>
       )}
-      <View style={[styles.chip, { backgroundColor: adaptive.background }]}>
-        <Txt typography="t7" fontWeight="semibold" color={adaptive.grey900} numberOfLines={1}>
-          {label}
-        </Txt>
-      </View>
+
     </View>
   );
 }
@@ -150,7 +123,6 @@ const styles = StyleSheet.create({
     width: MAP_PIN_WIDTH,
     height: MAP_PIN_HEIGHT,
     alignItems: 'center',
-    gap: GAP,
   },
   graphic: {
     width: PIN_W,
@@ -173,11 +145,5 @@ const styles = StyleSheet.create({
     height: DOT,
     borderRadius: DOT / 2,
     borderWidth: 2,
-  },
-  chip: {
-    maxWidth: MAP_PIN_WIDTH,
-    paddingHorizontal: CHIP_PAD_X,
-    paddingVertical: CHIP_PAD_Y,
-    borderRadius: Shape.chipRadius,
   },
 });

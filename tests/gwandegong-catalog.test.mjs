@@ -3,16 +3,16 @@ import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 const text = readFileSync(new URL('../src/mocks/gwandegong-catalog.json', import.meta.url), 'utf8');
-const { artist, places } = JSON.parse(text);
+const { artists, places } = JSON.parse(text);
 
 describe('supplied Gwandegong catalog', () => {
   it('retains all 23 distinct pins and associates them with the searchable collection', () => {
-    assert.equal(artist.name, '관데공');
+    assert.deepEqual(artists.map((artist) => artist.name), ['HJ', 'SY', 'JW', 'MJ']);
     assert.equal(places.length, 23);
-    assert.equal(artist.placeCount, places.length);
+    assert.deepEqual(artists.map((artist) => artist.placeCount), [4, 3, 3, 13]);
     assert.equal(new Set(places.map((place) => place.id)).size, places.length);
     for (const place of places) {
-      assert.deepEqual(place.artistIds, [artist.id]);
+      assert.deepEqual(place.artistIds, ['artist-' + place.id.split('-')[2]]);
       assert.ok(Number.isFinite(place.lat) && Math.abs(place.lat) <= 90);
       assert.ok(Number.isFinite(place.lng) && Math.abs(place.lng) <= 180);
       assert.ok(place.lat !== 0 && place.lng !== 0, `${place.id}: real coordinates required`);
@@ -22,7 +22,7 @@ describe('supplied Gwandegong catalog', () => {
   });
 
   it('uses English initials for all contributors and public image URLs for cutouts', () => {
-    const initials = new Set(['YHJ', 'JSY', 'LJW', 'KMJ']);
+    const initials = new Set(['HJ', 'SY', 'JW', 'MJ']);
     assert.equal(new Set(places.map((place) => place.contributorInitials)).size, initials.size);
     assert.doesNotMatch(text, /\/Users\/|file:\/\/|sourceKey|Downloads/);
     for (const place of places) {

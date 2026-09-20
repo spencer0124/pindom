@@ -5,7 +5,7 @@ export const GAUGE_FIRST = 10;
 export const GAUGE_TOP = 20;
 
 export interface TierView {
-  /** 수집 중 · 10장부터 응모 가능 — the line over the gauge. */
+  /** 수집 중 · 응모는 상품별 티켓 수 확인 — the line over the gauge. */
   label: string;
   /** 7장 남음, or 최고 등급. */
   next: string;
@@ -26,17 +26,17 @@ export interface TierView {
 export function tierView(user: User): TierView {
   const n = user.ticketsIssued;
   if (n >= GAUGE_TOP) {
-    return { label: '20장 클럽 · 전체 응모 가능', next: '최고 등급', progress: 1 };
+    return { label: '20장 클럽 · 방문 기록 수집 중', next: '최고 등급', progress: 1 };
   }
   if (n >= GAUGE_FIRST) {
     return {
-      label: '10장 클럽 · 앨범/콘서트 응모 가능',
+      label: '10장 클럽 · 방문 기록 수집 중',
       next: `${GAUGE_TOP - n}장 남음`,
       progress: n / GAUGE_TOP,
     };
   }
   return {
-    label: '수집 중 · 10장부터 응모 가능',
+    label: '수집 중 · 응모는 상품별 티켓 수 확인',
     next: `${GAUGE_FIRST - n}장 남음`,
     progress: n / GAUGE_TOP,
   };

@@ -12,6 +12,8 @@ export interface Raffle {
   imageUrl: string;
   /** What the 잔여 티켓 충족 branch on 응모 compares the balance against */
   ticketCost: number;
+  /** Display order in the raffle catalog. */
+  order?: number;
   /** Drives 마감 임박 on 홈 */
   closesAt: Date;
   entryCount: number;

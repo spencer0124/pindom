@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { failureMessage } from '@/lib/api/failure-message';
 import type { Ticket } from '@/lib/domain';
@@ -22,6 +23,7 @@ type State =
  * back out of public view leaves nothing behind on 장소/상세.
  */
 export function useVault() {
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [state, setState] = useState<State>({ status: 'loading' });
 
   const load = useCallback(async () => {
@@ -29,7 +31,7 @@ export function useVault() {
     const [mine, vault] = await Promise.all([ticketRepository.listMine(), ticketRepository.listVault()]);
     if (!mine.ok) return setState({ status: 'error', message: failureMessage(mine.failure) });
     if (!vault.ok) return setState({ status: 'error', message: failureMessage(vault.failure) });
-    const tickets = [...mine.data, ...vault.data].sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
+    const tickets = [...mine.data, ...vault.data].filter((ticket) => !ticket.photoDeleted).sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
     setState({ status: 'ready', tickets });
   }, []);
 
@@ -52,5 +54,15 @@ export function useVault() {
     return result.ok;
   }, []);
 
-  return { state, reload: load, toggle };
+  const remove = useCallback(async (ticket: Ticket) => {
+    setBusyId(ticket.id);
+    const result = await ticketRepository.deletePhoto(ticket.id);
+    setBusyId(null);
+    if (result.ok) {
+      setState((current) => current.status === 'ready'
+        ? { ...current, tickets: current.tickets.filter((t) => t.id !== ticket.id) } : current);
+    } else Alert.alert('사진을 삭제하지 못했어요', failureMessage(result.failure));
+  }, []);
+
+  return { state, reload: load, toggle, remove, busyId };
 }

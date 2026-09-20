@@ -47,7 +47,7 @@ export function useRaffles() {
 
     const open = raffles.data
       .filter((r) => isEnterable(r))
-      .sort((a, b) => a.closesAt.getTime() - b.closesAt.getTime());
+      .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.closesAt.getTime() - b.closesAt.getTime());
     // Both visibilities, because the server spends from both. A list that failed
     // to load contributes nothing rather than failing the screen — the balance
     // above is the server's figure either way, and `enterRaffle` is the decision.

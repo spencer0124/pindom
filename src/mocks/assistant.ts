@@ -101,7 +101,7 @@ export function mockAssistantReply(input: AssistantAsk): AssistantReply {
         '같은 지역 촬영지를 하루에 묶어서 도는 게 가장 빨라요.\n' +
         '· 한 촬영지는 30일에 한 번만 발행돼요\n' +
         '· 지역 코스로 묶으면 하루에 2~3장까지 가능합니다\n' +
-        '· 20장을 채우면 팬사인회·굿즈 응모가 열려요',
+        '· 포토카드 1장, 앨범 3장, 사인 CD 5장, 팬사인회 8장, 콘서트 10장이 필요해요',
       map: mapFor(input),
     };
   }

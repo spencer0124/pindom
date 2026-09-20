@@ -61,8 +61,8 @@ export function useMapData(query: string, sort: MapSort = 'distance') {
     { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: Base }
   >({ status: 'loading' });
 
+  const reconcile = useDiscoveryStore((s) => s.reconcile);
   const selectedArtistId = useDiscoveryStore((s) => s.selectedArtistId);
-  const seed = useDiscoveryStore((s) => s.seed);
 
   const load = useCallback(async () => {
     setBase({ status: 'loading' });
@@ -72,7 +72,7 @@ export function useMapData(query: string, sort: MapSort = 'distance') {
 
     const [placesResult, artistsResult, visitedPlaceIds] = await Promise.all([
       placeRepository.listAll(origin.lat, origin.lng),
-      artistRepository.listMine(),
+      artistRepository.search(),
       readVisitedPlaceIds(),
     ]);
 
@@ -81,9 +81,7 @@ export function useMapData(query: string, sort: MapSort = 'distance') {
     if (!artistsResult.ok)
       return setBase({ status: 'error', message: failureMessage(artistsResult.failure) });
 
-    // Only matters when 지도 is the first Discovery screen opened; 홈 usually
-    // seeds this first, and `seed` will not overwrite a real selection.
-    seed(artistsResult.data[0]?.id ?? null);
+    reconcile(artistsResult.data.map((artist) => artist.id));
 
     setBase({
       status: 'ready',
@@ -95,7 +93,7 @@ export function useMapData(query: string, sort: MapSort = 'distance') {
         hasPosition: position != null,
       },
     });
-  }, [seed]);
+  }, [reconcile]);
 
   useEffect(() => {
     void load();
@@ -116,7 +114,7 @@ export function useMapData(query: string, sort: MapSort = 'distance') {
         ...base.data,
         selectedArtist,
         places: forArtist
-          .filter((p) => matches(p, query, selectedArtist?.name))
+          .filter((p) => matches(p, query, base.data.artists.filter((artist) => p.artistIds.includes(artist.id)).map((artist) => artist.name).join(' ')))
           .sort((a, b) => sort === 'popular'
             ? (b.ticketCount + b.verifyCount + b.photoCount) - (a.ticketCount + a.verifyCount + a.photoCount)
             : a.distanceMeters - b.distanceMeters),

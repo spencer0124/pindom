@@ -22,25 +22,10 @@ const SELECT_MS = 300;
 interface MapFiltersProps {
   artists: Artist[];
   selectedId?: string;
-  onSelect: (artistId: string) => void;
+  onSelect: (artistId: string | null) => void;
 }
 
-/**
- * The filter row over 지도 — the 최애 the user follows, one active at a time.
- *
- * `1a` filters this map by artist; the older Figma frame (`33:2460`) filters it
- * by 작품 종류 — 전체 / MV / 드라마 / 자체 콘텐츠. What a filter filters on is flow,
- * and flow is `1a`'s axis, so the artist wins. It is also the only reading that
- * agrees with 홈, which is keyed to one 최애 throughout.
- *
- * There is deliberately no 전체: the selection is shared with 홈 and 장소/상세,
- * and an "all artists" state has no meaning on either of those.
- *
- * Chips are the one shape `2b` allows a radius on, so these are the only
- * rounded things on the screen — 4px, not a pill. Selection cross-fades over
- * 300 ms as 1a's does; the label is an `Animated.Text` dressed from the same
- * typography map `Txt` reads, because `Txt` takes a fixed colour.
- */
+/** All artists or one contributor, shared with home. */
 export function MapFilters({ artists, selectedId, onSelect }: MapFiltersProps) {
   return (
     <ScrollView
@@ -48,6 +33,11 @@ export function MapFilters({ artists, selectedId, onSelect }: MapFiltersProps) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.track}
     >
+      <FilterChip
+        artist={{ id: 'all', name: '전체', initial: '전체', placeCount: 0 }}
+        selected={selectedId == null}
+        onSelect={() => onSelect(null)}
+      />
       {artists.map((artist) => (
         <FilterChip
           key={artist.id}

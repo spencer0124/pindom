@@ -65,7 +65,7 @@ export function useMyPage() {
       data: {
         user: user.data,
         artists: artists.ok ? artists.data : [],
-        vaultCount: (mine.ok ? mine.data.length : 0) + (vault.ok ? vault.data.length : 0),
+        vaultCount: (mine.ok ? mine.data.filter((t) => !t.photoDeleted).length : 0) + (vault.ok ? vault.data.filter((t) => !t.photoDeleted).length : 0),
         permissionsGranted,
       },
     });

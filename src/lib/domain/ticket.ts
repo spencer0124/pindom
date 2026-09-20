@@ -18,6 +18,7 @@ export interface Ticket {
   /** Inherited from the place, so 컬렉션 can group by 최애 */
   artistId?: string;
   photoUrl: string;
+  photoDeleted?: boolean;
   /** Rendered as the barcode on 티켓 발행 */
   serial: string;
   /** `private` puts the ticket in 보관함 rather than the public collection */

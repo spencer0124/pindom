@@ -34,7 +34,7 @@ export function chipsFor(artistName: string, placeName: string): AssistantChip[]
     },
     {
       label: '티켓 빨리 모으는 법',
-      question: '티켓 20장 모아서 팬사인회 응모하려면 어떤 코스가 가장 효율적이야?',
+      question: '티켓 8장 모아서 팬사인회 응모하려면 어떤 코스가 가장 효율적이야?',
     },
   ];
 }
