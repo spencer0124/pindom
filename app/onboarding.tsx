@@ -97,11 +97,12 @@ export default function OnboardingScreen() {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="이메일"
+              placeholder={mode === 'signIn' ? '아이디 또는 이메일' : '이메일'}
               placeholderTextColor={adaptive.grey400}
               autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
+              keyboardType={mode === 'signIn' ? 'default' : 'email-address'}
+              autoComplete={mode === 'signIn' ? 'username' : 'email'}
+              autoCorrect={false}
               style={[styles.input, { color: adaptive.grey900, borderBottomColor: adaptive.grey200 }]}
             />
             <TextInput
@@ -173,7 +174,7 @@ export default function OnboardingScreen() {
             disabled={mode === 'signIn' ? !canSubmit : busy}
             onPress={() => (mode === 'signIn' ? void go() : setMode('signIn'))}
           >
-            이메일로 로그인
+            아이디 · 이메일로 로그인
           </Button>
           <Txt typography="st13" color={adaptive.grey500} textAlign="center" style={styles.note}>
             위치 권한과 카메라 권한이 필요합니다

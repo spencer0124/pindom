@@ -569,8 +569,12 @@ export const firebaseRepositories: Repositories = {
   },
 
   auth: {
-    signIn: (email, password) =>
+    signIn: (identifier, password) =>
       attempt(async () => {
+        // The review account accepts its assigned ID; Firebase still checks its password.
+        const email = identifier.trim().toLowerCase() === 'openapi'
+          ? 'openapi@pindom.app'
+          : identifier.trim();
         const cred = await signInWithEmailAndPassword(auth(), email, password);
         // 가입이 반쪽으로 끝난 계정을 복구한다: createUser 는 성공했는데 users 문서
         // 쓰기만 실패하면, 재가입은 "이미 있는 이메일" 로 막히고 문서는 영영 없다 —
