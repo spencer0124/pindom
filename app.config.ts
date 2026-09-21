@@ -159,10 +159,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // catalog, and a 보관함 photo can be deleted without losing the ticket it
     // earned or its 응모 이력. Place covers load through expo-image, which says
     // it is loading and offers a retry instead of leaving the hero blank. The
-    // originals themselves and the camera-test flags — open everywhere but
-    // 마로니에공원, which is back on 50m GPS — are backend data this build only
-    // reads. Same 1.0.2 train as build 18.
-    // Build 20 (2026-09-21) carries: feat(auth): allow openapi review login ID.
+    // place originals and the camera-test flags are backend data this build
+    // only reads; src/mocks/ merely mirrors them, and that mirror was wrong
+    // here until 7ee5e6d. Read a flag from the backend, never the catalog.
+    // Same 1.0.2 train as build 18.
+    // Build 20 (2026-09-21) carries: the review sign-in — the 로그인 field takes
+    // an 아이디 as well as an email, and the ID `openapi` resolves to its own
+    // account so an App Store reviewer never has to type an address. Firebase
+    // still checks the password, so this widens the input, not the gate. This
+    // is the build 1.0.2 is submitted to the App Store with, alongside a review
+    // walkthrough pointed at place-gdg-kmj-13 — after 7ee5e6d the only place
+    // where remote camera testing is open. Same 1.0.2 train as build 19.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
@@ -194,7 +201,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // it carries everything from iOS builds 11–15 at once: the on-device camera,
     // the Skia hologram ticket, the photo vault, drag mosaic, album profile
     // photos and the in-app browser.
-    versionCode: 2,
+    // Version 3 (2026-09-21) is 1.0.2, matching iOS build 20: the pink
+    // holographic redesign, the cutout camera and photo pins, the photo editor,
+    // map pin clustering, photo deletion in 보관함 and 아이디 sign-in. Android
+    // has no per-build train of its own — it is rebuilt once per store release,
+    // so this number moves far more slowly than ios.buildNumber above.
+    versionCode: 3,
     ...(androidFirebaseConfigured && { googleServicesFile: ANDROID_FIREBASE_CONFIG }),
     adaptiveIcon: {
       // Matches the generated rose heart-pin launcher artwork.
