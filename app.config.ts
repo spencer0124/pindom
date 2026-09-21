@@ -162,10 +162,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // originals themselves and the camera-test flags — open everywhere but
     // 마로니에공원, which is back on 50m GPS — are backend data this build only
     // reads. Same 1.0.2 train as build 18.
+    // Build 20 (2026-09-21) carries: feat(auth): allow openapi review login ID.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
-    buildNumber: '19',
+    buildNumber: '20',
     ...(iosFirebaseConfigured && { googleServicesFile: IOS_FIREBASE_CONFIG }),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
