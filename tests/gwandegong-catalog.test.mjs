@@ -32,7 +32,7 @@ describe('supplied Gwandegong catalog', () => {
     }
   });
 
-  it('uses supplied originals for every cover and allows remote camera testing only at the 600th Anniversary Hall', () => {
+  it('uses supplied originals for every cover and requires GPS only at Marronnier Park', () => {
     for (const place of places) {
       const url = new URL(place.coverImageUrl);
       assert.equal(url.protocol, 'https:');
@@ -40,7 +40,7 @@ describe('supplied Gwandegong catalog', () => {
       assert.equal(place.coverImageCredit, undefined);
       assert.equal(place.coverImageSourceUrl, undefined);
       assert.doesNotMatch(place.description, /원본 배경사진은 아직|촬영 당시 사진이 아닌/);
-      assert.equal(place.cameraTestEnabled, place.id === 'place-gdg-kmj-13');
+      assert.equal(place.cameraTestEnabled, place.id !== 'place-gdg-ljw-03');
       assert.equal(place.radiusMeters, 50);
     }
   });

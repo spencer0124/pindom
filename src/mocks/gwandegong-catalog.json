@@ -24,7 +24,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-02",
@@ -50,7 +50,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-03",
@@ -76,7 +76,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-yhj-04",
@@ -102,7 +102,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-01",
@@ -128,7 +128,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-02",
@@ -154,7 +154,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-jsy-03",
@@ -180,7 +180,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-01",
@@ -206,7 +206,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-02",
@@ -232,7 +232,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-ljw-03",
@@ -284,7 +284,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-02",
@@ -310,7 +310,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-03",
@@ -336,7 +336,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-04",
@@ -362,7 +362,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-05",
@@ -388,7 +388,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-06",
@@ -414,7 +414,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-07",
@@ -440,7 +440,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-08",
@@ -466,7 +466,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-09",
@@ -492,7 +492,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-10",
@@ -518,7 +518,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-11",
@@ -544,7 +544,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-12",
@@ -570,7 +570,7 @@
       "photoCount": 0,
       "reviewCount": 0,
       "createdAt": "2026-09-19T14:46:08.024Z",
-      "cameraTestEnabled": false
+      "cameraTestEnabled": true
     },
     {
       "id": "place-gdg-kmj-13",
