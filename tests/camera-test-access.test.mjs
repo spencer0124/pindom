@@ -42,7 +42,7 @@ describe('camera test repository access', () => {
     assert.equal(active.ok, true);
     assert.deepEqual(new Set(active.data.map((place) => place.id)), new Set(catalog.map((place) => place.id)));
     assert.ok(active.data.every((place) => !place.archived));
-    assert.deepEqual(active.data.filter((place) => !place.cameraTestEnabled).map((place) => place.id), ['place-gdg-ljw-03']);
+    assert.deepEqual(active.data.filter((place) => place.cameraTestEnabled).map((place) => place.id), ['place-gdg-kmj-13']);
     assert.equal((await repo.verification.startCameraTest('place-gdg-ljw-03')).ok, false);
     assert.equal((await repo.places.getById('place-jumunjin')).data.archived, true);
     assert.equal((await repo.courses.listForArtist('artist-lumina')).data.length, 0);
@@ -59,7 +59,7 @@ describe('camera test repository access', () => {
   it('requests a test grant without a reading and carries TEST through ticket issue', async () => {
     const load = modules();
     const { mockRepositories: repo } = load('./src/lib/repositories/mock');
-    const result = await repo.verification.startCameraTest('place-gdg-yhj-01');
+    const result = await repo.verification.startCameraTest('place-gdg-kmj-13');
     assert.equal(result.ok, true);
     assert.equal(result.data.verified, true);
     assert.equal(result.data.grant.testMode, true);
@@ -68,15 +68,15 @@ describe('camera test repository access', () => {
     const ticket = await repo.tickets.issue({ grantToken: result.data.grant.token, photoPath: 'test.jpg', visibility: 'private' });
     assert.equal(ticket.ok, true);
     assert.equal(ticket.data.testMode, true);
-    assert.equal(ticket.data.placeId, 'place-gdg-yhj-01');
+    assert.equal(ticket.data.placeId, 'place-gdg-kmj-13');
     assert.equal((await repo.tickets.issue({ grantToken: result.data.grant.token, photoPath: 'test.jpg', visibility: 'private' })).ok, false);
   });
 
   it('preserves TEST in public profile projections while keeping private test photos out', async () => {
     const { mockRepositories: repo } = modules()('./src/lib/repositories/mock');
-    const publicGrant = (await repo.verification.startCameraTest('place-gdg-yhj-01')).data.grant;
+    const publicGrant = (await repo.verification.startCameraTest('place-gdg-kmj-13')).data.grant;
     const publicTicket = (await repo.tickets.issue({ grantToken: publicGrant.token, photoPath: 'public-test.jpg', visibility: 'public' })).data;
-    const privateGrant = (await repo.verification.startCameraTest('place-gdg-yhj-02')).data.grant;
+    const privateGrant = (await repo.verification.startCameraTest('place-gdg-kmj-13')).data.grant;
     const privateTicket = (await repo.tickets.issue({ grantToken: privateGrant.token, photoPath: 'private-test.jpg', visibility: 'private' })).data;
     const profile = (await repo.users.getPublicProfile(publicTicket.userId)).data;
     assert.equal(profile.tickets.find((ticket) => ticket.ticketId === publicTicket.id).testMode, true);
@@ -90,18 +90,18 @@ describe('camera test repository access', () => {
     const { mockPlaces } = load('./src/mocks/places');
     assert.equal((await repo.verification.startCameraTest('place-jumunjin')).ok, false);
     assert.equal((await repo.verification.submitReading({ placeId: 'place-jumunjin' })).ok, false);
-    const place = mockPlaces.find((entry) => entry.id === 'place-gdg-yhj-01');
+    const place = mockPlaces.find((entry) => entry.id === 'place-gdg-kmj-13');
     const issued = await repo.verification.startCameraTest(place.id);
     place.cameraTestEnabled = false;
     assert.equal((await repo.verification.startCameraTest(place.id)).failure.errorCode, 'camera_test_disabled');
     assert.equal((await repo.tickets.issue({ grantToken: issued.data.grant.token, photoPath: 'test.jpg', visibility: 'private' })).failure.errorCode, 'camera_test_disabled');
     await repo.auth.signOut();
-    assert.equal((await repo.verification.startCameraTest('place-gdg-yhj-02')).failure.code, 'unauthenticated');
+    assert.equal((await repo.verification.startCameraTest('place-gdg-kmj-13')).failure.code, 'unauthenticated');
   });
 
   it('also bypasses scripted GPS failures for older apps submitting readings to an enabled place', async () => {
     const { mockRepositories: repo } = modules()('./src/lib/repositories/mock');
-    const result = await repo.verification.submitReading({ placeId: 'place-gdg-yhj-01' });
+    const result = await repo.verification.submitReading({ placeId: 'place-gdg-kmj-13' });
     assert.equal(result.data.verified, true);
     assert.equal(result.data.grant.testMode, true);
   });
