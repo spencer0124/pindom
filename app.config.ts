@@ -160,16 +160,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // earned or its 응모 이력. Place covers load through expo-image, which says
     // it is loading and offers a retry instead of leaving the hero blank. The
     // place originals and the camera-test flags are backend data this build
-    // only reads; src/mocks/ merely mirrors them, and that mirror was wrong
-    // here until 7ee5e6d. Read a flag from the backend, never the catalog.
-    // Same 1.0.2 train as build 18.
+    // only reads; src/mocks/ merely mirrors them, and that mirror was edited
+    // twice in one morning in opposite directions. Read a camera-test flag
+    // from the backend, never from the catalog. Same 1.0.2 train as build 18.
     // Build 20 (2026-09-21) carries: the review sign-in — the 로그인 field takes
     // an 아이디 as well as an email, and the ID `openapi` resolves to its own
     // account so an App Store reviewer never has to type an address. Firebase
     // still checks the password, so this widens the input, not the gate. This
     // is the build 1.0.2 is submitted to the App Store with, alongside a review
-    // walkthrough pointed at place-gdg-kmj-13 — after 7ee5e6d the only place
-    // where remote camera testing is open. Same 1.0.2 train as build 19.
+    // walkthrough pointed at place-gdg-kmj-13, which the backend holds open for
+    // capture without a site visit. Same 1.0.2 train as build 19.
     // It lives here rather than in Info.plist because `ios/` is gitignored — a
     // number kept only there is lost at the next prebuild, and the next
     // uploader finds out from a rejected upload.
